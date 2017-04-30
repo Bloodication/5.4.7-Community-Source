@@ -139,7 +139,7 @@ void AnticheatMgr::StartHackDetection(Player* player, MovementInfo const& moveme
     
     if (!sWorld->getBoolConfig(CONFIG_ANTICHEAT_GAMEMASTER_REPORT) && player->GetSession())
     {
-        if (player->GetSession()->GetSecurity() >= SEC_MODERATOR)
+        if (player->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
             return;
     }
 
