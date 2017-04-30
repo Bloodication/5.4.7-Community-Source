@@ -27,6 +27,7 @@ void AddSC_example_commandscript();
 void AddSC_DuelReset();
 void AddSC_DuelZone();
 void AddSC_fast_arena_start();
+void AddSC_chat();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -1846,5 +1847,6 @@ void AddCustomScripts()
     AddSC_petguy();
     AddSC_arena_spectator_script();
     AddSC_transmogrify_script();
+    AddSC_chat();
 #endif
 }
