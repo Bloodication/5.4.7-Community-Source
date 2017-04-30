@@ -278,7 +278,7 @@ public:
             return false;
         }
 
-        int32 item_int = Trinity::lexicalCast<int32>(pitem);
+        int32 item_int = atol(pitem);
         if (item_int <= 0)
             return false;
 
@@ -287,15 +287,15 @@ public:
         char* fmaxcount = strtok(NULL, " ");                    //add maxcount, default: 0
         uint32 maxcount = 0;
         if (fmaxcount)
-            maxcount = Trinity::lexicalCast<uint32>(fmaxcount);
+            maxcount = atol(fmaxcount);
 
         char* fincrtime = strtok(NULL, " ");                    //add incrtime, default: 0
         uint32 incrtime = 0;
         if (fincrtime)
-            incrtime = Trinity::lexicalCast<uint32>(fincrtime);
+            incrtime = atol(fincrtime);
 
         char* fextendedcost = strtok(NULL, " ");                //add ExtendedCost, default: 0
-        uint32 extendedcost = fextendedcost ? Trinity::lexicalCast<uint32>(fextendedcost) : 0u;
+        uint32 extendedcost = fextendedcost ? atol(fextendedcost) : 0;
         Creature* vendor = handler->getSelectedCreature();
         if (!vendor)
         {
@@ -304,7 +304,7 @@ public:
             return false;
         }
 
-        uint32 vendor_entry = vendor->GetEntry();
+        uint32 vendor_entry = vendor ? vendor->GetEntry() : 0;
 
         if (!sObjectMgr->IsVendorItemValid(vendor_entry, itemId, maxcount, incrtime, extendedcost, type, handler->GetSession()->GetPlayer()))
         {
