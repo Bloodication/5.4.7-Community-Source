@@ -289,6 +289,7 @@ namespace AccountMgr
         return gmlevel >= SEC_GAMEMASTER && gmlevel <= SEC_CONSOLE;
     }
 
+    
     bool IsGMAccount(uint32 gmlevel)
     {
         return gmlevel >= SEC_CONFIRMED_GAMEMASTER && gmlevel <= SEC_CONSOLE;
