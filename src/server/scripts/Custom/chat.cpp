@@ -68,35 +68,35 @@ class chat : public CommandScript
                                 msg += player->GetName();
                                 msg += "] |cFF87CEEB";
                                 break;
-                        case SEC_CONFIRMED_GAMEMASTER:
+                        case SEC_GAMEMASTER:
 								msg += "|cffff0000[World]";
 								msg += "|TINTERFACE/CHATFRAME/UI-CHATICON-BLIZZ:15:15:0:-1|t";
                                 msg += "|cfffa9900[GM] |cffffffff[";
                                 msg += player->GetName();
                                 msg += "] |cFF87CEEB";
                                 break;
-                        case SEC_REALM_LEADER:
+                        case SEC_CONFIRMED_GAMEMASTER:
 								msg += "|cffff0000[World]";
 								msg += "|TINTERFACE/CHATFRAME/UI-CHATICON-BLIZZ:15:15:0:-1|t";
                                 msg += "|cfffa9900[Head GM] |cffffffff[";
                                 msg += player->GetName();
                                 msg += "] |cFF87CEEB";
                                 break;
-                        case SEC_GM_LEADER:
+                        case SEC_REALM_LEADER:
 								msg += "|cffff0000[World]";
 								msg += "|TINTERFACE/CHATFRAME/UI-CHATICON-BLIZZ:15:15:0:-1|t";
                                 msg += "|cfffa9900[Dev] |cffffffff[";
                                 msg += player->GetName();
                                 msg += "] |cFF87CEEB";
                                 break;
-                        case SEC_ADMINISTRATOR:
+                        case SEC_GM_LEADER:
 								msg += "|cffff0000[World]";
 								msg += "|TINTERFACE/CHATFRAME/UI-CHATICON-BLIZZ:15:15:0:-1|t";
                                 msg += "|cFF87CEEB[Executive] |cffffffff[";
                                 msg += player->GetName();
                                 msg += "] |cFF87CEEB";
                                 break;
-                        case SEC_O:
+                        case SEC_ADMINISTRATOR:
 								msg += "|cffff0000[World]";
 								msg += "|TINTERFACE/CHATFRAME/UI-CHATICON-BLIZZ:15:15:0:-1|t";
                                 msg += "|cFF87CEEB[Owner] |cffffffff[";

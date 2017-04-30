@@ -151,14 +151,14 @@ enum TimeConstants
 enum AccountTypes
 {
     SEC_PLAYER                = 0, // PLAYER
-    SEC_VIP                   = 1, // VIP
-    SEC_MODERATOR            = 2, // TRIAL GM
-    SEC_CONFIRMED_GAMEMASTER  = 3, // GM.
-    SEC_REALM_LEADER          = 4, // HEAD GM
-    SEC_GM_LEADER             = 5, // DEV
-    SEC_ADMINISTRATOR         = 6, // EXECUTIVE
-    SEC_O                     = 7, // OWNER
-    SEC_CONSOLE               = 8                               // must be always last in list, accounts must have less security level always also
+    SEC_VIP		      = 1, // VIP
+    SEC_MODERATOR             = 2, // TRIAL GM
+    SEC_GAMEMASTER            = 3, // GM
+    SEC_CONFIRMED_GAMEMASTER  = 4, // HEAD GM
+    SEC_REALM_LEADER          = 5, // DEV
+    SEC_GM_LEADER             = 6, // EXECUTIVE
+    SEC_ADMINISTRATOR         = 7, // OWNER
+    SEC_CONSOLE               = 8                            // must be always last in list, accounts must have less security level always also
 };
 
 enum LocaleConstant
