@@ -61,7 +61,7 @@ class chat : public CommandScript
 										msg += "] |cFFA9A9A9";
 								}
                                 break;
-                        case SEC_GAMEMASTER:
+                        case SEC_MODERATOR:
 								msg += "|cffff0000[World]";
 								msg += "|TINTERFACE/CHATFRAME/UI-CHATICON-BLIZZ:15:15:0:-1|t";
                                 msg += "|cff00ffff[Trial GM] |cffffffff[";

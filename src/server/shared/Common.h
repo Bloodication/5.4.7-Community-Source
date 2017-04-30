@@ -152,7 +152,7 @@ enum AccountTypes
 {
     SEC_PLAYER                = 0, // PLAYER
     SEC_VIP                   = 1, // VIP
-    SEC_GAMEMASTER            = 2, // TRIAL GM
+    SEC_MODERATOR            = 2, // TRIAL GM
     SEC_CONFIRMED_GAMEMASTER  = 3, // GM.
     SEC_REALM_LEADER          = 4, // HEAD GM
     SEC_GM_LEADER             = 5, // DEV
