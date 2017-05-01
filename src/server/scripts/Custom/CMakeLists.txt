@@ -24,6 +24,7 @@ set(scripts_STAT_SRCS
 	Custom/VIP_Area.cpp
 	Custom/npc_profvendor.cpp
 	Custom/morph.cpp
+	Custom/titlenpc.cpp
 )
 
 message("  -> Prepared: Custom")
