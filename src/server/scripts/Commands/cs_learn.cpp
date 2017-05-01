@@ -37,35 +37,35 @@ public:
     {
         static ChatCommand learnAllMyCommandTable[] =
         {
-            { "class",          SEC_ADMINISTRATOR,  false, &HandleLearnAllMyClassCommand,       "", NULL },
-            { "pettalents",     SEC_ADMINISTRATOR,  false, &HandleLearnAllMyPetTalentsCommand,  "", NULL },
-            { "spells",         SEC_ADMINISTRATOR,  false, &HandleLearnAllMySpellsCommand,      "", NULL },
-            { "talents",        SEC_ADMINISTRATOR,  false, &HandleLearnAllMyTalentsCommand,     "", NULL },
+            { "class",          SEC_REALM_LEADER ,  false, &HandleLearnAllMyClassCommand,       "", NULL },
+            { "pettalents",     SEC_REALM_LEADER ,  false, &HandleLearnAllMyPetTalentsCommand,  "", NULL },
+            { "spells",         SEC_REALM_LEADER ,  false, &HandleLearnAllMySpellsCommand,      "", NULL },
+            { "talents",        SEC_REALM_LEADER ,  false, &HandleLearnAllMyTalentsCommand,     "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
         static ChatCommand learnAllCommandTable[] =
         {
-            { "my",             SEC_ADMINISTRATOR,  false, NULL,                                "",  learnAllMyCommandTable },
-            { "gm",             SEC_GAMEMASTER,     false, &HandleLearnAllGMCommand,            "", NULL },
-            { "crafts",         SEC_GAMEMASTER,     false, &HandleLearnAllCraftsCommand,        "", NULL },
-            { "default",        SEC_MODERATOR,      false, &HandleLearnAllDefaultCommand,       "", NULL },
-            { "lang",           SEC_MODERATOR,      false, &HandleLearnAllLangCommand,          "", NULL },
-            { "recipes",        SEC_GAMEMASTER,     false, &HandleLearnAllRecipesCommand,       "", NULL },
+            { "my",             SEC_REALM_LEADER ,  false, NULL,                                "",  learnAllMyCommandTable },
+            { "gm",             SEC_REALM_LEADER ,     false, &HandleLearnAllGMCommand,            "", NULL },
+            { "crafts",         SEC_REALM_LEADER ,     false, &HandleLearnAllCraftsCommand,        "", NULL },
+            { "default",        SEC_REALM_LEADER ,      false, &HandleLearnAllDefaultCommand,       "", NULL },
+            { "lang",           SEC_REALM_LEADER ,      false, &HandleLearnAllLangCommand,          "", NULL },
+            { "recipes",        SEC_REALM_LEADER ,     false, &HandleLearnAllRecipesCommand,       "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
         static ChatCommand learnCommandTable[] =
         {
-            { "all",            SEC_ADMINISTRATOR,  false, NULL,                                "",  learnAllCommandTable },
-            { "",               SEC_ADMINISTRATOR,  false, &HandleLearnCommand,                 "", NULL },
+            { "all",            SEC_REALM_LEADER ,  false, NULL,                                "",  learnAllCommandTable },
+            { "",               SEC_REALM_LEADER ,  false, &HandleLearnCommand,                 "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "learn",          SEC_MODERATOR,      false, NULL,                                "", learnCommandTable },
-            { "unlearn",        SEC_ADMINISTRATOR,  false, &HandleUnLearnCommand,               "", NULL },
+            { "learn",          SEC_REALM_LEADER ,      false, NULL,                                "", learnCommandTable },
+            { "unlearn",        SEC_REALM_LEADER ,  false, &HandleUnLearnCommand,               "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         return commandTable;
