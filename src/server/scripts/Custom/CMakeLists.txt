@@ -17,7 +17,6 @@ set(scripts_STAT_SRCS
     Custom/arena_spectator.cpp
     Custom/npc_transmogrify.cpp
     Custom/npc_arena1v1.cpp
-    Custom/npc_arena1v1.h
     Custom/chat.cpp
 	Custom/class_trainer.cpp
 	Custom/teleporter.cpp
