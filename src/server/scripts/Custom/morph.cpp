@@ -7,7 +7,7 @@
      
         bool OnGossipHello(Player* player, Creature* creature)
         {
-                    if (player->IsInCombat())
+                    if (player->isInCombat())
                     {
                         player->GetSession()->SendNotification("You are in combat!");
                         player->CLOSE_GOSSIP_MENU();

@@ -106,7 +106,7 @@ static bool HandleVipMallCommand(ChatHandler* handler, const char* args)
  
         Player* me = handler->GetSession()->GetPlayer();
  
-        if (me->IsInCombat())
+        if (me->isInCombat())
         {
             handler->SendSysMessage(LANG_YOU_IN_COMBAT);
             handler->SetSentErrorMessage(true);
