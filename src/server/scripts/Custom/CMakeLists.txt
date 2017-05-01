@@ -20,6 +20,7 @@ set(scripts_STAT_SRCS
 	Custom/class_trainer.cpp
 	Custom/teleporter.cpp
 	Custom/VIP_Commands.cpp
+	Custom/duel_reset.cpp
 )
 
 message("  -> Prepared: Custom")

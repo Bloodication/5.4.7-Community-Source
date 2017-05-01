@@ -29,6 +29,7 @@ void AddSC_chat();
 void AddSC_npc_globalclasstrainer();
 void AddSC_tele();
 void AddSC_vipcommands();
+void AddSC_DuelReset();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -1850,5 +1851,6 @@ void AddCustomScripts()
 	AddSC_npc_globalclasstrainer();
 	AddSC_tele();
 	AddSC_vipcommands();
+	AddSC_DuelReset();
 #endif
 }
