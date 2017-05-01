@@ -10,8 +10,8 @@ class chat : public CommandScript
         {
                 static ChatCommand ChatCommandTable[] =
                 {
-                        {"world",        SEC_PLAYER,             true,           &HandleChatCommand,     "", NULL},
-                        {NULL,          0,                              false,          NULL,                                           "", NULL}
+                        {"world",        SEC_PLAYER,             true,                  &HandleChatCommand,  "", NULL},
+                        {NULL,           0,                      false,                 NULL,                "", NULL}
                 };
  
                 return ChatCommandTable;
