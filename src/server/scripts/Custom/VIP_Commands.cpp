@@ -17,6 +17,7 @@ public:
  
         {
             { "mall",       1,     true, &HandleVipMallCommand,         "", NULL },
+			{ "bank",           1, false, &HandleVipBankCommand,               "", NULL },
             { "changerace",    1,  false, &HandleChangeRaceCommand,             "", NULL },
             { "changefaction",  1,  false, &HandleChangeFactionCommand,         "", NULL },
             { "customize",      1,  false, &HandleCustomizeCommand,             "", NULL },
@@ -64,6 +65,12 @@ static bool HandlevipCommand(ChatHandler* handler, const char* args)
  
             me->Say("vip command?", LANG_UNIVERSAL);
             return true;
+    }
+	
+	static bool HandleVipBankCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        handler->GetSession()->SendShowBank(handler->GetSession()->GetPlayer()->GetGUID());
+        return true;
     }
  
 static bool HandleChangeRaceCommand(ChatHandler* handler, const char* args)
