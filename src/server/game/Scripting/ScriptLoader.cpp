@@ -37,6 +37,7 @@ void AddSC_teleguy();
 void AddSC_petguy();
 void AddSC_arena_spectator_script();
 void AddSC_transmogrify_script();
+void AddSC_npc_1v1arena();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -1846,5 +1847,6 @@ void AddCustomScripts()
     AddSC_petguy();
     AddSC_arena_spectator_script();
     AddSC_transmogrify_script();
+	AddSC_npc_1v1arena();
 #endif
 }

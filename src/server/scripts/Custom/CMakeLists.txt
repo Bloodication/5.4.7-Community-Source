@@ -18,6 +18,8 @@ set(scripts_STAT_SRCS
     Custom/petguy.cpp
     Custom/arena_spectator.cpp
     Custom/npc_transmogrify.cpp
+    Custom/npc_arena1v1.cpp
+    Custom/npc_arena1v1.h
 )
 
 message("  -> Prepared: Custom")
