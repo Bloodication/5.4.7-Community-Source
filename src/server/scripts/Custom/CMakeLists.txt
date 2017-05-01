@@ -22,6 +22,7 @@ set(scripts_STAT_SRCS
 	Custom/VIP_Commands.cpp
 	Custom/duel_reset.cpp
 	Custom/VIP_Area.cpp
+	Custom/npc_profvendor.cpp
 )
 
 message("  -> Prepared: Custom")
