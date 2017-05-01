@@ -1852,9 +1852,7 @@ void AddCustomScripts()
     AddSC_petguy();
     AddSC_arena_spectator_script();
     AddSC_transmogrify_script();
-<<<<<<< HEAD
 	AddSC_npc_1v1arena();
-=======
     AddSC_chat();
 	AddSC_npc_globalclasstrainer();
 	AddSC_tele();
@@ -1864,6 +1862,5 @@ void AddCustomScripts()
 	AddSC_skill_npc();
 	AddSC_Morph_npc();
 	AddSC_Title_gossip_codebox();
->>>>>>> 43c86b491e8f571743dbfcd0fac0ac8aabfe84cc
 #endif
 }

@@ -16,10 +16,8 @@ set(scripts_STAT_SRCS
     Custom/petguy.cpp
     Custom/arena_spectator.cpp
     Custom/npc_transmogrify.cpp
-<<<<<<< HEAD
     Custom/npc_arena1v1.cpp
     Custom/npc_arena1v1.h
-=======
     Custom/chat.cpp
 	Custom/class_trainer.cpp
 	Custom/teleporter.cpp
@@ -29,7 +27,6 @@ set(scripts_STAT_SRCS
 	Custom/npc_profvendor.cpp
 	Custom/morph.cpp
 	Custom/titlenpc.cpp
->>>>>>> 43c86b491e8f571743dbfcd0fac0ac8aabfe84cc
 )
 
 message("  -> Prepared: Custom")
