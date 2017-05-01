@@ -128,70 +128,70 @@ public:
     {
         static ChatCommand npcAddCommandTable[] =
         {
-            { "formation",      SEC_MODERATOR,      false, &HandleNpcAddFormationCommand,      "", NULL },
-            { "item",           SEC_GAMEMASTER,     false, &HandleNpcAddVendorItemCommand,     "", NULL },
-            { "move",           SEC_GAMEMASTER,     false, &HandleNpcAddMoveCommand,           "", NULL },
-            { "temp",           SEC_GAMEMASTER,     false, &HandleNpcAddTempSpawnCommand,      "", NULL },
+            { "formation",      SEC_REALM_LEADER,      false, &HandleNpcAddFormationCommand,      "", NULL },
+            { "item",           SEC_REALM_LEADER,     false, &HandleNpcAddVendorItemCommand,     "", NULL },
+            { "move",           SEC_REALM_LEADER,     false, &HandleNpcAddMoveCommand,           "", NULL },
+            { "temp",           SEC_REALM_LEADER,     false, &HandleNpcAddTempSpawnCommand,      "", NULL },
             //{ TODO: fix or remove this command
-            { "weapon",         SEC_ADMINISTRATOR,  false, &HandleNpcAddWeaponCommand,         "", NULL },
+            { "weapon",         SEC_REALM_LEADER,  false, &HandleNpcAddWeaponCommand,         "", NULL },
             //}
-            { "",               SEC_GAMEMASTER,     false, &HandleNpcAddCommand,               "", NULL },
+            { "",               SEC_REALM_LEADER,     false, &HandleNpcAddCommand,               "", NULL },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         static ChatCommand npcDeleteCommandTable[] =
         {
-            { "item",           SEC_GAMEMASTER,     false, &HandleNpcDeleteVendorItemCommand,  "", NULL },
-            { "",               SEC_GAMEMASTER,     false, &HandleNpcDeleteCommand,            "", NULL },
+            { "item",           SEC_REALM_LEADER,     false, &HandleNpcDeleteVendorItemCommand,  "", NULL },
+            { "",               SEC_REALM_LEADER,     false, &HandleNpcDeleteCommand,            "", NULL },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         static ChatCommand npcFollowCommandTable[] =
         {
-            { "stop",           SEC_GAMEMASTER,     false, &HandleNpcUnFollowCommand,          "", NULL },
-            { "",               SEC_GAMEMASTER,     false, &HandleNpcFollowCommand,            "", NULL },
+            { "stop",           SEC_REALM_LEADER,     false, &HandleNpcUnFollowCommand,          "", NULL },
+            { "",               SEC_REALM_LEADER,     false, &HandleNpcFollowCommand,            "", NULL },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         static ChatCommand npcSetCommandTable[] =
         {
-            { "allowmove",      SEC_ADMINISTRATOR,  false, &HandleNpcSetAllowMovementCommand,  "", NULL },
-            { "entry",          SEC_ADMINISTRATOR,  false, &HandleNpcSetEntryCommand,          "", NULL },
-            { "factionid",      SEC_GAMEMASTER,     false, &HandleNpcSetFactionIdCommand,      "", NULL },
-            { "flag",           SEC_GAMEMASTER,     false, &HandleNpcSetFlagCommand,           "", NULL },
-            { "flag",           SEC_GAMEMASTER,     false, &HandleNpcSetFlag2Command,          "", NULL },
-            { "level",          SEC_GAMEMASTER,     false, &HandleNpcSetLevelCommand,          "", NULL },
-            { "link",           SEC_GAMEMASTER,     false, &HandleNpcSetLinkCommand,           "", NULL },
-            { "model",          SEC_GAMEMASTER,     false, &HandleNpcSetModelCommand,          "", NULL },
-            { "movetype",       SEC_GAMEMASTER,     false, &HandleNpcSetMoveTypeCommand,       "", NULL },
-            { "phase",          SEC_GAMEMASTER,     false, &HandleNpcSetPhaseCommand,          "", NULL },
-            { "spawndist",      SEC_GAMEMASTER,     false, &HandleNpcSetSpawnDistCommand,      "", NULL },
-            { "spawntime",      SEC_GAMEMASTER,     false, &HandleNpcSetSpawnTimeCommand,      "", NULL },
-            { "data",           SEC_ADMINISTRATOR,  false, &HandleNpcSetDataCommand,           "", NULL },
+            { "allowmove",      SEC_REALM_LEADER,  false, &HandleNpcSetAllowMovementCommand,  "", NULL },
+            { "entry",          SEC_REALM_LEADER,  false, &HandleNpcSetEntryCommand,          "", NULL },
+            { "factionid",      SEC_REALM_LEADER,     false, &HandleNpcSetFactionIdCommand,      "", NULL },
+            { "flag",           SEC_REALM_LEADER,     false, &HandleNpcSetFlagCommand,           "", NULL },
+            { "flag",           SEC_REALM_LEADER,     false, &HandleNpcSetFlag2Command,          "", NULL },
+            { "level",          SEC_REALM_LEADER,     false, &HandleNpcSetLevelCommand,          "", NULL },
+            { "link",           SEC_REALM_LEADER,     false, &HandleNpcSetLinkCommand,           "", NULL },
+            { "model",          SEC_REALM_LEADER,     false, &HandleNpcSetModelCommand,          "", NULL },
+            { "movetype",       SEC_REALM_LEADER,     false, &HandleNpcSetMoveTypeCommand,       "", NULL },
+            { "phase",          SEC_REALM_LEADER,     false, &HandleNpcSetPhaseCommand,          "", NULL },
+            { "spawndist",      SEC_REALM_LEADER,     false, &HandleNpcSetSpawnDistCommand,      "", NULL },
+            { "spawntime",      SEC_REALM_LEADER,     false, &HandleNpcSetSpawnTimeCommand,      "", NULL },
+            { "data",           SEC_REALM_LEADER,  false, &HandleNpcSetDataCommand,           "", NULL },
             //{ TODO: fix or remove these commands
-            { "name",           SEC_GAMEMASTER,     false, &HandleNpcSetNameCommand,           "", NULL },
-            { "subname",        SEC_GAMEMASTER,     false, &HandleNpcSetSubNameCommand,        "", NULL },
+            { "name",           SEC_REALM_LEADER,     false, &HandleNpcSetNameCommand,           "", NULL },
+            { "subname",        SEC_REALM_LEADER,     false, &HandleNpcSetSubNameCommand,        "", NULL },
             //}
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         static ChatCommand npcCommandTable[] =
         {
-            { "info",           SEC_ADMINISTRATOR,  false, &HandleNpcInfoCommand,              "", NULL },
-            { "move",           SEC_GAMEMASTER,     false, &HandleNpcMoveCommand,              "", NULL },
-            { "playemote",      SEC_ADMINISTRATOR,  false, &HandleNpcPlayEmoteCommand,         "", NULL },
-            { "say",            SEC_MODERATOR,      false, &HandleNpcSayCommand,               "", NULL },
-            { "textemote",      SEC_MODERATOR,      false, &HandleNpcTextEmoteCommand,         "", NULL },
-            { "whisper",        SEC_MODERATOR,      false, &HandleNpcWhisperCommand,           "", NULL },
-            { "yell",           SEC_MODERATOR,      false, &HandleNpcYellCommand,              "", NULL },
-            { "tame",           SEC_GAMEMASTER,     false, &HandleNpcTameCommand,              "", NULL },
-            { "map_activate",   SEC_GAMEMASTER,     false, &HandleNpcActivateCommand,          "", NULL },
-            { "near",           SEC_GAMEMASTER,     false, &HandleNpcNearCommand,              "", NULL },
-            { "add",            SEC_GAMEMASTER,     false, NULL,                 "", npcAddCommandTable },
-            { "delete",         SEC_GAMEMASTER,     false, NULL,              "", npcDeleteCommandTable },
-            { "follow",         SEC_GAMEMASTER,     false, NULL,              "", npcFollowCommandTable },
-            { "set",            SEC_GAMEMASTER,     false, NULL,                 "", npcSetCommandTable },
+            { "info",           SEC_REALM_LEADER,  false, &HandleNpcInfoCommand,              "", NULL },
+            { "move",           SEC_REALM_LEADER,     false, &HandleNpcMoveCommand,              "", NULL },
+            { "playemote",      SEC_REALM_LEADER,  false, &HandleNpcPlayEmoteCommand,         "", NULL },
+            { "say",            SEC_REALM_LEADER,      false, &HandleNpcSayCommand,               "", NULL },
+            { "textemote",      SEC_REALM_LEADER,      false, &HandleNpcTextEmoteCommand,         "", NULL },
+            { "whisper",        SEC_REALM_LEADER,      false, &HandleNpcWhisperCommand,           "", NULL },
+            { "yell",           SEC_REALM_LEADER,      false, &HandleNpcYellCommand,              "", NULL },
+            { "tame",           SEC_REALM_LEADER,     false, &HandleNpcTameCommand,              "", NULL },
+            { "map_activate",   SEC_REALM_LEADER,     false, &HandleNpcActivateCommand,          "", NULL },
+            { "near",           SEC_REALM_LEADER,     false, &HandleNpcNearCommand,              "", NULL },
+            { "add",            SEC_REALM_LEADER,     false, NULL,                 "", npcAddCommandTable },
+            { "delete",         SEC_REALM_LEADER,     false, NULL,              "", npcDeleteCommandTable },
+            { "follow",         SEC_REALM_LEADER,     false, NULL,              "", npcFollowCommandTable },
+            { "set",            SEC_REALM_LEADER,     false, NULL,                 "", npcSetCommandTable },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "npc",            SEC_MODERATOR,      false, NULL,                    "", npcCommandTable },
+            { "npc",            SEC_REALM_LEADER,      false, NULL,                    "", npcCommandTable },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;
