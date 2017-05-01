@@ -24,8 +24,6 @@ void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 void AddSC_example_commandscript();
-void AddSC_DuelReset();
-void AddSC_DuelZone();
 void AddSC_fast_arena_start();
 void AddSC_chat();
 void AddSC_npc_globalclasstrainer();
@@ -920,8 +918,6 @@ void AddScripts()
     AddBattlegroundScripts();
     AddOutdoorPvPScripts();
     AddCustomScripts();
-    AddSC_DuelReset();
-    AddSC_DuelZone();
     AddSC_fast_arena_start();
     AddScenarioScripts();
 #endif
