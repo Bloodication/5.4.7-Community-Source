@@ -37,14 +37,14 @@ public:
     {
         static ChatCommand guildCommandTable[] =
         {
-            { "create",         SEC_GAMEMASTER,     true,  &HandleGuildCreateCommand,           "", NULL },
-            { "delete",         SEC_GAMEMASTER,     true,  &HandleGuildDeleteCommand,           "", NULL },
-            { "invite",         SEC_GAMEMASTER,     true,  &HandleGuildInviteCommand,           "", NULL },
-            { "uninvite",       SEC_GAMEMASTER,     true,  &HandleGuildUninviteCommand,         "", NULL },
-            { "rank",           SEC_GAMEMASTER,     true,  &HandleGuildRankCommand,             "", NULL },
-            { "rename",         SEC_GAMEMASTER,     true,  &HandleGuildRenameCommand,           "", NULL },
-            { "givexp",         SEC_GAMEMASTER,     true,  &HandleGuildXpCommand,               "", NULL },
-            { "levelup",        SEC_GAMEMASTER,     true,  &HandleGuildLevelUpCommand,          "", NULL },
+            { "create",         SEC_CONFIRMED_GAMEMASTER,     true,  &HandleGuildCreateCommand,           "", NULL },
+            { "delete",         SEC_CONFIRMED_GAMEMASTER,     true,  &HandleGuildDeleteCommand,           "", NULL },
+            { "invite",         SEC_CONFIRMED_GAMEMASTER,     true,  &HandleGuildInviteCommand,           "", NULL },
+            { "uninvite",       SEC_CONFIRMED_GAMEMASTER,     true,  &HandleGuildUninviteCommand,         "", NULL },
+            { "rank",           SEC_CONFIRMED_GAMEMASTER,     true,  &HandleGuildRankCommand,             "", NULL },
+            { "rename",         SEC_CONFIRMED_GAMEMASTER,     true,  &HandleGuildRenameCommand,           "", NULL },
+            { "givexp",         SEC_CONFIRMED_GAMEMASTER,     true,  &HandleGuildXpCommand,               "", NULL },
+            { "levelup",        SEC_CONFIRMED_GAMEMASTER,     true,  &HandleGuildLevelUpCommand,          "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         static ChatCommand commandTable[] =

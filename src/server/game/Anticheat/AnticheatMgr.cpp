@@ -57,6 +57,7 @@ void AnticheatMgr::WalkOnWaterHackDetection(Player* player, MovementInfo const& 
     if (!player->isAlive())
         return;
 
+	
     if (player->HasAuraType(SPELL_AURA_FEATHER_FALL) ||
         player->HasAuraType(SPELL_AURA_SAFE_FALL) ||
         player->HasAuraType(SPELL_AURA_WATER_WALK))

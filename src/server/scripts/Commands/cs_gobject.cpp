@@ -38,35 +38,35 @@ public:
     {
         static ChatCommand gobjectAddCommandTable[] =
         {
-            { "temp",           SEC_GAMEMASTER,     false, &HandleGameObjectAddTempCommand,   "", NULL },
-            { "",               SEC_GAMEMASTER,     false, &HandleGameObjectAddCommand,       "", NULL },
+            { "temp",           SEC_REALM_LEADER ,     false, &HandleGameObjectAddTempCommand,   "", NULL },
+            { "",               SEC_REALM_LEADER ,     false, &HandleGameObjectAddCommand,       "", NULL },
             { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand gobjectSetCommandTable[] =
         {
-            { "phase",          SEC_GAMEMASTER,     false, &HandleGameObjectSetPhaseCommand,  "", NULL },
-            { "state",          SEC_GAMEMASTER,     false, &HandleGameObjectSetStateCommand,  "", NULL },
+            { "phase",          SEC_REALM_LEADER ,     false, &HandleGameObjectSetPhaseCommand,  "", NULL },
+            { "state",          SEC_REALM_LEADER ,     false, &HandleGameObjectSetStateCommand,  "", NULL },
             { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand gobjectCommandTable[] =
         {
-            { "activate",       SEC_GAMEMASTER,     false, &HandleGameObjectActivateCommand,  "", NULL },
-            { "map_activate",   SEC_GAMEMASTER,     false, &HandleGameObjectActivateMapCommand, "", NULL },
-            { "delete",         SEC_GAMEMASTER,     false, &HandleGameObjectDeleteCommand,    "", NULL },
-            { "info",           SEC_GAMEMASTER,     false, &HandleGameObjectInfoCommand,      "", NULL },
-            { "move",           SEC_GAMEMASTER,     false, &HandleGameObjectMoveCommand,      "", NULL },
-            { "near",           SEC_GAMEMASTER,     false, &HandleGameObjectNearCommand,      "", NULL },
-            { "target",         SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", NULL },
-            { "turn",           SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", NULL },
-            { "bindportal",     SEC_GAMEMASTER,     false, &HandleBindPortalCommand,          "", NULL },
-            { "damage",         SEC_GAMEMASTER,     false, &HandleDamageObjectCommand,        "", NULL },
-            { "add",            SEC_GAMEMASTER,     false, NULL,            "", gobjectAddCommandTable },
-            { "set",            SEC_GAMEMASTER,     false, NULL,            "", gobjectSetCommandTable },
+            { "activate",       SEC_REALM_LEADER ,     false, &HandleGameObjectActivateCommand,  "", NULL },
+            { "map_activate",   SEC_REALM_LEADER ,     false, &HandleGameObjectActivateMapCommand, "", NULL },
+            { "delete",         SEC_REALM_LEADER ,     false, &HandleGameObjectDeleteCommand,    "", NULL },
+            { "info",           SEC_REALM_LEADER ,     false, &HandleGameObjectInfoCommand,      "", NULL },
+            { "move",           SEC_REALM_LEADER ,     false, &HandleGameObjectMoveCommand,      "", NULL },
+            { "near",           SEC_REALM_LEADER ,     false, &HandleGameObjectNearCommand,      "", NULL },
+            { "target",         SEC_REALM_LEADER ,     false, &HandleGameObjectTargetCommand,    "", NULL },
+            { "turn",           SEC_REALM_LEADER ,     false, &HandleGameObjectTurnCommand,      "", NULL },
+            { "bindportal",     SEC_REALM_LEADER ,     false, &HandleBindPortalCommand,          "", NULL },
+            { "damage",         SEC_REALM_LEADER ,     false, &HandleDamageObjectCommand,        "", NULL },
+            { "add",            SEC_REALM_LEADER ,     false, NULL,            "", gobjectAddCommandTable },
+            { "set",            SEC_REALM_LEADER ,     false, NULL,            "", gobjectSetCommandTable },
             { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "gobject",        SEC_GAMEMASTER,     false, NULL,                "", gobjectCommandTable },
+            { "gobject",        SEC_REALM_LEADER ,     false, NULL,                "", gobjectCommandTable },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;

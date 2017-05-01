@@ -36,24 +36,24 @@ public:
     {
         static ChatCommand wpCommandTable[] =
         {
-            { "add",            SEC_GAMEMASTER,     false, &HandleWpAddCommand,                "", NULL },
-            { "event",          SEC_GAMEMASTER,     false, &HandleWpEventCommand,              "", NULL },
-            { "load",           SEC_GAMEMASTER,     false, &HandleWpLoadCommand,               "", NULL },
-            { "modify",         SEC_GAMEMASTER,     false, &HandleWpModifyCommand,             "", NULL },
-            { "unload",         SEC_GAMEMASTER,     false, &HandleWpUnLoadCommand,             "", NULL },
-            { "reload",         SEC_ADMINISTRATOR,  false, &HandleWpReloadCommand,             "", NULL },
-            { "show",           SEC_GAMEMASTER,     false, &HandleWpShowCommand,               "", NULL },
+            { "add",            SEC_REALM_LEADER,     false, &HandleWpAddCommand,                "", NULL },
+            { "event",          SEC_REALM_LEADER,     false, &HandleWpEventCommand,              "", NULL },
+            { "load",           SEC_REALM_LEADER,     false, &HandleWpLoadCommand,               "", NULL },
+            { "modify",         SEC_REALM_LEADER,     false, &HandleWpModifyCommand,             "", NULL },
+            { "unload",         SEC_REALM_LEADER,     false, &HandleWpUnLoadCommand,             "", NULL },
+            { "reload",         SEC_REALM_LEADER,     false, &HandleWpReloadCommand,             "", NULL },
+            { "show",           SEC_REALM_LEADER,     false, &HandleWpShowCommand,               "", NULL },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         static ChatCommand scriptWpCommandTable[] =
         {
-            { "add",            SEC_GAMEMASTER,     false, &HandleScriptWpAddCommand,          "", NULL },
+            { "add",            SEC_REALM_LEADER,     false, &HandleScriptWpAddCommand,          "", NULL },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "wp",             SEC_GAMEMASTER,     false, NULL,               "",       wpCommandTable },
-            { "script_wp",      SEC_GAMEMASTER,     false, NULL,               "", scriptWpCommandTable },
+            { "wp",             SEC_REALM_LEADER,     false, NULL,               "",       wpCommandTable },
+            { "script_wp",      SEC_REALM_LEADER,     false, NULL,               "", scriptWpCommandTable },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;

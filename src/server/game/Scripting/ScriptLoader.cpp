@@ -24,9 +24,16 @@ void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 void AddSC_example_commandscript();
-void AddSC_DuelReset();
-void AddSC_DuelZone();
 void AddSC_fast_arena_start();
+void AddSC_chat();
+void AddSC_npc_globalclasstrainer();
+void AddSC_tele();
+void AddSC_vipcommands();
+void AddSC_DuelReset();
+void AddSC_Vip_Access();
+void AddSC_skill_npc();
+void AddSC_Morph_npc();
+void AddSC_Title_gossip_codebox();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -917,8 +924,6 @@ void AddScripts()
     AddBattlegroundScripts();
     AddOutdoorPvPScripts();
     AddCustomScripts();
-    AddSC_DuelReset();
-    AddSC_DuelZone();
     AddSC_fast_arena_start();
     AddScenarioScripts();
 #endif
@@ -1847,6 +1852,18 @@ void AddCustomScripts()
     AddSC_petguy();
     AddSC_arena_spectator_script();
     AddSC_transmogrify_script();
+<<<<<<< HEAD
 	AddSC_npc_1v1arena();
+=======
+    AddSC_chat();
+	AddSC_npc_globalclasstrainer();
+	AddSC_tele();
+	AddSC_vipcommands();
+	AddSC_DuelReset();
+	AddSC_Vip_Access();
+	AddSC_skill_npc();
+	AddSC_Morph_npc();
+	AddSC_Title_gossip_codebox();
+>>>>>>> 43c86b491e8f571743dbfcd0fac0ac8aabfe84cc
 #endif
 }
