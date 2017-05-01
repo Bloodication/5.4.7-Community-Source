@@ -20,6 +20,7 @@ set(scripts_STAT_SRCS
     Custom/npc_transmogrify.cpp
     Custom/chat.cpp
 	Custom/class_trainer.cpp
+	Custom/teleporter.cpp
 )
 
 message("  -> Prepared: Custom")

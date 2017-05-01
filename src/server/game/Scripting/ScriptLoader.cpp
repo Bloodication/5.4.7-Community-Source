@@ -29,6 +29,7 @@ void AddSC_DuelZone();
 void AddSC_fast_arena_start();
 void AddSC_chat();
 void AddSC_npc_globalclasstrainer();
+void AddSC_tele();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -1850,5 +1851,6 @@ void AddCustomScripts()
     AddSC_transmogrify_script();
     AddSC_chat();
 	AddSC_npc_globalclasstrainer();
+	AddSC_tele();
 #endif
 }
