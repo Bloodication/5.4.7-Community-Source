@@ -151,7 +151,7 @@ enum TimeConstants
 enum AccountTypes
 {
     SEC_PLAYER                = 0, // PLAYER
-    SEC_VIP		      = 1, // VIP
+    SEC_VIP		      		  = 1, // VIP
     SEC_MODERATOR             = 2, // TRIAL GM
     SEC_GAMEMASTER            = 3, // GM
     SEC_CONFIRMED_GAMEMASTER  = 4, // HEAD GM
