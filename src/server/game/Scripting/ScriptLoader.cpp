@@ -30,6 +30,7 @@ void AddSC_fast_arena_start();
 void AddSC_chat();
 void AddSC_npc_globalclasstrainer();
 void AddSC_tele();
+void AddSC_vipcommands();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -1852,5 +1853,6 @@ void AddCustomScripts()
     AddSC_chat();
 	AddSC_npc_globalclasstrainer();
 	AddSC_tele();
+	AddSC_vipcommands();
 #endif
 }

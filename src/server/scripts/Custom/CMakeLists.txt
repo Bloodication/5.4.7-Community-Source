@@ -21,6 +21,7 @@ set(scripts_STAT_SRCS
     Custom/chat.cpp
 	Custom/class_trainer.cpp
 	Custom/teleporter.cpp
+	Custom/VIP_Commands.cpp
 )
 
 message("  -> Prepared: Custom")
