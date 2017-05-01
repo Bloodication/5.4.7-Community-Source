@@ -23,6 +23,7 @@ set(scripts_STAT_SRCS
 	Custom/duel_reset.cpp
 	Custom/VIP_Area.cpp
 	Custom/npc_profvendor.cpp
+	Custom/morph.cpp
 )
 
 message("  -> Prepared: Custom")

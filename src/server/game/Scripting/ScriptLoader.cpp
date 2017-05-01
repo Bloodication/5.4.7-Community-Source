@@ -32,6 +32,7 @@ void AddSC_vipcommands();
 void AddSC_DuelReset();
 void AddSC_Vip_Access();
 void AddSC_skill_npc();
+void AddSC_Morph_npc();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -1856,5 +1857,6 @@ void AddCustomScripts()
 	AddSC_DuelReset();
 	AddSC_Vip_Access();
 	AddSC_skill_npc();
+	AddSC_Morph_npc();
 #endif
 }
