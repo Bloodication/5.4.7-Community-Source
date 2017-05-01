@@ -913,10 +913,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         }
         else
         {
-            //this switch can be much shorter
-            MaxPlayersPerTeam = arenaType;
-            MinPlayersPerTeam = arenaType;
-            /*switch (arenaType)
+            switch (arenaType)
             {
             case ARENA_TYPE_2v2:
                 MaxPlayersPerTeam = 2;
@@ -927,10 +924,10 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
                 MinPlayersPerTeam = 3;
                 break;
             case ARENA_TYPE_5v5:
-                MaxPlayersPerTeam = 5;
-                MinPlayersPerTeam = 5;
+                MaxPlayersPerTeam = 1;
+                MinPlayersPerTeam = 1;
                 break;
-            }*/
+            }
         }
     }
 
