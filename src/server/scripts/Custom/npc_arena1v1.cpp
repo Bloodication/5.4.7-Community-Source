@@ -1,3 +1,9 @@
+/*
+*
+* Copyright (C) 2013 Emu-Devstore <http://emu-devstore.com/>
+* Written by Teiby <http://www.teiby.de/>
+*
+*/
 
 #include "ScriptMgr.h"
 #include "Common.h"
@@ -10,9 +16,9 @@
 class npc_1v1arena : public CreatureScript
 {
 public:
-    npc_1v1arena() : CreatureScript("npc_1v1arena")
-    {
-    }
+	npc_1v1arena() : CreatureScript("npc_1v1arena")
+	{
+	}
 
 	bool JoinQueueArena(Player* player, Creature* me, bool isRated)
 	{
@@ -62,8 +68,8 @@ public:
 
 		BattlegroundQueue &bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
 
-		//GroupQueueInfo* ginfo = bgQueue.AddGroup(player, NULL, bgTypeId, bracketEntry, arenatype, isRated, false, arenaRating, matchmakerRating, ateamId);
-		GroupQueueInfo* ginfo = bgQueue.AddGroup(player, NULL, bgTypeId, bracketEntry, arenatype, false, false, 0, 0);
+		GroupQueueInfo* ginfo = bgQueue.AddGroup(player, NULL, bgTypeId, bracketEntry, arenatype, isRated, false, arenaRating, matchmakerRating);
+		//GroupQueueInfo* ginfo = bgQueue.AddGroup(player, NULL, bgTypeId, bracketEntry, arenatype, false, false, 0,0);
 		//uint32 avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
 		uint32 avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
 		uint32 queueSlot = player->AddBattlegroundQueueId(bgQueueTypeId);
@@ -107,43 +113,44 @@ public:
 
 
 
-    bool OnGossipSelect(Player* player, Creature* me, uint32 /*uiSender*/, uint32 uiAction)
-    {
-        if(!player || !me)
-            return true;
+	bool OnGossipSelect(Player* player, Creature* me, uint32 /*uiSender*/, uint32 uiAction)
+	{
+		if (!player || !me)
+			return true;
 
-        player->PlayerTalkClass->ClearMenus();
+		player->PlayerTalkClass->ClearMenus();
 
-        switch (uiAction)
-        {
+		switch (uiAction)
+		{
 
-        case 2: // Join Queue Arena (rated)
-            {
-				if (Arena1v1CheckTalents(player) && JoinQueueArena(player, me, false) == false)
-					ChatHandler(player->GetSession()).SendSysMessage("Something went wrong while join queue.");
+		case 20: // Join Queue Arena (unrated)
+		{
+			if (JoinQueueArena(player, me, false) == false)
+				ChatHandler(player->GetSession()).SendSysMessage("Something went wrong while join queue.");
 
-                player->CLOSE_GOSSIP_MENU();
-                return true;
-            }
-            break;
-        case 3: // Leave Queue
-            {
-                WorldPacket Data;
-                Data << (uint8)0x1 << (uint8)0x0 << (uint32)BATTLEGROUND_AA << (uint16)0x0 << (uint8)0x0;
-                player->GetSession()->HandleBattleFieldPortOpcode(Data);
-                player->CLOSE_GOSSIP_MENU();
-                return true;
-            }
-            break;
-        }
+			player->CLOSE_GOSSIP_MENU();
+			return true;
+		}
+		break;
 
-        OnGossipHello(player, me);
-        return true;
-    }
+		case 3: // Leave Queue
+		{
+			WorldPacket Data;
+			Data << (uint8)0x1 << (uint8)0x0 << (uint32)BATTLEGROUND_AA << (uint16)0x0 << (uint8)0x0;
+			player->GetSession()->HandleBattleFieldPortOpcode(Data);
+			player->CLOSE_GOSSIP_MENU();
+			return true;
+		}
+		break;
+		}
+
+		OnGossipHello(player, me);
+		return true;
+	}
 };
 
 
 void AddSC_npc_1v1arena()
 {
-    new npc_1v1arena();
+	new npc_1v1arena();
 }
