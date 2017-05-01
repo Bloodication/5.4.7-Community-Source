@@ -24,6 +24,9 @@ bool OnGossipHello(Player* Plr, Creature* pCrea)
 				Plr->ADD_GOSSIP_ITEM( 7, "Alliance Mall", GOSSIP_SENDER_MAIN, 1001);
 				Plr->ADD_GOSSIP_ITEM( 7, "Duel Zone", GOSSIP_SENDER_MAIN, 3001);
 				Plr->ADD_GOSSIP_ITEM( 9, "Gurubashi", GOSSIP_SENDER_MAIN, 3005);
+				if(Plr->GetSession()->GetSecurity() >= SEC_MODERATOR) {
+					Plr->ADD_GOSSIP_ITEM( 9, "Anticheat Jail", GOSSIP_SENDER_MAIN, 4505);
+				}
 			}
 			else
 			{
@@ -31,6 +34,9 @@ bool OnGossipHello(Player* Plr, Creature* pCrea)
 				Plr->ADD_GOSSIP_ITEM( 7, "Duel Zone", GOSSIP_SENDER_MAIN, 3001);
 				Plr->ADD_GOSSIP_ITEM( 9, "Gurubashi", GOSSIP_SENDER_MAIN, 3005);
 				//Plr->ADD_GOSSIP_ITEM(7, "Hunter Mall", GOSSIP_SENDER_MAIN, 2005);
+				if(Plr->GetSession()->GetSecurity() >= SEC_MODERATOR) {
+					Plr->ADD_GOSSIP_ITEM( 9, "Anticheat Jail", GOSSIP_SENDER_MAIN, 4505);
+				}
 			}
         }
         else // Main Menu for Horde
@@ -39,6 +45,9 @@ bool OnGossipHello(Player* Plr, Creature* pCrea)
 				Plr->ADD_GOSSIP_ITEM( 7, "Horde Mall", GOSSIP_SENDER_MAIN, 2001);
 				Plr->ADD_GOSSIP_ITEM( 7, "Duel Zone", GOSSIP_SENDER_MAIN, 3001);
 				Plr->ADD_GOSSIP_ITEM( 9, "Gurubashi", GOSSIP_SENDER_MAIN, 3005);
+				if(Plr->GetSession()->GetSecurity() >= SEC_MODERATOR) {
+					Plr->ADD_GOSSIP_ITEM( 9, "Anticheat Jail", GOSSIP_SENDER_MAIN, 4505);
+				}
 			}
 			else
 			{
@@ -46,6 +55,9 @@ bool OnGossipHello(Player* Plr, Creature* pCrea)
 				Plr->ADD_GOSSIP_ITEM( 7, "Duel Zone", GOSSIP_SENDER_MAIN, 3001);
 				Plr->ADD_GOSSIP_ITEM( 9, "Gurubashi", GOSSIP_SENDER_MAIN, 3005);
 				//Plr->ADD_GOSSIP_ITEM(7, "Hunter Mall", GOSSIP_SENDER_MAIN, 2005);
+				if(Plr->GetSession()->GetSecurity() >= SEC_MODERATOR) {
+					Plr->ADD_GOSSIP_ITEM( 9, "Anticheat Jail", GOSSIP_SENDER_MAIN, 4505);
+				}
 			}
 			
         }
@@ -143,8 +155,9 @@ case 3005:// Gurubashi
        
 break;
  
-
-       
+case 4505: //anticheat jail
+		Plr->CLOSE_GOSSIP_MENU();
+		Plr->TeleportTo(1,16226.5f,16403.6f,-64.5f,3.2f); 
         }
 		return true;
 }
