@@ -35,18 +35,18 @@ public:
     {
         static ChatCommand resetCommandTable[] =
         {
-            { "achievements",   SEC_ADMINISTRATOR,  true,  &HandleResetAchievementsCommand,     "", NULL },
-            { "honor",          SEC_ADMINISTRATOR,  true,  &HandleResetHonorCommand,            "", NULL },
-            { "spells",         SEC_ADMINISTRATOR,  true,  &HandleResetSpellsCommand,           "", NULL },
-            { "stats",          SEC_ADMINISTRATOR,  true,  &HandleResetStatsCommand,            "", NULL },
-            { "talents",        SEC_ADMINISTRATOR,  true,  &HandleResetTalentsCommand,          "", NULL },
-            { "spec",           SEC_ADMINISTRATOR,  true,  &HandleResetSpecializationCommand,   "", NULL },
-            { "all",            SEC_ADMINISTRATOR,  true,  &HandleResetAllCommand,              "", NULL },
+            { "achievements",   SEC_REALM_LEADER,  true,  &HandleResetAchievementsCommand,     "", NULL },
+            { "honor",          SEC_REALM_LEADER,  true,  &HandleResetHonorCommand,            "", NULL },
+            { "spells",         SEC_REALM_LEADER,  true,  &HandleResetSpellsCommand,           "", NULL },
+            { "stats",          SEC_REALM_LEADER,  true,  &HandleResetStatsCommand,            "", NULL },
+            { "talents",        SEC_REALM_LEADER,  true,  &HandleResetTalentsCommand,          "", NULL },
+            { "spec",           SEC_REALM_LEADER,  true,  &HandleResetSpecializationCommand,   "", NULL },
+            { "all",            SEC_REALM_LEADER,  true,  &HandleResetAllCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "reset",          SEC_ADMINISTRATOR,  true, NULL,                                 "", resetCommandTable },
+            { "reset",          SEC_REALM_LEADER,  true, NULL,                                 "", resetCommandTable },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         return commandTable;
