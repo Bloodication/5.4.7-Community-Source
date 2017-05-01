@@ -72,7 +72,7 @@ public:
         static ChatCommand commandTable[] =
         {
             { "morph",          SEC_CONFIRMED_GAMEMASTER,     false, &HandleModifyMorphCommand,          "", NULL },
-            { "demorph",        SEC_CONFIRMED_GAMEMASTER_GAMEMASTER,     false, &HandleDeMorphCommand,              "", NULL },
+            { "demorph",        SEC_CONFIRMED_GAMEMASTER,     false, &HandleDeMorphCommand,              "", NULL },
             { "modify",         SEC_MODERATOR,      false, NULL,                 "", modifyCommandTable },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
