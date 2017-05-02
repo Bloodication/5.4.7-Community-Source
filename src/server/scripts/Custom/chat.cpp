@@ -30,14 +30,14 @@ class chat : public CommandScript
                         case SEC_PLAYER:
                                 if (player->GetTeam() == ALLIANCE)
                                 {
-										msg += "|cffff0000[World]";
+					msg += "|cffff0000[World]";
                                         msg += "|cff4169e1[Player] |cffffffff[";
                                         msg += player->GetName();
                                         msg += "] |cFFA9A9A9";
                                 }
                                 else
                                 {
-										msg += "|cffff0000[World]";
+					msg += "|cffff0000[World]";
                                         msg += "|cffff0000[Player] |cffffffff[";
                                         msg += player->GetName();
                                         msg += "] |cFFA9A9A9";

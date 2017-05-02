@@ -105,7 +105,9 @@ enum MageSpells
     SPELL_MAGE_GLYPH_OF_RAPID_DISPLACEMENT       = 146659,
     SPELL_MAGE_PYROBLAST_INSTANT_CAST            = 48108,
     SPELL_MAGE_PRESENCE_OF_MIND                  = 12043,
-    SPELL_MAGE_RING_OF_FROST_FROZEN              = 82691
+    SPELL_MAGE_RING_OF_FROST_FROZEN              = 82691,
+    SPELL_MAGE_RING_OF_FROST_SUMMON		 = 113724,
+    SPELL_MAGE_RING_OF_FROST_DUMMY		 = 91264
 };
 
 // Flamestrike - 2120
@@ -1924,37 +1926,16 @@ public:
             if (!GetCaster() || !GetCaster()->ToPlayer())
                 return;
 
-            // this could be far more efficient if units would store a pointer to their summoned creatures
-            // it is only a small change you might want to consider it
-            std::list<Creature*> rings;
-            GetCreatureListWithEntryInGrid(rings, GetCaster(), 44199, 100.0f);
+        
+            std::list<Creature*> MinionList;
+		GetTarget()->GetAllMinionsByEntry(MinionList, 44199);
+			for (std::list<Creature*>::iterator itr = MinionList.begin(); itr != MinionList.end(); itr++)
+			{
+				TempSummon* ringOfFrost = (*itr)->ToTempSummon();
+				GetTarget()->CastSpell(ringOfFrost->GetPositionX(), ringOfFrost->GetPositionY(), ringOfFrost->GetPositionZ(), SPELL_MAGE_RING_OF_FROST_FROZEN, true);
+			}
 
-            Creature* castingRing = nullptr;
-            for (Creature* ring : rings)
-                if (ring->ToTempSummon())
-                    if (ring->ToTempSummon()->GetSummoner() == GetCaster())
-                        castingRing = ring;
-            
-            if (!castingRing)
-                return;
-
-            if (Player* caster = GetCaster()->ToPlayer())
-            {
-                if (caster->getClass() == CLASS_MAGE && caster->HasAura(12043))
-                {
-                    caster->RemoveAura(12043);
-
-                    // Calculating amount of delay for our freeze
-                    float haste = 1 + caster->GetRatingBonusValue(CR_HASTE_SPELL) / 100.0f;
-                    int32 delayDuration = int32((2 / haste) * 1000.0f);
-                    if (Aura* freezeDelay = castingRing->AddAura(91264, castingRing))
-                        freezeDelay->SetDuration(delayDuration);
-                }
-
-            }
-
-            castingRing->CastSpell(castingRing, SPELL_MAGE_RING_OF_FROST_FROZEN, true);
-        }
+ 		}
 
         void Register()
         {
@@ -1979,46 +1960,25 @@ public:
 
         void FilterTargets(std::list<WorldObject*>& targets)
         {
-            struct is_not_valid_target
-            {
-                is_not_valid_target(Unit* caster)
-                    : m_caster(caster)
-                {
-                    m_caster->GetPosition(&m_pos);
-                }
+                SpellInfo const* triggeredBy = sSpellMgr->GetSpellInfo(SPELL_MAGE_RING_OF_FROST_SUMMON);
+		float inRadius = 4.0f;  // Radius 1 / 2
+		float outRadius = 7.25f; // Radius 1 + Radius 0 / 2
+		for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+				if (Unit* unit = (*itr)->ToUnit())
+ 				{
+				if (unit->HasAura(SPELL_MAGE_RING_OF_FROST_DUMMY) || unit->HasAura(SPELL_MAGE_RING_OF_FROST_FROZEN) || unit->GetExactDist(GetExplTargetDest()) > outRadius || unit->GetExactDist(GetExplTargetDest()) < inRadius)
 
-                bool operator() (WorldObject* target)
-                {
-                    // is this delay is required ?
-                    // for ring used with Presence of Mind we have a delay equals to duration of 91264 aura
-                    if (m_caster && m_caster->HasAura(91264))
-                        return true;
-
-                    float distance = target->GetExactDist2d(&m_pos);
-                    if (distance < 3.4f || distance > 6.3f)
-                        return true;
-
-                    Unit* unit = target->ToUnit();
-                    if (!unit || unit->isTotem())
-                        return true;
-
-                    if (unit->HasUnitState(UNIT_STATE_ISOLATED)) // Cyclone
-                    {
-                        unit->AddAura(91264, unit);
-                        return true;
-                    }
-
-                    if (unit->HasAura(SPELL_MAGE_RING_OF_FROST_FROZEN) || unit->HasAura(31224) || unit->HasAura(91264))
-                        return true;
-
-                    return false;
-                }
-
-                Unit* m_caster;
-                Position m_pos;
-            };
-
-            targets.remove_if(is_not_valid_target(GetCaster()));
+					{
+						WorldObject* temp = (*itr);
+						itr++;
+						targets.remove(temp);
+					}
+					else
+						itr++;
+ 				}
+				else
+					itr++;
+ 		}
         }
 
         void Register()
