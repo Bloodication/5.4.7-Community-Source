@@ -1,21 +1,21 @@
 #include "ScriptPCH.h"
 #include "Chat.h"
  
-class chat : public CommandScript
+class worldchatcustom : public CommandScript
 {
-        public:
-                chat() : CommandScript("chat"){}
- 
-        ChatCommand * GetCommands() const
-        {
-                static ChatCommand ChatCommandTable[] =
-                {
-                        {"world",        SEC_PLAYER,             true,                  &HandleChatCommand,  "", NULL},
-                        {NULL,           0,                      false,                 NULL,                "", NULL}
-                };
- 
-                return ChatCommandTable;
-        }
+public:
+	worldchatcustom() : CommandScript("worldchat") { }
+
+		ChatCommand * GetCommands() const
+		{
+			static ChatCommand ChatCommandTable[] =
+			{
+				{ "world", SEC_PLAYER, false , &HandleChatCommand, "", NULL },
+				{ NULL, 0, false, NULL, "", NULL }
+			};
+
+			return ChatCommandTable;
+		}
  
         static bool HandleChatCommand(ChatHandler * handler, const char * args)
         {
@@ -118,7 +118,7 @@ class chat : public CommandScript
         }
 };
  
-void AddSC_chat()
+void AddSC_worldchatcustom()
 {
-        new chat();
+	new worldchatcustom();
 }
