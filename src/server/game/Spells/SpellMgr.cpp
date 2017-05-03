@@ -4943,8 +4943,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 82691: // Ring of Frost
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
-                    //spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
-                    //spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(134); // 14 - 8, 37 - 7
+                    spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(134); // 14 - 8, 37 - 7
                     break;
                 case 91021: // Find Weakness
                     spellInfo->Effects[0].BasePoints = 100;
