@@ -336,6 +336,8 @@ class WorldSession
         bool IsPremium() const { return _ispremium; }
         uint32 GetAccountId() const { return _accountId; }
         Player* GetPlayer() const { return _player; }
+		uint32 GetCurrentVendor() const { return m_currentVendorEntry; }
+		void SetCurrentVendor(uint32 vendorEntry) { m_currentVendorEntry = vendorEntry; }
         std::string GetPlayerName(bool simple = true) const;
         uint32 GetGuidLow() const;
         void SetSecurity(AccountTypes security) { _security = security; }
@@ -390,7 +392,7 @@ class WorldSession
 
         void SendTrainerList(uint64 guid);
         void SendTrainerList(uint64 guid, const std::string& strTitle);
-        void SendListInventory(uint64 guid);
+		void SendListInventory(uint64 vendorGuid, uint32 vendorEntry = 0);
         void SendShowBank(uint64 guid);
         void SendTabardVendorActivate(uint64 guid);
         void SendSpiritResurrect();
@@ -1294,6 +1296,7 @@ class WorldSession
         bool isRecruiter;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
         time_t timeLastWhoCommand;
+		uint32 m_currentVendorEntry;
         time_t timeCharEnumOpcode;
         time_t timeLastChannelInviteCommand;
         time_t timeLastChannelPassCommand;

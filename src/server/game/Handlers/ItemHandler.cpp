@@ -911,7 +911,7 @@ void WorldSession::HandleListInventoryOpcode(WorldPacket& recvData)
     SendListInventory(guid);
 }
 
-void WorldSession::SendListInventory(uint64 vendorGuid)
+void WorldSession::SendListInventory(uint64 vendorGuid, uint32 vendorEntry)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_LIST_INVENTORY");
 
@@ -934,8 +934,10 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     int32 priceMod = _player->GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES);
     std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
 
-    VendorItemData const* vendorItems = vendor->GetVendorItems();
-    uint32 rawItemCount = vendorItems ? vendorItems->GetItemCount() : 0;
+	VendorItemData const* vendorItems = vendorEntry ? sObjectMgr->GetNpcVendorItemList(vendorEntry) : vendor->GetVendorItems();
+	uint32 rawItemCount = vendorItems ? vendorItems->GetItemCount() : 0;
+
+	SetCurrentVendor(vendorEntry);
 
     ByteBuffer itemsData(32 * rawItemCount);
 
