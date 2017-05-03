@@ -34,17 +34,17 @@ public:
     {
         static ChatCommand castCommandTable[] =
         {
-            { "back",           SEC_REALM_LEADER ,  false, &HandleCastBackCommand,              "", NULL },
-            { "dist",           SEC_REALM_LEADER ,  false, &HandleCastDistCommand,              "", NULL },
-            { "self",           SEC_REALM_LEADER ,  false, &HandleCastSelfCommand,              "", NULL },
-            { "target",         SEC_REALM_LEADER ,  false, &HandleCastTargetCommad,             "", NULL },
-            { "dest",           SEC_REALM_LEADER ,  false, &HandleCastDestCommand,              "", NULL },
-            { "",               SEC_REALM_LEADER ,  false, &HandleCastCommand,                  "", NULL },
+            { "back",           SEC_ADMINISTRATOR,  false, &HandleCastBackCommand,              "", NULL },
+            { "dist",           SEC_ADMINISTRATOR,  false, &HandleCastDistCommand,              "", NULL },
+            { "self",           SEC_ADMINISTRATOR,  false, &HandleCastSelfCommand,              "", NULL },
+            { "target",         SEC_ADMINISTRATOR,  false, &HandleCastTargetCommad,             "", NULL },
+            { "dest",           SEC_ADMINISTRATOR,  false, &HandleCastDestCommand,              "", NULL },
+            { "",               SEC_ADMINISTRATOR,  false, &HandleCastCommand,                  "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "cast",           SEC_REALM_LEADER ,  false, NULL,                                "", castCommandTable },
+            { "cast",           SEC_ADMINISTRATOR,  false, NULL,                                "", castCommandTable },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         return commandTable;

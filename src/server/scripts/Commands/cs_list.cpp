@@ -38,16 +38,16 @@ public:
     {
         static ChatCommand listCommandTable[] =
         {
-            { "creature",       SEC_REALM_LEADER ,  true,  &HandleListCreatureCommand,          "", NULL },
-            { "item",           SEC_REALM_LEADER ,  true,  &HandleListItemCommand,              "", NULL },
-            { "object",         SEC_REALM_LEADER ,  true,  &HandleListObjectCommand,            "", NULL },
-            { "auras",          SEC_REALM_LEADER ,  false, &HandleListAurasCommand,             "", NULL },
-            { "mail",           SEC_REALM_LEADER ,  true,  &HandleListMailCommand,              "", NULL },
+            { "creature",       SEC_ADMINISTRATOR,  true,  &HandleListCreatureCommand,          "", NULL },
+            { "item",           SEC_ADMINISTRATOR,  true,  &HandleListItemCommand,              "", NULL },
+            { "object",         SEC_ADMINISTRATOR,  true,  &HandleListObjectCommand,            "", NULL },
+            { "auras",          SEC_ADMINISTRATOR,  false, &HandleListAurasCommand,             "", NULL },
+            { "mail",           SEC_ADMINISTRATOR,  true,  &HandleListMailCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "list",          SEC_REALM_LEADER ,   true, NULL,                                 "", listCommandTable },
+            { "list",          SEC_ADMINISTRATOR,   true, NULL,                                 "", listCommandTable },
             { NULL,            0,                   false, NULL,                                "", NULL }
         };
         return commandTable;

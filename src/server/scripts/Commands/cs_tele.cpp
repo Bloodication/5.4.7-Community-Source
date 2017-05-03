@@ -37,10 +37,10 @@ public:
     {
         static ChatCommand teleCommandTable[] =
         {
-            { "add",            SEC_REALM_LEADER,  false, &HandleTeleAddCommand,             "", NULL },
-            { "del",            SEC_REALM_LEADER,  true,  &HandleTeleDelCommand,             "", NULL },
-            { "name",           SEC_REALM_LEADER,      true,  &HandleTeleNameCommand,            "", NULL },
-            { "group",          SEC_REALM_LEADER,      false, &HandleTeleGroupCommand,           "", NULL },
+            { "add",            SEC_ADMINISTRATOR,  false, &HandleTeleAddCommand,             "", NULL },
+            { "del",            SEC_ADMINISTRATOR,  true,  &HandleTeleDelCommand,             "", NULL },
+            { "name",           SEC_MODERATOR,      true,  &HandleTeleNameCommand,            "", NULL },
+            { "group",          SEC_MODERATOR,      false, &HandleTeleGroupCommand,           "", NULL },
             { "",               SEC_MODERATOR,      false, &HandleTeleCommand,                "", NULL },
             { NULL,             0,                  false, NULL,                              "", NULL }
         };

@@ -39,17 +39,17 @@ public:
     {
         static ChatCommand instanceCommandTable[] =
         {
-            { "listbinds",      SEC_REALM_LEADER ,  false,  &HandleInstanceListBindsCommand,    "", NULL },
-            { "unbind",         SEC_REALM_LEADER ,  false,  &HandleInstanceUnbindCommand,       "", NULL },
-            { "stats",          SEC_REALM_LEADER ,  true,   &HandleInstanceStatsCommand,        "", NULL },
-            { "savedata",       SEC_REALM_LEADER ,  false,  &HandleInstanceSaveDataCommand,     "", NULL },
-            { "raidunbind",     SEC_REALM_LEADER ,  false,  &HandleInstanceRaidUnbindCommand,   "", NULL },
+            { "listbinds",      SEC_ADMINISTRATOR,  false,  &HandleInstanceListBindsCommand,    "", NULL },
+            { "unbind",         SEC_ADMINISTRATOR,  false,  &HandleInstanceUnbindCommand,       "", NULL },
+            { "stats",          SEC_ADMINISTRATOR,  true,   &HandleInstanceStatsCommand,        "", NULL },
+            { "savedata",       SEC_ADMINISTRATOR,  false,  &HandleInstanceSaveDataCommand,     "", NULL },
+            { "raidunbind",     SEC_ADMINISTRATOR,  false,  &HandleInstanceRaidUnbindCommand,   "", NULL },
             { NULL,             0,                  false,  NULL,                               "", NULL }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "instance",       SEC_REALM_LEADER ,  true,   NULL,                               "", instanceCommandTable },
+            { "instance",       SEC_ADMINISTRATOR,  true,   NULL,                               "", instanceCommandTable },
             { NULL,             0,                  false,  NULL,                               "", NULL }
         };
 

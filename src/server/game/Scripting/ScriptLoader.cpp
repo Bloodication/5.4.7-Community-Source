@@ -25,7 +25,6 @@ void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 void AddSC_example_commandscript();
 void AddSC_fast_arena_start();
-void AddSC_worldchatcustom();
 void AddSC_npc_globalclasstrainer();
 void AddSC_tele();
 void AddSC_vipcommands();
@@ -1853,7 +1852,6 @@ void AddCustomScripts()
     AddSC_arena_spectator_script();
     AddSC_transmogrify_script();
 	AddSC_npc_1v1arena();
-	AddSC_worldchatcustom();
 	AddSC_npc_globalclasstrainer();
 	AddSC_tele();
 	AddSC_vipcommands();

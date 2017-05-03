@@ -37,35 +37,35 @@ public:
     {
         static ChatCommand removeDisableCommandTable[] =
         {
-            { "spell",                  SEC_REALM_LEADER ,      true,   &HandleRemoveDisableSpellCommand,               "", NULL },
-            { "quest",                  SEC_REALM_LEADER ,      true,   &HandleRemoveDisableQuestCommand,               "", NULL },
-            { "map",                    SEC_REALM_LEADER ,      true,   &HandleRemoveDisableMapCommand,                 "", NULL },
-            { "battleground",           SEC_REALM_LEADER ,      true,   &HandleRemoveDisableBattlegroundCommand,        "", NULL },
-            { "achievement_criteria",   SEC_REALM_LEADER ,      true,   &HandleRemoveDisableAchievementCriteriaCommand, "", NULL },
-            { "outdoorpvp",             SEC_REALM_LEADER ,      true,   &HandleRemoveDisableOutdoorPvPCommand,          "", NULL },
-            { "vmap",                   SEC_REALM_LEADER ,      true,   &HandleRemoveDisableVmapCommand,                "", NULL },
+            { "spell",                  SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableSpellCommand,               "", NULL },
+            { "quest",                  SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableQuestCommand,               "", NULL },
+            { "map",                    SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableMapCommand,                 "", NULL },
+            { "battleground",           SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableBattlegroundCommand,        "", NULL },
+            { "achievement_criteria",   SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableAchievementCriteriaCommand, "", NULL },
+            { "outdoorpvp",             SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableOutdoorPvPCommand,          "", NULL },
+            { "vmap",                   SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableVmapCommand,                "", NULL },
             { NULL,                     0,                      false,  NULL,                                           "", NULL }
         };
         static ChatCommand addDisableCommandTable[] =
         {
-            { "spell",                  SEC_REALM_LEADER ,      true,   &HandleAddDisableSpellCommand,                  "", NULL },
-            { "quest",                  SEC_REALM_LEADER ,      true,   &HandleAddDisableQuestCommand,                  "", NULL },
-            { "map",                    SEC_REALM_LEADER ,      true,   &HandleAddDisableMapCommand,                    "", NULL },
-            { "battleground",           SEC_REALM_LEADER ,      true,   &HandleAddDisableBattlegroundCommand,           "", NULL },
-            { "achievement_criteria",   SEC_REALM_LEADER ,      true,   &HandleAddDisableAchievementCriteriaCommand,    "", NULL },
-            { "outdoorpvp",             SEC_REALM_LEADER ,      true,   &HandleAddDisableOutdoorPvPCommand,             "", NULL },
-            { "vmap",                   SEC_REALM_LEADER ,      true,   &HandleAddDisableVmapCommand,                   "", NULL },
+            { "spell",                  SEC_ADMINISTRATOR,      true,   &HandleAddDisableSpellCommand,                  "", NULL },
+            { "quest",                  SEC_ADMINISTRATOR,      true,   &HandleAddDisableQuestCommand,                  "", NULL },
+            { "map",                    SEC_ADMINISTRATOR,      true,   &HandleAddDisableMapCommand,                    "", NULL },
+            { "battleground",           SEC_ADMINISTRATOR,      true,   &HandleAddDisableBattlegroundCommand,           "", NULL },
+            { "achievement_criteria",   SEC_ADMINISTRATOR,      true,   &HandleAddDisableAchievementCriteriaCommand,    "", NULL },
+            { "outdoorpvp",             SEC_ADMINISTRATOR,      true,   &HandleAddDisableOutdoorPvPCommand,             "", NULL },
+            { "vmap",                   SEC_ADMINISTRATOR,      true,   &HandleAddDisableVmapCommand,                   "", NULL },
             { NULL,                     0,                      false,  NULL,                                           "", NULL }
         };
         static ChatCommand disableCommandTable[] =
         {
-            { "add",                    SEC_REALM_LEADER ,      true,   NULL,                                           "", addDisableCommandTable },
-            { "remove",                 SEC_REALM_LEADER ,      true,   NULL,                                           "", removeDisableCommandTable },
+            { "add",                    SEC_ADMINISTRATOR,      true,   NULL,                                           "", addDisableCommandTable },
+            { "remove",                 SEC_ADMINISTRATOR,      true,   NULL,                                           "", removeDisableCommandTable },
             { NULL,                     0,                      false,  NULL,                                           "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "disable",                SEC_REALM_LEADER ,     false,   NULL,                                           "", disableCommandTable },
+            { "disable",                SEC_ADMINISTRATOR,     false,   NULL,                                           "", disableCommandTable },
             { NULL,                     0,                     false,   NULL,                                           "", NULL }
         };
         return commandTable;

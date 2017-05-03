@@ -52,22 +52,22 @@ public:
 
         static ChatCommand characterCommandTable[] =
         {
-            { "customize",      SEC_REALM_LEADER ,     true,  &HandleCharacterCustomizeCommand,       "", NULL },
-            { "changefaction",  SEC_REALM_LEADER ,     true,  &HandleCharacterChangeFactionCommand,   "", NULL },
-            { "changerace",     SEC_REALM_LEADER ,     true,  &HandleCharacterChangeRaceCommand,      "", NULL },
-            { "deleted",        SEC_REALM_LEADER ,     true,  NULL,                                   "", characterDeletedCommandTable },
+            { "customize",      SEC_GAMEMASTER,     true,  &HandleCharacterCustomizeCommand,       "", NULL },
+            { "changefaction",  SEC_GAMEMASTER,     true,  &HandleCharacterChangeFactionCommand,   "", NULL },
+            { "changerace",     SEC_GAMEMASTER,     true,  &HandleCharacterChangeRaceCommand,      "", NULL },
+            { "deleted",        SEC_GAMEMASTER,     true,  NULL,                                   "", characterDeletedCommandTable },
             { "erase",          SEC_CONSOLE,        true,  &HandleCharacterEraseCommand,           "", NULL },
             { "level",          SEC_ADMINISTRATOR,  true,  &HandleCharacterLevelCommand,           "", NULL },
-            { "rename",         SEC_REALM_LEADER ,     true,  &HandleCharacterRenameCommand,          "", NULL },
-            { "reputation",     SEC_REALM_LEADER ,     true,  &HandleCharacterReputationCommand,      "", NULL },
-            { "titles",         SEC_REALM_LEADER ,     true,  &HandleCharacterTitlesCommand,          "", NULL },
-            { "getrename",      SEC_REALM_LEADER ,     true,  &HandleCharacterGetrenameCommand,    "", NULL },
+            { "rename",         SEC_GAMEMASTER,     true,  &HandleCharacterRenameCommand,          "", NULL },
+            { "reputation",     SEC_GAMEMASTER,     true,  &HandleCharacterReputationCommand,      "", NULL },
+            { "titles",         SEC_GAMEMASTER,     true,  &HandleCharacterTitlesCommand,          "", NULL },
+            { "getrename",      SEC_GAMEMASTER,     true,  &HandleCharacterGetrenameCommand,    "", NULL },
             { NULL,             0,                  false, NULL,                                   "", NULL }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "character",      SEC_REALM_LEADER ,     true,  NULL,                                   "", characterCommandTable },
+            { "character",      SEC_GAMEMASTER,     true,  NULL,                                   "", characterCommandTable },
             { "levelup",        SEC_ADMINISTRATOR,  false, &HandleLevelUpCommand,                  "", NULL },
             { "pdump",          SEC_ADMINISTRATOR,  true,  NULL,                                   "", pdumpCommandTable },
             { NULL,             0,                  false, NULL,                                   "", NULL }

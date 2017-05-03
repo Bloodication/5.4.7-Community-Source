@@ -36,22 +36,22 @@ class cheat_commandscript : public CommandScript
 
             static ChatCommand cheatCommandTable[] =
             {
-                { "god",        SEC_REALM_LEADER , false, &HandleGodModeCheatCommand,      "", NULL },
-                { "casttime",   SEC_REALM_LEADER , false, &HandleCasttimeCheatCommand,     "", NULL },
-                { "cooldown",   SEC_REALM_LEADER , false, &HandleCoolDownCheatCommand,     "", NULL },
-                { "power",      SEC_REALM_LEADER , false, &HandlePowerCheatCommand,        "", NULL },
-                { "waterwalk",  SEC_REALM_LEADER , false, &HandleWaterWalkCheatCommand,    "", NULL },
-                { "status",     SEC_REALM_LEADER , false, &HandleCheatStatusCommand,       "", NULL },
-                { "taxi",       SEC_REALM_LEADER , false, &HandleTaxiCheatCommand,         "", NULL },
-                { "explore",    SEC_REALM_LEADER , false, &HandleExploreCheatCommand,      "", NULL },
-                { "all",        SEC_REALM_LEADER , false, &HandleAllSpellCheatCommand,     "", NULL },
+                { "god",        SEC_GAMEMASTER, false, &HandleGodModeCheatCommand,      "", NULL },
+                { "casttime",   SEC_GAMEMASTER, false, &HandleCasttimeCheatCommand,     "", NULL },
+                { "cooldown",   SEC_GAMEMASTER, false, &HandleCoolDownCheatCommand,     "", NULL },
+                { "power",      SEC_GAMEMASTER, false, &HandlePowerCheatCommand,        "", NULL },
+                { "waterwalk",  SEC_GAMEMASTER, false, &HandleWaterWalkCheatCommand,    "", NULL },
+                { "status",     SEC_GAMEMASTER, false, &HandleCheatStatusCommand,       "", NULL },
+                { "taxi",       SEC_GAMEMASTER, false, &HandleTaxiCheatCommand,         "", NULL },
+                { "explore",    SEC_GAMEMASTER, false, &HandleExploreCheatCommand,      "", NULL },
+                { "all",        SEC_GAMEMASTER, false, &HandleAllSpellCheatCommand,     "", NULL },
                 { NULL,         0,              false, NULL,                            "", NULL }
 
             };
 
             static ChatCommand commandTable[] =
             {
-                { "cheat", SEC_REALM_LEADER , false, NULL, "", cheatCommandTable },
+                { "cheat", SEC_GAMEMASTER, false, NULL, "", cheatCommandTable },
                 { NULL, 0, false, NULL, "", NULL }
             };
             return commandTable;

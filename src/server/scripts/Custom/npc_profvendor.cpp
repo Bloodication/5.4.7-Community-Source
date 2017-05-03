@@ -63,7 +63,7 @@ bool PlayerAlreadyHasTwoProfessions(const Player *player) /*const*/
 }
 
 
-void LearnSkillRecipesHelper(Player *player, uint32 skill_id)
+/*void LearnSkillRecipesHelper(Player *player, uint32 skill_id)
 {
 	uint32 classmask = player->getClassMask();
 
@@ -91,7 +91,7 @@ void LearnSkillRecipesHelper(Player *player, uint32 skill_id)
 
 		player->learnSpell(skillLine->spellId, false);
 	}
-}
+} 
 
 bool LearnAllRecipesInProfession(Player *player, SkillType skill)
 {
@@ -112,7 +112,7 @@ bool LearnAllRecipesInProfession(Player *player, SkillType skill)
 	player->SetSkill(SkillInfo->id, player->GetSkillStep(SkillInfo->id), 600, 600);
 	handler.PSendSysMessage(LANG_COMMAND_LEARN_ALL_RECIPES, skill_name.c_str());
 	return true;
-}
+}*/
 
 bool IsSecondarySkill(SkillType skill) /* const */
 {
@@ -121,11 +121,8 @@ bool IsSecondarySkill(SkillType skill) /* const */
 
 void CompleteLearnProfession(Player *player, Creature *creature, SkillType skill)
 {
-	if (PlayerAlreadyHasTwoProfessions(player) && !IsSecondarySkill(skill))
-		creature->MonsterWhisper("You already know two professions!", player->GetGUID());
-	else
-		if (!LearnAllRecipesInProfession(player, skill))
-			creature->MonsterWhisper("Internal error occured!", player->GetGUID());
+
+		
 }
 
 class skill_npc : public CreatureScript

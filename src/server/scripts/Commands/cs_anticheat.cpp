@@ -28,8 +28,8 @@ public:
         static ChatCommand anticheatCommandTable[] =
         {
             { "player",         SEC_GAMEMASTER,     true,  &HandleAntiCheatPlayerCommand,         "", NULL },
-            { "delete",         SEC_GAMEMASTER,  true,  &HandleAntiCheatDeleteCommand,         "", NULL },
-            { "handle",         SEC_GAMEMASTER,  true,  &HandleAntiCheatHandleCommand,         "", NULL },
+            { "delete",         SEC_ADMINISTRATOR,  true,  &HandleAntiCheatDeleteCommand,         "", NULL },
+            { "handle",         SEC_ADMINISTRATOR,  true,  &HandleAntiCheatHandleCommand,         "", NULL },
             { "jail",           SEC_GAMEMASTER,     true,  &HandleAnticheatJailCommand,         "", NULL },
             { "warn",           SEC_GAMEMASTER,     true,  &HandleAnticheatWarnCommand,         "", NULL },
             { NULL,             0,                     false, NULL,                                           "", NULL }
