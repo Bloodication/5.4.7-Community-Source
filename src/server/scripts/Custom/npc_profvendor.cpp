@@ -62,7 +62,7 @@ bool PlayerAlreadyHasTwoProfessions(const Player *player) /*const*/
 	return false;
 }
 
-/*
+
 void LearnSkillRecipesHelper(Player *player, uint32 skill_id)
 {
 	uint32 classmask = player->getClassMask();
@@ -92,7 +92,6 @@ void LearnSkillRecipesHelper(Player *player, uint32 skill_id)
 		player->learnSpell(skillLine->spellId, false);
 	}
 }
-*/
 
 bool LearnAllRecipesInProfession(Player *player, SkillType skill)
 {
@@ -107,7 +106,7 @@ bool LearnAllRecipesInProfession(Player *player, SkillType skill)
 		return false;
 	}
 
-	//LearnSkillRecipesHelper(player, SkillInfo->id);
+	LearnSkillRecipesHelper(player, SkillInfo->id);
 
 	uint16 maxLevel = player->GetPureMaxSkillValue(SkillInfo->id);
 	player->SetSkill(SkillInfo->id, player->GetSkillStep(SkillInfo->id), 600, 600);
