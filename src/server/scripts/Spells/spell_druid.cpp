@@ -2406,46 +2406,26 @@ class spell_dru_wild_mushroom : public SpellScriptLoader
 
             void HandleSummon(SpellEffIndex effIndex)
             {
-                if (Player* player = GetCaster()->ToPlayer())
-                {
-                    PreventHitDefaultEffect(effIndex);
+				TempSummon* oldestSummon = NULL;
+				uint32 duration = 300000;
+				std::list<Creature*> MinionList;
+				GetCaster()->GetAllMinionsByEntry(MinionList, GetSpellInfo()->Effects[EFFECT_0].MiscValue);
+				if (MinionList.size() > uint32(GetSpellInfo()->Effects[EFFECT_0].BasePoints))
+				{
+					for (std::list<Creature*>::iterator itr = MinionList.begin(); itr != MinionList.end(); itr++)
+					{
+						TempSummon* temp = (*itr)->ToTempSummon();
+						if (temp->GetTimer() < duration)
+						{
+							duration = temp->GetTimer();
+							oldestSummon = temp;
+						}
+					}
+				}
 
-                    const SpellInfo* spell = GetSpellInfo();
-                    std::list<Creature*> tempList;
-
-                    player->GetCreatureListWithEntryInGrid(tempList, DRUID_NPC_WILD_MUSHROOM, 200.0f);
-
-                    // Remove other players mushrooms
-                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end();)
-                    {
-                        Unit* owner = (*i)->GetOwner();
-                        if (owner && owner == player && (*i)->isSummon())
-                        {
-                            ++i;
-                            continue;
-                        }
-
-                        i = tempList.erase(i);
-                    }
-
-                    // 3 mushrooms max
-                    if ((int32)tempList.size() >= spell->Effects[effIndex].BasePoints)
-                        tempList.back()->ToTempSummon()->UnSummon();
-
-                    Position pos;
-                    GetExplTargetDest()->GetPosition(&pos);
-                    const SummonPropertiesEntry* properties = sSummonPropertiesStore.LookupEntry(spell->Effects[effIndex].MiscValueB);
-                    TempSummon* summon = player->SummonCreature(spell->Effects[effIndex].MiscValue, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, spell->GetDuration());
-                    if (!summon)
-                        return;
-
-                    summon->SetByteValue(UNIT_FIELD_BYTES_2, 1, player->GetByteValue(UNIT_FIELD_BYTES_2, 1));
-                    summon->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
-                    summon->setFaction(player->getFaction());
-                    summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                    summon->SetMaxHealth(5);
-                    summon->CastSpell(summon, DRUID_SPELL_MUSHROOM_BIRTH_VISUAL, true); // Wild Mushroom : Detonate Birth Visual
-                }
+				if (oldestSummon)
+					oldestSummon->UnSummon();
+                
             }
 
             void Register()
