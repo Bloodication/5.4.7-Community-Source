@@ -25613,9 +25613,7 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
         return false;
     }
 
-
-	uint32 currentVendor = GetSession()->GetCurrentVendor();
-	VendorItemData const* vItems = currentVendor ? sObjectMgr->GetNpcVendorItemList(currentVendor) : creature->GetVendorItems();    if (!vItems || vItems->Empty())
+	VendorItemData const* vItems = creature->GetVendorItems();
     if (!vItems || vItems->Empty())
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, currency, 0);
@@ -25747,7 +25745,8 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         return false;
     }
 
-    VendorItemData const* vItems = creature->GetVendorItems();
+	uint32 currentVendor = GetSession()->GetCurrentVendor();
+	VendorItemData const* vItems = currentVendor ? sObjectMgr->GetNpcVendorItemList(currentVendor) : creature->GetVendorItems();    if (!vItems || vItems->Empty())
     if (!vItems || vItems->Empty())
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
