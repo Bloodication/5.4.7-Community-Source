@@ -7948,17 +7948,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
                     triggered_spell_id = 63106;
                     break;
                 }
-                case 108558: // Nightfall
-                {
-                    if (!isAlive() || !damage || !procSpell)
-                        return false;
-
-                    if (!IsLatestAppliedAuras(const_cast<Aura*>(procEffect)))
-                        return false;
-
-                    triggered_spell_id = 17941;
-                    break;
-                }
                 default:
                     break;
             }

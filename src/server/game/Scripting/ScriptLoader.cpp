@@ -30,9 +30,9 @@ void AddSC_tele();
 void AddSC_vipcommands();
 void AddSC_DuelReset();
 void AddSC_Vip_Access();
-void AddSC_skill_npc();
 void AddSC_Morph_npc();
 void AddSC_Title_gossip_codebox();
+void AddSC_proff_npc();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -1857,8 +1857,8 @@ void AddCustomScripts()
 	AddSC_vipcommands();
 	AddSC_DuelReset();
 	AddSC_Vip_Access();
-	AddSC_skill_npc();
 	AddSC_Morph_npc();
 	AddSC_Title_gossip_codebox();
+	AddSC_proff_npc();
 #endif
 }

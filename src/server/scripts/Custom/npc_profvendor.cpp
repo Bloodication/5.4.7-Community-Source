@@ -1,301 +1,166 @@
 #include "ScriptPCH.h"
 #include "Language.h"
 
-#define ICON_ALCHEMY "|TInterface\\icons\\trade_alchemy:30|t"
-#define ICON_BLACKSMITHING "|TInterface\\icons\\INV_Ingot_05:30|t"
-#define ICON_LEATHERWORKING "|TInterface\\icons\\INV_Misc_LeatherScrap_02:30|t"
-#define ICON_TAILORING "|TInterface\\icons\\INV_Fabric_Felcloth_Ebon:30|t"
-#define ICON_ENGINEERING "|TInterface\\icons\\inv_misc_wrench_01:30|t"
-#define ICON_ENCHANTING "|TInterface\\icons\\trade_engraving:30|t"
-#define ICON_JEWELCRAFTING "|TInterface\\icons\\inv_misc_gem_01:30|t"
-#define ICON_INSCRIPTION "|TInterface\\icons\\INV_Scroll_08:30|t"
-#define ICON_FIRST_AID "|TInterface\\icons\\Spell_Holy_SealOfSacrifice|t"
+class proff_npc : public CreatureScript
 
-// not used atm
-enum ProfMenus
 {
-	MAIN_MENU = 0,
-	ALCHEMY = 1,
-	BLACKSMITHING = 2,
-	LEATHERWROKING = 3,
-	TAILORING = 4,
-	ENGINEERING = 5,
-	ENCHANTING = 6,
-	JEWELCRAFTING = 7,
-	INSCRIPTION = 8,
-	FIRST_AID = 9
-};
+public:
 
-bool PlayerAlreadyHasTwoProfessions(const Player *player) /*const*/
-{
-	uint32 skillCount = 0;
+	proff_npc() : CreatureScript("proff_npc") {}
 
-	if (player->HasSkill(SKILL_MINING))
-		skillCount++;
-	if (player->HasSkill(SKILL_SKINNING))
-		skillCount++;
-	if (player->HasSkill(SKILL_HERBALISM))
-		skillCount++;
-
-	if (skillCount >= 2)
-		return true;
-
-	for (uint32 i = 1; i < sSkillLineStore.GetNumRows(); ++i)
+	struct proff_npcAI : public ScriptedAI
 	{
-		SkillLineEntry const *SkillInfo = sSkillLineStore.LookupEntry(i);
-		if (!SkillInfo)
-			continue;
+		proff_npcAI(Creature *c) : ScriptedAI(c)
+		{
+		}
+	};
 
-		if (SkillInfo->categoryId == SKILL_CATEGORY_SECONDARY)
-			continue;
+	CreatureAI* GetAI(Creature* _creature) const
+	{
+		return new proff_npcAI(_creature);
+	}
 
-		if ((SkillInfo->categoryId != SKILL_CATEGORY_PROFESSION) || !SkillInfo->canLink)
-			continue;
+	bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+	{
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Alchemy]", GOSSIP_SENDER_MAIN, 1, "Do you really want to learn [Alchemy]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Blacksmithing]", GOSSIP_SENDER_MAIN, 2, "Do you really want to learn [Blacksmithing]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Leatherworking]", GOSSIP_SENDER_MAIN, 3, "Do you really want to learn [Leatherworking]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Tailoring]", GOSSIP_SENDER_MAIN, 4, "Do you really want to learn [Tailoring]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Engineering]", GOSSIP_SENDER_MAIN, 5, "Do you really want to learn [Engineering]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Enchanting]", GOSSIP_SENDER_MAIN, 6, "Do you really want to learn [Enchanting]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Jewelcrafting]", GOSSIP_SENDER_MAIN, 7, "Do you really want to learn [Jewelcrafting]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Inscription]", GOSSIP_SENDER_MAIN, 8, "Do you really want to learn [Inscription]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Mining]", GOSSIP_SENDER_MAIN, 11, "Do you really want to learn [Mining]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Herbalism]", GOSSIP_SENDER_MAIN, 12, "Do you really want to learn [Herbalism]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(6, "[Skinning]", GOSSIP_SENDER_MAIN, 13, "Do you really want to learn [Skinning]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(1, "[Cooking]", GOSSIP_SENDER_MAIN, 9, "Do you really want to learn [Cooking]?", 0, false);
+		pPlayer->ADD_GOSSIP_ITEM_EXTENDED(1, "[First Aid]", GOSSIP_SENDER_MAIN, 10, "Do you really want to learn [First Aid]?", 0, false);
+		pPlayer->PlayerTalkClass->SendGossipMenu(pCreature->GetEntry(), pCreature->GetGUID());
+		return true;
+	}
 
-		const uint32 skillID = SkillInfo->id;
-		if (player->HasSkill(skillID))
+	bool PlayerAlreadyHasTwoProfessions(const Player *pPlayer) const
+	{
+		uint32 skillCount = 0;
+
+		if (pPlayer->HasSkill(SKILL_MINING))
+			skillCount++;
+		if (pPlayer->HasSkill(SKILL_SKINNING))
+			skillCount++;
+		if (pPlayer->HasSkill(SKILL_HERBALISM))
 			skillCount++;
 
 		if (skillCount >= 2)
 			return true;
-	}
-	return false;
-}
 
+		for (uint32 i = 1; i < sSkillLineStore.GetNumRows(); ++i)
+		{
+			SkillLineEntry const *SkillInfo = sSkillLineStore.LookupEntry(i);
+			if (!SkillInfo)
+				continue;
 
-/*void LearnSkillRecipesHelper(Player *player, uint32 skill_id)
-{
-	uint32 classmask = player->getClassMask();
+			if (SkillInfo->categoryId == SKILL_CATEGORY_SECONDARY)
+				continue;
 
-	for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
-	{
-		SkillLineAbilityEntry const *skillLine = sSkillLineAbilityStore.LookupEntry(j);
-		if (!skillLine)
-			continue;
+			if ((SkillInfo->categoryId != SKILL_CATEGORY_PROFESSION) || !SkillInfo->canLink)
+				continue;
 
-		// wrong skill
-		if (skillLine->skillId != skill_id)
-			continue;
+			const uint32 skillID = SkillInfo->id;
+			if (pPlayer->HasSkill(skillID))
+				skillCount++;
 
-		// not high rank
-		if (skillLine->forward_spellid)
-			continue;
-
-		// skip racial skills
-		if (skillLine->racemask != 0)
-			continue;
-
-		// skip wrong class skills
-		if (skillLine->classmask && (skillLine->classmask & classmask) == 0)
-			continue;
-
-		player->learnSpell(skillLine->spellId, false);
-	}
-} 
-
-bool LearnAllRecipesInProfession(Player *player, SkillType skill)
-{
-	ChatHandler handler(player->GetSession());
-	std::string skill_name;
-
-	SkillLineEntry const *SkillInfo = sSkillLineStore.LookupEntry(skill);
-	skill_name, SkillInfo->name[handler.GetSessionDbcLocale()];
-
-	if (!SkillInfo)
-	{
+			if (skillCount >= 2)
+				return true;
+		}
 		return false;
 	}
 
-	LearnSkillRecipesHelper(player, SkillInfo->id);
+	bool LearnAllRecipesInProfession(Player *pPlayer, SkillType skill)
+	{
+		SkillLineEntry const *SkillInfo = sSkillLineStore.LookupEntry(skill);
+		std::string skill_name = SkillInfo->name;
+		if (!SkillInfo)
+			return false;
 
-	uint16 maxLevel = player->GetPureMaxSkillValue(SkillInfo->id);
-	player->SetSkill(SkillInfo->id, player->GetSkillStep(SkillInfo->id), 600, 600);
-	handler.PSendSysMessage(LANG_COMMAND_LEARN_ALL_RECIPES, skill_name.c_str());
-	return true;
-}*/
+		LearnSkillRecipesHelper(pPlayer, SkillInfo->id);
+		pPlayer->SetSkill(SkillInfo->id, pPlayer->GetSkillStep(SkillInfo->id), 600, 600);
+		if (skill_name.empty())
+			return false;
 
-bool IsSecondarySkill(SkillType skill) /* const */
-{
-	return skill == SKILL_COOKING || skill == SKILL_FIRST_AID || skill == SKILL_FISHING || skill == SKILL_ARCHAEOLOGY;
-}
+		ChatHandler(pPlayer).PSendSysMessage(LANG_COMMAND_LEARN_ALL_RECIPES, skill_name.c_str());
+		return true;
+	}
 
-void CompleteLearnProfession(Player *player, Creature *creature, SkillType skill)
-{
+	void LearnSkillRecipesHelper(Player *pPlayer, uint32 skill_id)
+	{
+		uint32 classmask = pPlayer->getClassMask();
 
-		
-}
-
-class skill_npc : public CreatureScript
-{
-public: skill_npc() : CreatureScript("skill_npc") {}
-
-		bool OnGossipHello(Player* player, Creature* creature)
+		for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
 		{
-			// Primary
-			if (!player->HasSkill(SKILL_ALCHEMY))
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Alchemy", GOSSIP_SENDER_MAIN, 1);
-			if (!player->HasSkill(SKILL_BLACKSMITHING))
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Blacksmithing", GOSSIP_SENDER_MAIN, 2);
-			if (!player->HasSkill(SKILL_LEATHERWORKING))
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Leatherworking", GOSSIP_SENDER_MAIN, 3);
-			if (!player->HasSkill(SKILL_TAILORING))
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Tailoring", GOSSIP_SENDER_MAIN, 4);
-			if (!player->HasSkill(SKILL_ENGINEERING))
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Engineering", GOSSIP_SENDER_MAIN, 5);
-			if (!player->HasSkill(SKILL_ENCHANTING))
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Enchanting", GOSSIP_SENDER_MAIN, 6);
-			if (!player->HasSkill(SKILL_JEWELCRAFTING))
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Jewelcrafting", GOSSIP_SENDER_MAIN, 7);
-			if (!player->HasSkill(SKILL_INSCRIPTION))
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Inscription", GOSSIP_SENDER_MAIN, 8); 
-			if (!player->HasSkill(SKILL_HERBALISM))
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Herbalism", GOSSIP_SENDER_MAIN, 19);
-			if (!player->HasSkill(SKILL_MINING))
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Mining", GOSSIP_SENDER_MAIN, 20);
-			if (!player->HasSkill(SKILL_SKINNING))
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Skinning", GOSSIP_SENDER_MAIN, 21);
-			// Secondary
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Secondary", GOSSIP_SENDER_MAIN, 9);
-			player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
-			return true;
+			SkillLineAbilityEntry const *skillLine = sSkillLineAbilityStore.LookupEntry(j);
+			if (!skillLine)
+				continue;
+
+			// wrong skill
+			if (skillLine->SkillLine != skill_id)
+				continue;
+			if (skillLine->Spell == 110955) // skip this spell.. idk why its added
+				continue;
+			// skip racial skills
+			if (skillLine->RaceMask != 0)
+				continue;
+			// skip wrong class skills
+			if (skillLine->ClassMask && (skillLine->ClassMask & classmask) == 0)
+				continue;
+
+			SpellEntry const* spellInfo = sSpellStore.LookupEntry(skillLine->Spell);
+			pPlayer->learnSpell(skillLine->Spell, false);
+		}
+	}
+
+	bool IsSecondarySkill(SkillType skill) const
+	{
+		return skill == SKILL_COOKING || skill == SKILL_FIRST_AID;
+	}
+
+	void CompleteLearnProfession(Player *pPlayer, SkillType skill)
+	{
+		if (PlayerAlreadyHasTwoProfessions(pPlayer) && !IsSecondarySkill(skill))
+			pPlayer->GetSession()->SendNotification("You already know two primary professions!");
+		else
+		{
+			if (!LearnAllRecipesInProfession(pPlayer, skill))
+				pPlayer->GetSession()->SendNotification("Error #1: Internal code failiure");
+		}
+	}
+
+	bool OnGossipSelect(Player* pPlayer, Creature* _creature, uint32 uiSender, uint32 uiAction)
+	{
+		pPlayer->PlayerTalkClass->ClearMenus();
+
+		switch (uiAction)
+		{
+		case 1: CompleteLearnProfession(pPlayer, SKILL_ALCHEMY); break;
+		case 2: CompleteLearnProfession(pPlayer, SKILL_BLACKSMITHING); break;
+		case 3: CompleteLearnProfession(pPlayer, SKILL_LEATHERWORKING); break;
+		case 4: CompleteLearnProfession(pPlayer, SKILL_TAILORING); break;
+		case 5: CompleteLearnProfession(pPlayer, SKILL_ENGINEERING); break;
+		case 6: CompleteLearnProfession(pPlayer, SKILL_ENCHANTING); break;
+		case 7: CompleteLearnProfession(pPlayer, SKILL_JEWELCRAFTING); break;
+		case 8: CompleteLearnProfession(pPlayer, SKILL_INSCRIPTION); break;
+		case 9: CompleteLearnProfession(pPlayer, SKILL_COOKING); break;
+		case 10: CompleteLearnProfession(pPlayer, SKILL_FIRST_AID); break;
+		case 11: CompleteLearnProfession(pPlayer, SKILL_MINING); break;
+		case 12: CompleteLearnProfession(pPlayer, SKILL_HERBALISM); break;
+		case 13: CompleteLearnProfession(pPlayer, SKILL_SKINNING); break;
 		}
 
-		bool OnGossipSelect(Player* player, Creature* creature, uint32 uiSender, uint32 uiAction)
-		{
-			player->PlayerTalkClass->ClearMenus();
-
-			if (uiSender == GOSSIP_SENDER_MAIN)
-			{
-				switch (uiAction)
-				{
-				case 0:
-					OnGossipHello(player, creature);
-					break;
-
-				case 1:
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Back", GOSSIP_SENDER_MAIN, 0);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Alchemy : Master of Transmutations", GOSSIP_SENDER_MAIN, 10);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Alchemy : Master of Elixir", GOSSIP_SENDER_MAIN, 11);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Alchemy : Master of Potion", GOSSIP_SENDER_MAIN, 12);
-					player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
-					break;
-				case 10:
-					CompleteLearnProfession(player, creature, SKILL_ALCHEMY);
-					player->removeSpell(28677, false);
-					player->removeSpell(28675, false);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				case 11:
-					CompleteLearnProfession(player, creature, SKILL_ALCHEMY);
-					player->removeSpell(28672, false);
-					player->removeSpell(28675, false);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				case 12:
-					CompleteLearnProfession(player, creature, SKILL_ALCHEMY);
-					player->removeSpell(28677, false);
-					player->removeSpell(28672, false);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-
-				case 2:
-					CompleteLearnProfession(player, creature, SKILL_BLACKSMITHING);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-
-				case 3:
-					CompleteLearnProfession(player, creature, SKILL_LEATHERWORKING);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-
-				case 4:
-					CompleteLearnProfession(player, creature, SKILL_TAILORING);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-
-				case 5:
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Back", GOSSIP_SENDER_MAIN, 0);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Engineering : Gnomish Engineer", GOSSIP_SENDER_MAIN, 13);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Engineering : Goblin Engineer", GOSSIP_SENDER_MAIN, 14);
-					player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
-					break;
-				case 13:
-					CompleteLearnProfession(player, creature, SKILL_ENGINEERING);
-					player->removeSpell(20222, false);
-					player->removeSpell(82207, false);
-					player->removeSpell(105518, false);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				case 14:
-					CompleteLearnProfession(player, creature, SKILL_ENGINEERING);
-					player->removeSpell(20219, false);
-					player->removeSpell(82207, false);
-					player->removeSpell(105518, false);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-
-				case 6:
-					CompleteLearnProfession(player, creature, SKILL_ENCHANTING);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-
-				case 7:
-					CompleteLearnProfession(player, creature, SKILL_JEWELCRAFTING);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-
-				case 8:
-					CompleteLearnProfession(player, creature, SKILL_INSCRIPTION);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-
-				case 9:
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Back", GOSSIP_SENDER_MAIN, 0);
-					if (!player->HasSkill(SKILL_FIRST_AID)/* || player->GetClass() == CLASS_DEATH_KNIGHT*/)
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "First Aid", GOSSIP_SENDER_MAIN, 15);
-					if (!player->HasSkill(SKILL_FISHING))
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Fishing", GOSSIP_SENDER_MAIN, 16);
-					if (!player->HasSkill(SKILL_COOKING))
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Cooking", GOSSIP_SENDER_MAIN, 17);
-					/* if (!player->HasSkill(SKILL_ARCHAEOLOGY))
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_2, "Archeology", GOSSIP_SENDER_MAIN, 18); */
-					player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
-					break;
-				case 15:
-					CompleteLearnProfession(player, creature, SKILL_FIRST_AID);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				case 16:
-					CompleteLearnProfession(player, creature, SKILL_FISHING);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				case 17:
-					CompleteLearnProfession(player, creature, SKILL_COOKING);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				case 18:
-					CompleteLearnProfession(player, creature, SKILL_ARCHAEOLOGY);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				case 19:
-					CompleteLearnProfession(player, creature, SKILL_HERBALISM);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				case 20:
-					CompleteLearnProfession(player, creature, SKILL_MINING);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				case 21:
-					CompleteLearnProfession(player, creature, SKILL_SKINNING);
-					player->CLOSE_GOSSIP_MENU();
-					break;
-				}
-			}
-			return true;
-		}
+		pPlayer->CLOSE_GOSSIP_MENU();
+		return true;
+	}
 };
 
-void AddSC_skill_npc()
+void AddSC_proff_npc()
 {
-	new skill_npc();
+	new proff_npc();
 }
