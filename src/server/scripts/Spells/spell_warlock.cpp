@@ -28,6 +28,7 @@
 
 enum WarlockSpells
 {
+	WARLOCK_NIGHTFALL					    = 108558,
     WARLOCK_DEMONIC_EMPOWERMENT_SUCCUBUS    = 54435,
     WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER  = 54443,
     WARLOCK_DEMONIC_EMPOWERMENT_FELGUARD    = 54508,
@@ -2215,11 +2216,12 @@ class spell_warl_nightfall : public SpellScriptLoader
                 if (!GetCaster())
                     return;
 
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
-                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 4, POWER_DEMONIC_FURY);
-                }
+				if (Player* player = GetCaster()->ToPlayer())
+				{
+					if (player->HasAura(WARLOCK_NIGHTFALL))
+						if (roll_chance_i(5))
+							player->SetPower(POWER_SOUL_SHARDS, player->GetPower(POWER_SOUL_SHARDS) + 100);
+				}
             }
 
             void Register()
