@@ -68,6 +68,7 @@
 #include "BattlegroundKT.h"
 #include "BattlegroundWS.h"
 #include "BattlegroundTP.h"
+#include "../scripts/Custom/SpellRegulator.h"
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
@@ -962,7 +963,10 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
     if (IsAIEnabled)
         GetAI()->DamageDealt(victim, damage, damagetype);
-
+	
+	if ((damagetype == SPELL_DIRECT_DAMAGE || damagetype == DOT) && spellProto)
+		sSpellRegulator->Regulate(damage, spellProto->Id);
+	
     if (victim->GetTypeId() == TYPEID_PLAYER)
     {   
         // Signal to pets that their owner was attacked
@@ -1255,7 +1259,9 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
             he->DuelComplete(DUEL_WON);
         }
     }
-
+	if ((damagetype == SPELL_DIRECT_DAMAGE || damagetype == DOT) && spellProto)
+		sSpellRegulator->Regulate(damage, spellProto->Id);
+	
     return damage;
 }
 
@@ -6179,6 +6185,7 @@ void Unit::RemoveAllGameObjects()
 
 void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage* log)
 {
+	sSpellRegulator->Regulate(log->damage, log->SpellID);
     WorldPacket data(SMSG_SPELL_NON_MELEE_DAMAGE_LOG, 1 + 7*4 + 3 + 16);  // we guess size (73 is from sniffs without debug flag)
 
     // target is sended twice
@@ -6266,6 +6273,7 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
 {
     AuraEffect const* aura = pInfo->auraEff;
 
+	sSpellRegulator->Regulate(pInfo->damage, aura->GetId());
     WorldPacket data(SMSG_PERIODIC_AURA_LOG, 60);
     ObjectGuid targetGuid = GetGUID();
     ObjectGuid casterGuid = aura->GetCasterGUID();

@@ -33,6 +33,7 @@ void AddSC_Vip_Access();
 void AddSC_Morph_npc();
 void AddSC_Title_gossip_codebox();
 void AddSC_proff_npc();
+void AddSC_SpellRegulator();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -1860,5 +1861,6 @@ void AddCustomScripts()
 	AddSC_Morph_npc();
 	AddSC_Title_gossip_codebox();
 	AddSC_proff_npc();
+	AddSC_SpellRegulator();
 #endif
 }
