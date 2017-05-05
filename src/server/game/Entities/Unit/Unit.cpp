@@ -963,8 +963,10 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
     if (IsAIEnabled)
         GetAI()->DamageDealt(victim, damage, damagetype);
+	
 	if ((damagetype == SPELL_DIRECT_DAMAGE || damagetype == DOT) && spellProto)
 		sSpellRegulator->Regulate(damage, spellProto->Id);
+	
     if (victim->GetTypeId() == TYPEID_PLAYER)
     {   
         // Signal to pets that their owner was attacked
@@ -6269,9 +6271,9 @@ void Unit::ProcDamageAndSpell(Unit* victim, uint32 procAttacker, uint32 procVict
 
 void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
 {
-	sSpellRegulator->Regulate(pInfo->damage, aura->GetId());
     AuraEffect const* aura = pInfo->auraEff;
 
+	sSpellRegulator->Regulate(pInfo->damage, aura->GetId());
     WorldPacket data(SMSG_PERIODIC_AURA_LOG, 60);
     ObjectGuid targetGuid = GetGUID();
     ObjectGuid casterGuid = aura->GetCasterGUID();
