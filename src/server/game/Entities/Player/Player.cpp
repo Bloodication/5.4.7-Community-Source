@@ -10286,6 +10286,13 @@ void Player::DuelComplete(DuelCompleteType type)
     if (obj)
         duel->initiator->RemoveGameObject(obj, true);
 
+	// Battle Fatigue
+	if (duel->initiator->HasAura(134735))
+		duel->initiator->RemoveAura(134735);
+
+	if (duel->opponent->HasAura(134735))
+		duel->opponent->RemoveAura(134735);
+
     /* remove auras */
     AuraApplicationMap &itsAuras = duel->opponent->GetAppliedAuras();
     for (AuraApplicationMap::iterator i = itsAuras.begin(); i != itsAuras.end();)

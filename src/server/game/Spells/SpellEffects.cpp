@@ -6399,6 +6399,13 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
     caster->SetUInt64Value(PLAYER_DUEL_ARBITER, pGameObj->GetGUID());
     target->SetUInt64Value(PLAYER_DUEL_ARBITER, pGameObj->GetGUID());
 
+	// Battle Fatigue
+	if (!caster->HasAura(134735))
+		caster->AddAura(134735, caster, true);
+
+	if (!target->HasAura(134735))
+		caster->AddAura(134735, target, true);
+
     sScriptMgr->OnPlayerDuelRequest(target, caster);
 }
 

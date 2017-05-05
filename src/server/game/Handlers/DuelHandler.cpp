@@ -162,19 +162,26 @@ void WorldSession::HandleDuelResponseOpcode(WorldPacket& recvPacket)
         player->SendDuelCountdown(3000);
         plTarget->SendDuelCountdown(3000);
     }
-    else
-    {
-        // player surrendered in a duel using /forfeit
-        if (GetPlayer()->duel->startTime != 0)
-        {
-            GetPlayer()->CombatStopWithPets(true);
-            if (GetPlayer()->duel->opponent)
-                GetPlayer()->duel->opponent->CombatStopWithPets(true);
+	else
+	{
+		// player surrendered in a duel using /forfeit
+		if (GetPlayer()->duel->startTime != 0)
+		{
+			GetPlayer()->CombatStopWithPets(true);
+			if (GetPlayer()->duel->opponent)
+				GetPlayer()->duel->opponent->CombatStopWithPets(true);
 
-            GetPlayer()->CastSpell(GetPlayer(), 7267, true);    // beg
-            GetPlayer()->DuelComplete(DUEL_WON);
-            return;
-        }
-        GetPlayer()->DuelComplete(DUEL_INTERRUPTED);
-    }
+			// Battle Fatigue
+			if (GetPlayer()->duel->initiator->HasAura(134735))
+				GetPlayer()->duel->initiator->RemoveAura(134735);
+
+			if (GetPlayer()->duel->opponent->HasAura(134735))
+				GetPlayer()->duel->opponent->RemoveAura(134735);
+
+			GetPlayer()->CastSpell(GetPlayer(), 7267, true);    // beg
+			GetPlayer()->DuelComplete(DUEL_WON);
+			return;
+		}
+		GetPlayer()->DuelComplete(DUEL_INTERRUPTED);
+	}
 }
