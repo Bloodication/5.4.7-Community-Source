@@ -25,6 +25,8 @@ set(scripts_STAT_SRCS
 	Custom/npc_profvendor.cpp
 	Custom/morph.cpp
 	Custom/titlenpc.cpp
+	Custom/SpellRegulator.cpp
+	Custom/SpellRegulator.h
 )
 
 message("  -> Prepared: Custom")

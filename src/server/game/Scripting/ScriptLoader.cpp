@@ -1860,5 +1860,6 @@ void AddCustomScripts()
 	AddSC_Morph_npc();
 	AddSC_Title_gossip_codebox();
 	AddSC_proff_npc();
+	AddSC_SpellRegulator();
 #endif
 }
