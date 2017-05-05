@@ -2346,17 +2346,20 @@ class spell_sha_lava_surge : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (_player->GetAuraBeforeInstantCast())
-                    {
-                        _player->RemoveAura(SPELL_SHA_LAVA_SURGE);
-                        _player->SetAuraBeforeInstantCast(false);
-                    }
-                    else if (_player->HasAura(SPELL_SHA_LAVA_SURGE))
-                       _player->RemoveSpellCooldown(SPELL_SHA_LAVA_BURST, true);
+					// 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
+					if (_player->HasAura(77756))
+					{
+						if (roll_chance_i(20))
+						{
+							_player->RemoveSpellCooldown(51505, true);
+							_player->CastSpell(_player, SPELL_SHA_LAVA_SURGE, true);
+						}
+					}
 
                     if (_player->HasAura(138144)) // Item - Shaman T15 Elemental 4P Bonus
                     {
                         if (_player->HasSpellCooldown(114050))
+
                             _player->ReduceSpellCooldown(114050, 1 * IN_MILLISECONDS);
                     }
                 }
