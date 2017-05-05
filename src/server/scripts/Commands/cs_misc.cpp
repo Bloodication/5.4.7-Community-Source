@@ -34,7 +34,7 @@
 #include "RaidEncountersMgr.h"
 #include "MapManager.h"
 #include <fstream>
-#include "./scripts/Custom/SpellRegulator.h"
+#include "../scripts/Custom/SpellRegulator.h"
 
 class misc_commandscript : public CommandScript
 {
