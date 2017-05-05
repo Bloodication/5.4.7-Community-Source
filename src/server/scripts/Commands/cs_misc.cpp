@@ -164,10 +164,29 @@ public:
             handler->GetSession()->SendNotification(LANG_DEV_OFF);
             return true;
         }
-
+		
+		if (argstr == "rp")
+		{
+			sSpellRegulator->LoadFromDB();
+			if (handler->GetSession())
+			{
+				handler->GetSession()->SendNotification("SpellRegulator reloaded.");
+			}
+		}
+		
+		if (argstr == "reloadspell")
+		{
+			sSpellRegulator->LoadFromDB();
+			if (handler->GetSession())
+			{
+				handler->GetSession()->SendNotification("SpellRegulator reloaded.");
+			}
+		}
+		
         handler->SendSysMessage(LANG_USE_BOL);
         handler->SetSentErrorMessage(true);
         return false;
+		
     }
 
     static bool HandleGPSCommand(ChatHandler* handler, char const* args)
