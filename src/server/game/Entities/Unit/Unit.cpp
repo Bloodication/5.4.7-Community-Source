@@ -68,7 +68,7 @@
 #include "BattlegroundKT.h"
 #include "BattlegroundWS.h"
 #include "BattlegroundTP.h"
-#include "D:\_aprojectxuen\ardor-i90-at-realm\src\server\scripts\Custom\SpellRegulator.h"
+#include "../scripts/Custom/SpellRegulator.h"
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
