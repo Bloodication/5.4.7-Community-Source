@@ -9296,18 +9296,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
                         CastSpell(this, 105821, true);
                     break;
                 }
-                // Lava Surge
-                case 77756:
-
-                    if (GetTypeId() != TYPEID_PLAYER)
-                        return false;
-
-                    ToPlayer()->RemoveSpellCooldown(51505, true);
-
-                    triggered_spell_id = 77762;
-                    target = this;
-                    
-                    break;
                 case 120676:// Stormlash Totem
                 {
                     // Can't proc off from itself
