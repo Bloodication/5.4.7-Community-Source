@@ -2462,6 +2462,9 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
     if (obj)
         obj->SendUpdateToPlayer(GetPlayer());
 
+	if (!obj)
+		obj->SendUpdateToPlayer(GetPlayer()); // if there is no obj, lets send it anyway to avoid a crash
+
     sLog->outError(LOG_FILTER_NETWORKIO, "[%u] Object update failed for object " UI64FMTD " (%s) for player %s (%u)", time(NULL), uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
 }
 
