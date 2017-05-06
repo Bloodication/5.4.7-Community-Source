@@ -6401,10 +6401,10 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
 
 	// Battle Fatigue
 	if (!caster->HasAura(134735))
-		caster->AddAura(134735, caster, true);
+		caster->AddAura(134735, caster);
 
 	if (!target->HasAura(134735))
-		caster->AddAura(134735, target, true);
+		caster->AddAura(134735, target);
 
     sScriptMgr->OnPlayerDuelRequest(target, caster);
 }
