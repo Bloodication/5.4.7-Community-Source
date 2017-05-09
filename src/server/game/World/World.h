@@ -948,7 +948,7 @@ class World
         void InitWeeklyQuestResetTime();
         void InitMonthlyQuestResetTime();
         void InitRandomBGResetTime();
-        void InitServerAutoRestartTime();
+        //void InitServerAutoRestartTime();
         void InitCurrencyResetTime();
         void InitRaidEncountersResetTime();
         void InitGuildChallengesResetTime();

@@ -2078,9 +2078,6 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Calculate next weekly boss looted reset time...");
     InitBossLootedResetTime();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Calculate next auto restart time...");
-    InitServerAutoRestartTime();
-
     InitRaidEncountersResetTime();
 
     LoadCharacterInfoStore();
@@ -3273,7 +3270,7 @@ void World::InitBossLootedResetTime()
     m_NextBossLootedReset = l_NextResetDay * 86400 + 5 * 3600;
  }
 
-void World::InitServerAutoRestartTime()
+/*void World::InitServerAutoRestartTime()
 {
     time_t serverRestartTime = uint64(sWorld->getWorldState(WS_AUTO_SERVER_RESTART_TIME));
     if (!serverRestartTime)
@@ -3333,7 +3330,7 @@ void World::InitRaidEncountersResetTime()
             sWorld->setWorldState(WS_RAID_ENCOUNTERS_RESET_TIME, resetTime);
         }
     }
-}
+}*/
 
 void World::ResetDailyQuests()
 {
