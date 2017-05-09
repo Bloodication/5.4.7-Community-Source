@@ -3299,7 +3299,7 @@ void World::InitBossLootedResetTime()
 
     if (m_bool_configs[CONFIG_DISABLE_RESTART])
         m_NextServerRestart += DAY*1;
-}
+}*/
 
 void World::InitRaidEncountersResetTime()
 {
@@ -3330,7 +3330,7 @@ void World::InitRaidEncountersResetTime()
             sWorld->setWorldState(WS_RAID_ENCOUNTERS_RESET_TIME, resetTime);
         }
     }
-}*/
+}
 
 void World::ResetDailyQuests()
 {
