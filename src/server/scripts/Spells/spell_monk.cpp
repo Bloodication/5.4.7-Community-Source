@@ -900,88 +900,140 @@ class spell_monk_grapple_weapon : public SpellScriptLoader
         }
 };
 
-// Transcendence : Transfer - 119996
+// 101643 Transendence
+
+class spell_transcendence : public SpellScriptLoader
+{
+public:
+	spell_transcendence() : SpellScriptLoader("spell_transcendence") { }
+
+	class spell_transcendence_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_transcendence_SpellScript);
+
+		void HandleAfterCast()
+		{
+			// upon on hit make all the chains spells
+			if (!GetCaster())
+				return;
+			Player* player = GetCaster()->ToPlayer();
+			if (!player)
+				return;
+
+			// Remove Current Trans
+			if (Creature* CurrentTrasendanceTrigger = player->FindNearestCreature(54569, 500.0f, true))
+			{
+				if (CurrentTrasendanceTrigger->isSummon())
+					CurrentTrasendanceTrigger->DespawnOrUnsummon(500);
+			}
+
+			// Summons new one
+			//Creature* TriggerTransdence = player->SummonCreature(54569, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 900000);
+			Creature* TriggerTransdence = player->SummonPet(54569, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), MAX_PET_TYPE, 900000);
+
+			TriggerTransdence->Respawn();
+			TriggerTransdence->SetFullHealth();
+
+
+			//Stun Movement
+			TriggerTransdence->CastSpell(TriggerTransdence, 52165);
+
+			//Mediate
+			TriggerTransdence->AddAura(124416, TriggerTransdence);
+
+			TriggerTransdence->SetReactState(ReactStates::REACT_PASSIVE);
+			TriggerTransdence->SetFlag(EUnitFields::UNIT_FIELD_FLAGS, UnitFlags::UNIT_FLAG_DISABLE_MOVE | UnitFlags::UNIT_FLAG_NOT_SELECTABLE | UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+			TriggerTransdence->SetFlag(EUnitFields::UNIT_FIELD_FLAGS_2, UnitFlags2::UNIT_FLAG2_DISABLE_TURN);
+
+			
+
+			//Clone player's look
+			player->CastSpell(TriggerTransdence, 45204);
+
+			//Visual meditation effect
+			TriggerTransdence->CastSpell(TriggerTransdence, 119053);
+
+		}
+
+		void Register()
+		{
+			AfterCast += SpellCastFn(spell_transcendence_SpellScript::HandleAfterCast);
+		}
+	};
+
+	SpellScript* GetSpellScript() const
+	{
+		return new spell_transcendence_SpellScript();
+	}
+};
+
 class spell_monk_transcendence_transfer : public SpellScriptLoader
 {
 public:
-    spell_monk_transcendence_transfer() : SpellScriptLoader("spell_monk_transcendence_transfer") { }
+	spell_monk_transcendence_transfer() : SpellScriptLoader("spell_monk_transcendence_transfer") { }
 
-    class spell_monk_transcendence_transfer_SpellScript : public SpellScript
-    {
-    public:
+	class spell_monk_transcendence_transfer_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_monk_transcendence_transfer_SpellScript);
 
-        Creature* m_copy;
+		SpellCastResult CheckRange()
+		{
+			if (Player* _player = GetCaster()->ToPlayer())
+			{
+				if (Pet* CurrentTrasendanceTrigger = _player->GetPet())
+				{
+					if (CurrentTrasendanceTrigger->GetEntry() == 54569)
+					{
+						if (_player->IsWithinDistInMap(CurrentTrasendanceTrigger, GetSpellInfo()->GetMaxRange(true, GetCaster(), GetSpell()), true))
+							return SPELL_CAST_OK;
+					}
+				}
+			}
+			GetCaster()->ToPlayer()->GetSession()->SendNotification("Your clone is too far away!");
+			return SPELL_FAILED_DONT_REPORT;
+		}
 
-        spell_monk_transcendence_transfer_SpellScript()
-            : m_copy(nullptr)
-        {
-        }
+		void HandleAfterCast()
+		{
+			Player* player = GetCaster()->ToPlayer();
 
-        PrepareSpellScript(spell_monk_transcendence_transfer_SpellScript);
+			if (Pet* CurrentTrasendanceTrigger = player->GetPet())
+			{
+				if (CurrentTrasendanceTrigger->GetEntry() == 54569)
+				{
+					float X_Trigger = CurrentTrasendanceTrigger->GetPositionX();
+					float Y_Trigger = CurrentTrasendanceTrigger->GetPositionY();
+					float Z_Trigger = CurrentTrasendanceTrigger->GetPositionZ();
+					float O_Trigger = CurrentTrasendanceTrigger->GetOrientation();
 
-        SpellCastResult CheckRange()
-        {
-            Unit* caster = GetCaster();
-            if (!caster || !caster->ToPlayer())
-                return SPELL_FAILED_DONT_REPORT;
+					CurrentTrasendanceTrigger->Relocate(player->GetPositionX(), player->GetPositionY());
 
-            float distance = 40.0f;
-            if (caster->HasAura(123023))
-                distance = 50.0f;
+					if (MotionMaster* motion = CurrentTrasendanceTrigger->GetMotionMaster())
+					{
+						CurrentTrasendanceTrigger->ClearUnitState(UNIT_STATE_ROOT);
+						CurrentTrasendanceTrigger->SetSpeed(MOVE_RUN, 1000.0f, true);
+						motion->MovePoint(1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+						CurrentTrasendanceTrigger->SetSpeed(MOVE_RUN, 0.0f, true);
+						CurrentTrasendanceTrigger->AddUnitState(UNIT_STATE_ROOT);
 
-            std::list<Creature*> npcs;
-            GetCreatureListWithEntryInGrid(npcs, caster, 54569, distance);
-            for (Creature* creature : npcs)
-            {
-                if (creature->ToTempSummon())
-                {
-                    if (creature->ToTempSummon()->GetOwner() == caster)
-                    {
-                        m_copy = creature;
-                        break;
-                    }
-                }
-            }
+					}
+					// player
+					player->TeleportTo(CurrentTrasendanceTrigger->GetMapId(), X_Trigger, Y_Trigger, Z_Trigger, O_Trigger);
+				}
+			}
+		}
 
-            if (m_copy == nullptr)
-            {
-                GetCaster()->ToPlayer()->GetSession()->SendNotification("Your clone is too far away!");
-                return SPELL_FAILED_DONT_REPORT;
-            }
+		void Register()
+		{
+			OnCheckCast += SpellCheckCastFn(spell_monk_transcendence_transfer_SpellScript::CheckRange);
+			AfterCast += SpellCastFn(spell_monk_transcendence_transfer_SpellScript::HandleAfterCast);
+		}
+	};
 
-            return SPELL_CAST_OK;
-        }
-
-        void HandleAfterCast()
-        {
-            if (!m_copy)
-                return;
-
-            if (Player* player = GetCaster()->ToPlayer())
-            {
-                Position tpos;
-                m_copy->GetPosition(&tpos);
-
-                Position ppos;
-                player->GetPosition(&ppos);
-
-                m_copy->NearTeleportTo(ppos.GetPositionX(), ppos.GetPositionY(), ppos.GetPositionZ(), ppos.GetOrientation());
-
-                player->TeleportTo(m_copy->GetMapId(), tpos.GetPositionX(), tpos.GetPositionY(), tpos.GetPositionZ(), tpos.GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
-            }
-        }
-
-        void Register()
-        {
-            OnCheckCast += SpellCheckCastFn(spell_monk_transcendence_transfer_SpellScript::CheckRange);
-            AfterCast += SpellCastFn(spell_monk_transcendence_transfer_SpellScript::HandleAfterCast);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_monk_transcendence_transfer_SpellScript();
-    }
+	SpellScript* GetSpellScript() const
+	{
+		return new spell_monk_transcendence_transfer_SpellScript();
+	}
 };
 
 // Dampen Harm - 122278
@@ -4413,6 +4465,7 @@ void AddSC_monk_spell_scripts()
     new spell_monk_chi_wave_aoe();
     new spell_monk_grapple_weapon();
     new spell_monk_transcendence_transfer();
+	new spell_transcendence();
     new spell_monk_dampen_harm();
     new spell_monk_item_s12_4p_mistweaver();
     new spell_monk_diffuse_magic();
