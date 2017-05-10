@@ -28,6 +28,7 @@
 #include "GridNotifiers.h"
 #include "Unit.h"
 #include "SpellScript.h"
+#include "SpellScript.h"
 #include "SpellAuraEffects.h"
 
 enum ShamanSpells
@@ -2331,90 +2332,80 @@ class spell_sha_glyph_of_telluric_currents : public SpellScriptLoader
         }
 };
 
-// Called by Lava Burst - 51505
+// Lava Burst - 51505
+class spell_sha_lava_burst : public SpellScriptLoader
+{
+	class spell_sha_lava_burst_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_sha_lava_burst_SpellScript)
+
+		void HandleOnHit()
+		{
+			if (Player* _player = GetCaster()->ToPlayer())
+			{
+				if (_player->HasAura(77756))
+				{
+					_player->RemoveAura(SPELL_SHA_LAVA_SURGE);
+				}
+			}
+		}
+
+		void Register()
+		{
+			OnHit += SpellHitFn(spell_sha_lava_burst_SpellScript::HandleOnHit);
+		}
+	};
+
+public:
+	spell_sha_lava_burst() : SpellScriptLoader("spell_sha_lava_burst")
+	{ }
+
+	SpellScript * GetSpellScript() const
+	{
+		return new spell_sha_lava_burst_SpellScript();
+	}
+};
+
+// Triggered by Flame Shock - 8050
 // Lava Surge - 77756
 class spell_sha_lava_surge : public SpellScriptLoader
 {
-    public:
-        spell_sha_lava_surge() : SpellScriptLoader("spell_sha_lava_surge") { }
+public:
+	spell_sha_lava_surge() : SpellScriptLoader("spell_sha_lava_surge") { }
 
-        class spell_sha_lava_surge_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_lava_surge_SpellScript);
+	class spell_sha_lava_surge_AuraScript : public AuraScript
+	{
+		PrepareAuraScript(spell_sha_lava_surge_AuraScript);
 
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
+		void HandleEffectPeriodic(AuraEffect const * /*aurEff*/)
+		{
+			// 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
+			if (GetCaster())
+			{
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
 					if (_player->HasAura(77756))
 					{
+						if (roll_chance_i(20))
+						{
+							_player->CastSpell(_player, 77762, true);
 							_player->RemoveSpellCooldown(51505, true);
-							_player->CastSpell(_player, SPELL_SHA_LAVA_SURGE, true);
+						}
 					}
+				}
+			}
+		}
 
-                    if (_player->HasAura(138144)) // Item - Shaman T15 Elemental 4P Bonus
-                    {
-                        if (_player->HasSpellCooldown(114050))
+		void Register()
+		{
+			OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_lava_surge_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+		}
+	};
 
-                            _player->ReduceSpellCooldown(114050, 1 * IN_MILLISECONDS);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_sha_lava_surge_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_lava_surge_SpellScript();
-        }
-};
-
-// Flame Shock - 8050
-class spell_sha_flame_shock : public SpellScriptLoader
-{
-    public:
-        spell_sha_flame_shock() : SpellScriptLoader("spell_sha_flame_shock") { }
-
-        class spell_sha_flame_shock_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_sha_flame_shock_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if (GetCaster() && GetCaster()->ToPlayer())
-                {
-					// 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
-					if (roll_chance_i(20))
-					{
-						GetCaster()->AddAura(SPELL_SHA_LAVA_SURGE, GetCaster());
-
-					}
-                    // Item - Shaman T16 Enhancement 4P Bonus
-                    if (roll_chance_i(5) && GetCaster()->HasAura(144966))
-                    {
-                        for (int i = 0; i < 5; i++)
-                            GetCaster()->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, GetCaster());  // Searing Flame buff - 5 stacks
-
-                        if (GetCaster()->ToPlayer()->HasSpellCooldown(SPELL_SHA_LAVA_LASH))
-                            GetCaster()->ToPlayer()->RemoveSpellCooldown(SPELL_SHA_LAVA_LASH, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_flame_shock_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_sha_flame_shock_AuraScript();
-        }
+	AuraScript* GetAuraScript() const
+	{
+		return new spell_sha_lava_surge_AuraScript();
+	}
 };
 
 // Called by Far Sight - 6196
@@ -2531,9 +2522,9 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_chain_heal();
     new spell_sha_glyph_of_lightning_shield();
     new spell_sha_glyph_of_telluric_currents();
-    new spell_sha_lava_surge();
-    new spell_sha_flame_shock();
+	new spell_sha_lava_surge();
     new spell_sha_far_sight();
     new spell_sha_greater_healing_wave();
     new spell_sha_healing_rain_heal();
+	new spell_sha_lava_burst();
 }
