@@ -1291,11 +1291,11 @@ void World::LoadConfigSettings(bool reload)
     // Max instances per hour
     m_int_configs[CONFIG_MAX_INSTANCES_PER_HOUR] = ConfigMgr::GetIntDefault("AccountInstancesPerHour", 5);
 
-    m_int_configs[CONFIG_AUTO_SERVER_RESTART_HOUR] = ConfigMgr::GetIntDefault("Server.Auto.RestartHour", 4);
+   /* m_int_configs[CONFIG_AUTO_SERVER_RESTART_HOUR] = ConfigMgr::GetIntDefault("Server.Auto.RestartHour", 4);
     if (m_int_configs[CONFIG_AUTO_SERVER_RESTART_HOUR] > 23)
     {
         m_int_configs[CONFIG_AUTO_SERVER_RESTART_HOUR] = 4;
-    }
+    }*/
 
     // AutoBroadcast
     m_bool_configs[CONFIG_AUTOBROADCAST] = ConfigMgr::GetBoolDefault("AutoBroadcast.On", false);
@@ -1375,13 +1375,13 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_ANNOUNCE_MUTE] = ConfigMgr::GetBoolDefault("AnnounceMute", false);
     m_bool_configs[CONFIG_SPELL_FORBIDDEN] = ConfigMgr::GetBoolDefault("SpellForbidden", false);
 
-    m_bool_configs[CONFIG_DISABLE_RESTART] = ConfigMgr::GetBoolDefault("DisableRestart", false);
+   // m_bool_configs[CONFIG_DISABLE_RESTART] = ConfigMgr::GetBoolDefault("DisableRestart", false);
 
     // Custom Fun
     m_bool_configs[CONFIG_SHARE_MOUNTS] = ConfigMgr::GetBoolDefault("ShareMounts", true);
-    m_bool_configs[CONFIG_INSTANT_GLYPH_ENCHANT] = ConfigMgr::GetBoolDefault("InstantGlyphEnchant", false);
+    m_bool_configs[CONFIG_INSTANT_GLYPH_ENCHANT] = ConfigMgr::GetBoolDefault("InstantGlyphEnchant", true);
     m_bool_configs[CONFIG_DONT_TAKE_REAGENTS] = ConfigMgr::GetBoolDefault("DontTakeReagents", false);
-    m_bool_configs[CONFIG_PERMANENT_USABLE_ITEMS] = ConfigMgr::GetBoolDefault("PermanentUsableItems", false);
+    m_bool_configs[CONFIG_PERMANENT_USABLE_ITEMS] = ConfigMgr::GetBoolDefault("PermanentUsableItems", true);
 
     // Vip Commands
     m_bool_configs[CONFIG_VIP_DEBUFF_COMMAND] = ConfigMgr::GetBoolDefault("Vip.Debuff.Command", false);
@@ -2308,8 +2308,8 @@ void World::Update(uint32 diff)
     if (m_gameTime >= m_NextBossLootedReset)
         ResetBossLooted();
 
-    if (m_gameTime > m_NextServerRestart)
-        AutoRestartServer();
+   // if (m_gameTime > m_NextServerRestart)
+       // AutoRestartServer();
 
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
