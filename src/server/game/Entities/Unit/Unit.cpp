@@ -8007,37 +8007,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
             }
             switch (dummySpell->Id)
             {
-                case 109186:
-                {
-                    if (!procSpell || !ToPlayer())
-                        return false;
-
-                    int32 customChance = 15;
-                    if (ToPlayer()->GetSpecializationId() == SPEC_PRIEST_SHADOW)
-                    {
-                        // should proc only from damage
-                        if (!(procEx & PROC_EX_INTERNAL_DOT || procFlag & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG)) || procSpell->Id == 585)
-                            return false;
-
-                        customChance = 20;
-                        triggered_spell_id = 87160;
-                    }
-                    else
-                    {
-                        // can't proc from DoTs or HoTs
-                        // proc only from 585 damage spell
-                        if (procFlag & (PROC_FLAG_DONE_PERIODIC | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG) && procSpell->Id != 585)
-                            return false;
-
-                        triggered_spell_id = 114255;
-                    }
-
-                    if (!roll_chance_i(customChance))
-                        return false;
-
-                    target = this;
-                    break;
-                }
                 case 81749:
                 {
                     if (!target || !procSpell || !damage)
