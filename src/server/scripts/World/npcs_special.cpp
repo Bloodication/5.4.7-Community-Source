@@ -2359,6 +2359,8 @@ class npc_lightwell : public CreatureScript
             void Reset()
             {
                 me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+				me->SetFlag(UNIT_NPC_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+				me->SetFlag(UNIT_NPC_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->setFaction(35);
             }
 
