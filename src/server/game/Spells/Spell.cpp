@@ -3696,6 +3696,22 @@ bool Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
 
+	Unit::AuraEffectList const& stateAuras = m_caster->GetAuraEffectsByType(SPELL_AURA_ABILITY_IGNORE_AURASTATE);
+	for (Unit::AuraEffectList::const_iterator j = stateAuras.begin(); j != stateAuras.end();)
+	{
+		if ((*j)->IsAffectingSpell(m_spellInfo))
+		{
+			Aura* base = (*j)->GetBase();
+			if (base->GetSpellInfo()->StackAmount)
+			{
+				j++;
+				base->ModStackAmount(-1);
+				continue;
+			}
+		}
+		j++;
+	}
+
     // Set combo point requirement
     if ((_triggeredCastFlags & TRIGGERED_IGNORE_COMBO_POINTS) || m_CastItem || !m_caster->m_movedPlayer)
         m_needComboPoints = false;

@@ -40,7 +40,7 @@ enum WarriorSpells
     WARRIOR_SPELL_BLOOD_AND_THUNDER             = 84615,
     WARRIOR_SPELL_SHOCKWAVE_STUN                = 132168,
     WARRIOR_SPELL_HEROIC_LEAP_DAMAGE            = 52174,
-    WARRIOR_SPELL_RALLYING_CRY		      = 97463,
+    WARRIOR_SPELL_RALLYING_CRY					= 97463,
     WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE        = 58368,
     WARRIOR_SPELL_SWORD_AND_BOARD               = 50227,
     WARRIOR_SPELL_SHIELD_SLAM                   = 23922,
@@ -283,42 +283,77 @@ class spell_warr_shield_block : public SpellScriptLoader
         }
 };
 
-// Storm Bolt - 107570 and Storm Bolt (off hand) - 145585
+// Storm Bolt - 107570
 class spell_warr_storm_bolt : public SpellScriptLoader
 {
-    public:
-        spell_warr_storm_bolt() : SpellScriptLoader("spell_warr_storm_bolt") { }
+public:
+	spell_warr_storm_bolt() : SpellScriptLoader("spell_warr_storm_bolt") { }
 
-        class spell_warr_storm_bolt_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_storm_bolt_SpellScript);
+	class spell_warr_storm_bolt_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_warr_storm_bolt_SpellScript);
 
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* unitTarget = GetHitUnit())
-                    {
-                        if (unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->IsImmunedToSpellEffect(sSpellMgr->GetSpellInfo(WARRIOR_SPELL_STORM_BOLT_STUN), 0, true))
-                            SetHitDamage(GetHitDamage() * 4);
+		void HandleOnLaunchTarget(SpellEffIndex effIndex)
+		{
+			if (Player* _player = GetCaster()->ToPlayer())
+			{
+				if (Unit* unitTarget = GetHitUnit())
+				{
+					if (Creature* target = unitTarget->ToCreature())
+						if (target->GetCreatureTemplate())
+							if (float multiplier = target->GetCreatureTemplate()->MechanicImmuneMask & (1 << MECHANIC_STUN) ? 4.0f : 1.0f)
+								SetHitDamage(int32(GetHitDamage() * multiplier));
 
-                        if (GetSpellInfo()->Id == 107570 && !unitTarget->HasAura(19263)) // Deterrence
-                            _player->CastSpell(unitTarget, WARRIOR_SPELL_STORM_BOLT_STUN, true);
-                    }
-                }
-            }
+					_player->CastSpell(unitTarget, WARRIOR_SPELL_STORM_BOLT_STUN, true);
+				}
+			}
+		}
 
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_storm_bolt_SpellScript::HandleOnHit);
-            }
-        };
+		void Register()
+		{
+			OnEffectLaunchTarget += SpellEffectFn(spell_warr_storm_bolt_SpellScript::HandleOnLaunchTarget, EFFECT_0, SPELL_EFFECT_WEAPON_PERCENT_DAMAGE);
+		}
+	};
 
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_storm_bolt_SpellScript();
-        }
+	SpellScript* GetSpellScript() const
+	{
+		return new spell_warr_storm_bolt_SpellScript();
+	}
 };
+
+// Commented out for now
+/*class spell_warr_storm_bolt_left_hand : public SpellScriptLoader
+{
+public:
+	spell_warr_storm_bolt_left_hand() : SpellScriptLoader("spell_warr_storm_bolt_left_hand") { }
+
+	class spell_warr_storm_bolt_left_hand_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_warr_storm_bolt_left_hand_SpellScript);
+
+		void HandleOnHit()
+		{
+			if (Player* _player = GetCaster()->ToPlayer())
+				if (Unit* unitTarget = GetHitUnit())
+					if (Creature* target = unitTarget->ToCreature())
+						if (target->GetCreatureTemplate())
+							if (float multiplier = target->GetCreatureTemplate()->MechanicImmuneMask & (1 << MECHANIC_STUN) ? 4.0f : 1.0f)
+								SetHitDamage(int32(GetHitDamage() * multiplier));
+		}
+
+		void Register()
+		{
+			OnHit += SpellHitFn(spell_warr_storm_bolt_left_hand_SpellScript::HandleOnHit);
+		}
+	};
+
+	SpellScript* GetSpellScript() const
+	{
+		return new spell_warr_storm_bolt_left_hand_SpellScript();
+	}
+};*/
+
+
 
 // Colossus Smash - 86346
 class spell_warr_colossus_smash : public SpellScriptLoader
