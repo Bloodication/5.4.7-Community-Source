@@ -3337,6 +3337,23 @@ class spell_dru_eclipse : public SpellScriptLoader
 
             void HandleAfterCast()
             {
+				Unit * const caster = GetCaster();
+				if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+					return;
+
+				if (GetSpellInfo()->Id == SPELL_DRUID_STARSURGE)
+				{
+					AuraEffect * const aurEff = caster->GetAuraEffect(SPELL_DRUID_SHOOTING_STARS, EFFECT_0);
+
+					bool found = true;
+					if (!aurEff)
+						found = false;
+
+					if (found)
+						caster->ToPlayer()->RemoveSpellCooldown(GetSpellInfo()->Id, true);
+						caster->ToPlayer()->RemoveAura(SPELL_DRUID_SHOOTING_STARS);
+				}
+
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetExplTargetUnit())

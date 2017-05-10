@@ -11428,22 +11428,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, uint32 absorb, Au
 
             break;
         }
-        case 93399: // Shooting Stars
-        {
-            if (!procSpell)
-                return false;
-
-            if (procSpell->Id != 8921 && procSpell->Id != 93402)
-                return false;
-
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            if (!(procEx & PROC_EX_CRITICAL_HIT))
-                return false;
-
-            break;
-        }
         case 110301:// Burden of Guilt
         {
             if (!procSpell)
