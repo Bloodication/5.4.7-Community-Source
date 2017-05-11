@@ -2634,58 +2634,76 @@ void Map::AddObjectToSwitchList(WorldObject* obj, bool on)
 
 void Map::RemoveAllObjectsInRemoveList()
 {
-	while (!i_objectsToSwitch.empty())
-	{
-		std::map<WorldObject*, bool>::iterator itr = i_objectsToSwitch.begin();
-		WorldObject* obj = itr->first;
-		bool on = itr->second;
-		i_objectsToSwitch.erase(itr);
+    while (!i_objectsToSwitch.empty())
+    {
+        std::map<WorldObject*, bool>::iterator itr = i_objectsToSwitch.begin();
+        WorldObject* obj = itr->first;
+        bool on = itr->second;
+        i_objectsToSwitch.erase(itr);
 
-		if (obj->GetTypeId() == TYPEID_UNIT && !obj->IsPermanentWorldObject())
-			SwitchGridContainers(obj->ToCreature(), on);
-	}
+        if (!obj->IsPermanentWorldObject())
+        {
+            switch (obj->GetTypeId())
+            {
+                case TYPEID_UNIT:
+                    SwitchGridContainers<Creature>(obj->ToCreature(), on);
+                    break;
+                case TYPEID_GAMEOBJECT:
+                    SwitchGridContainers<GameObject>(obj->ToGameObject(), on);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 
-	//TC_LOG_DEBUG("maps", "Object remover 1 check.");
-	while (!i_objectsToRemove.empty())
-	{
-		std::set<WorldObject*>::iterator itr = i_objectsToRemove.begin();
-		WorldObject* obj = *itr;
+    //sLog->outDebug(LOG_FILTER_MAPS, "Object remover 1 check.");
+    while (!i_objectsToRemove.empty())
+    {
+        std::set<WorldObject*>::iterator itr = i_objectsToRemove.begin();
+        WorldObject* obj = *itr;
 
-		switch (obj->GetTypeId())
-		{
-		case TYPEID_CORPSE:
-		{
-			Corpse* corpse = ObjectAccessor::GetCorpse(*obj, obj->GetGUID());
-			if (!corpse)
-				sLog->outError(LOG_FILTER_MAPS, "Tried to delete corpse/bones %u that is not in map.", obj->GetGUIDLow());
-			else
-				RemoveFromMap(corpse, true);
-			break;
-		}
-		case TYPEID_DYNAMICOBJECT:
-			RemoveFromMap((DynamicObject*)obj, true);
-			break;
-		case TYPEID_AREATRIGGER:
-			RemoveFromMap((AreaTrigger*)obj, true);
-			break;
-		case TYPEID_GAMEOBJECT:
-			RemoveFromMap((GameObject*)obj, true);
-			break;
-		case TYPEID_UNIT:
-			// in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
-			// make sure that like sources auras/etc removed before destructor start
-			obj->ToCreature()->CleanupsBeforeDelete();
-			RemoveFromMap(obj->ToCreature(), true);
-			break;
-		default:
-			sLog->outError(LOG_FILTER_MAPS, "Non-grid object (TypeId: %u) is in grid object remove list, ignored.", obj->GetTypeId());
-			break;
-		}
+        if (!obj)
+            continue;
 
-		i_objectsToRemove.erase(itr);
-	}
+        switch (obj->GetTypeId())
+        {
+            case TYPEID_CORPSE:
+            {
+                Corpse* corpse = ObjectAccessor::GetCorpse(*obj, obj->GetGUID());
+                if (!corpse)
+                    sLog->outError(LOG_FILTER_MAPS, "Tried to delete corpse/bones %u that is not in map.", obj->GetGUIDLow());
+                else
+                    RemoveFromMap(corpse, true);
+                break;
+            }
+            case TYPEID_DYNAMICOBJECT:
+                RemoveFromMap(obj->ToDynObject(), true);
+                break;
+            case TYPEID_GAMEOBJECT:
+            {
+                GameObject* go = obj->ToGameObject();
+                if (Transport* transport = go->ToTransport())
+                    RemoveFromMap(transport, true);
+                else
+                    RemoveFromMap(go, true);
+                break;
+            }
+            case TYPEID_UNIT:
+                // in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
+                // make sure that like sources auras/etc removed before destructor start
+                obj->ToCreature()->CleanupsBeforeDelete();
+                RemoveFromMap(obj->ToCreature(), true);
+                break;
+            default:
+                sLog->outError(LOG_FILTER_MAPS, "Non-grid object (TypeId: %u) is in grid object remove list, ignored.", obj->GetTypeId());
+                break;
+        }
 
-	//TC_LOG_DEBUG("maps", "Object remover 2 check.");
+        i_objectsToRemove.erase(itr);
+    }
+
+    //sLog->outDebug(LOG_FILTER_MAPS, "Object remover 2 check.");
 }
 
 void Map::SetZoneMusic(uint32 zoneId, uint32 musicId)
