@@ -3337,23 +3337,6 @@ class spell_dru_eclipse : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-				Unit * const caster = GetCaster();
-				if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
-					return;
-
-				if (GetSpellInfo()->Id == SPELL_DRUID_STARSURGE)
-				{
-					AuraEffect * const aurEff = caster->GetAuraEffect(SPELL_DRUID_SHOOTING_STARS, EFFECT_0);
-
-					bool found = true;
-					if (!aurEff)
-						found = false;
-
-					if (found)
-						caster->ToPlayer()->RemoveSpellCooldown(GetSpellInfo()->Id, true);
-						caster->ToPlayer()->RemoveAura(SPELL_DRUID_SHOOTING_STARS);
-				}
-
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetExplTargetUnit())
@@ -4258,9 +4241,22 @@ class spell_dru_starsurge : public SpellScriptLoader
                 }
             }
 
+			void HandleOnHit()
+			{
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+					if (_player->HasAura(SPELL_DRUID_SHOOTING_STARS))
+					{
+						_player->RemoveAura(SPELL_DRUID_SHOOTING_STARS);
+					}
+
+				}
+			}
+
             void Register()
             {
                 AfterCast += SpellCastFn(spell_dru_starsurge_SpellScript::HandleAfterCast);
+				OnHit += SpellHitFn(spell_dru_starsurge_SpellScript::HandleOnHit);
             }
         };
 

@@ -11428,7 +11428,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, uint32 absorb, Au
 
             break;
         }
-        case 110301:// Burden of Guilt
+        case 110301:// Burden of GuiltShooting Stars
         {
             if (!procSpell)
                 return false;
@@ -11438,6 +11438,22 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, uint32 absorb, Au
 
             break;
         }
+		case 93399: // Shooting Stars
+		{
+			if (!procSpell)
+				return false;
+
+			if (procSpell->Id != 8921 && procSpell->Id != 93402)
+				return false;
+
+			if (GetTypeId() != TYPEID_PLAYER)
+				return false;
+
+			if (!(procEx & PROC_EX_CRITICAL_HIT))
+				return false;
+
+			break;
+		}
         case 144586:// Item - Paladin T16 Retribution 2P Bonus - 144586 (proc Warrior of the Light - 144587)
         {
             if (!procSpell)

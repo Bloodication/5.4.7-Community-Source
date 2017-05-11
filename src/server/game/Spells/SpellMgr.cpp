@@ -5426,7 +5426,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 93400: // Shooting Stars
                 case 77762: // Lava Surge
                     spellInfo->ProcFlags = 0;
-                    spellInfo->ProcCharges = 0;
+                    spellInfo->ProcCharges = 1;
                     break;
                 case 53301: // Explosive Shot
                     spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
