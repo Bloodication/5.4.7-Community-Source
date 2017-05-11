@@ -3696,22 +3696,6 @@ bool Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
 
-	Unit::AuraEffectList const& stateAuras = m_caster->GetAuraEffectsByType(SPELL_AURA_ABILITY_IGNORE_AURASTATE);
-	for (Unit::AuraEffectList::const_iterator j = stateAuras.begin(); j != stateAuras.end();)
-	{
-		if ((*j)->IsAffectingSpell(m_spellInfo))
-		{
-			Aura* base = (*j)->GetBase();
-			if (base->GetSpellInfo()->StackAmount)
-			{
-				j++;
-				base->ModStackAmount(-1);
-				continue;
-			}
-		}
-		j++;
-	}
-
     // Set combo point requirement
     if ((_triggeredCastFlags & TRIGGERED_IGNORE_COMBO_POINTS) || m_CastItem || !m_caster->m_movedPlayer)
         m_needComboPoints = false;
@@ -7227,7 +7211,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     }
 
     // Check for line of sight for spells with dest
-    if (m_targets.HasDst() && !(_triggeredCastFlags & TRIGGERED_IGNORE_LINE_OF_SIGHT_CHECK))
+    if (m_targets.HasDst())
     {
         float x, y, z;
         m_targets.GetDstPos()->GetPosition(x, y, z);
