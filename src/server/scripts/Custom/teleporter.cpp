@@ -24,7 +24,7 @@ bool OnGossipHello(Player* Plr, Creature* pCrea)
 				Plr->ADD_GOSSIP_ITEM( 7, "Alliance Mall", GOSSIP_SENDER_MAIN, 1001);
 				Plr->ADD_GOSSIP_ITEM( 7, "Duel Zone", GOSSIP_SENDER_MAIN, 3001);
 				Plr->ADD_GOSSIP_ITEM( 9, "Gurubashi", GOSSIP_SENDER_MAIN, 3005);
-				if(Plr->GetSession()->GetSecurity() >= SEC_MODERATOR) {
+				if(Plr->GetSession()->GetSecurity() > SEC_MODERATOR) {
 					Plr->ADD_GOSSIP_ITEM( 9, "Anticheat Jail", GOSSIP_SENDER_MAIN, 4505);
 				}
 			}
@@ -34,7 +34,7 @@ bool OnGossipHello(Player* Plr, Creature* pCrea)
 				Plr->ADD_GOSSIP_ITEM( 7, "Duel Zone", GOSSIP_SENDER_MAIN, 3001);
 				Plr->ADD_GOSSIP_ITEM( 9, "Gurubashi", GOSSIP_SENDER_MAIN, 3005);
 				//Plr->ADD_GOSSIP_ITEM(7, "Hunter Mall", GOSSIP_SENDER_MAIN, 2005);
-				if(Plr->GetSession()->GetSecurity() >= SEC_MODERATOR) {
+				if(Plr->GetSession()->GetSecurity() > SEC_MODERATOR) {
 					Plr->ADD_GOSSIP_ITEM( 9, "Anticheat Jail", GOSSIP_SENDER_MAIN, 4505);
 				}
 			}
@@ -45,7 +45,7 @@ bool OnGossipHello(Player* Plr, Creature* pCrea)
 				Plr->ADD_GOSSIP_ITEM( 7, "Horde Mall", GOSSIP_SENDER_MAIN, 2001);
 				Plr->ADD_GOSSIP_ITEM( 7, "Duel Zone", GOSSIP_SENDER_MAIN, 3001);
 				Plr->ADD_GOSSIP_ITEM( 9, "Gurubashi", GOSSIP_SENDER_MAIN, 3005);
-				if(Plr->GetSession()->GetSecurity() >= SEC_MODERATOR) {
+				if(Plr->GetSession()->GetSecurity() > SEC_MODERATOR) {
 					Plr->ADD_GOSSIP_ITEM( 9, "Anticheat Jail", GOSSIP_SENDER_MAIN, 4505);
 				}
 			}
@@ -55,7 +55,7 @@ bool OnGossipHello(Player* Plr, Creature* pCrea)
 				Plr->ADD_GOSSIP_ITEM( 7, "Duel Zone", GOSSIP_SENDER_MAIN, 3001);
 				Plr->ADD_GOSSIP_ITEM( 9, "Gurubashi", GOSSIP_SENDER_MAIN, 3005);
 				//Plr->ADD_GOSSIP_ITEM(7, "Hunter Mall", GOSSIP_SENDER_MAIN, 2005);
-				if(Plr->GetSession()->GetSecurity() >= SEC_MODERATOR) {
+				if(Plr->GetSession()->GetSecurity() > SEC_MODERATOR) {
 					Plr->ADD_GOSSIP_ITEM( 9, "Anticheat Jail", GOSSIP_SENDER_MAIN, 4505);
 				}
 			}
