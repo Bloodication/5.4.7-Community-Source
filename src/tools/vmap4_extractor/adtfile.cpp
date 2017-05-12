@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2005-2013 MaNGOS <http://www.getmangos.com/>
- * Copyright (C) 2008-2013 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -9,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include "vmapexport.h"
@@ -45,29 +44,26 @@ char* GetPlainName(char* FileName)
     return FileName;
 }
 
-void FixNameCase(char* name, size_t len)
+void fixnamen(char* name, size_t len)
 {
-    char* ptr = name + len - 1;
-
-    //extension in lowercase
-    for (; *ptr != '.'; --ptr)
-        *ptr |= 0x20;
-
-    for (; ptr >= name; --ptr)
+    for (size_t i = 0; i < len-3; i++)
     {
-        if (ptr > name && *ptr >= 'A' && *ptr <= 'Z' && isalpha(*(ptr - 1)))
-            *ptr |= 0x20;
-        else if ((ptr == name || !isalpha(*(ptr - 1))) && *ptr >= 'a' && *ptr <= 'z')
-            *ptr &= ~0x20;
+        if (i > 0 && name[i] >= 'A' && name[i] <= 'Z' && isalpha(name[i-1]))
+            name[i] |= 0x20;
+        else if ((i == 0 || !isalpha(name[i-1])) && name[i]>='a' && name[i]<='z')
+            name[i] &= ~0x20;
     }
+    //extension in lowercase
+    for (size_t i = len - 3; i < len; i++)
+        name[i] |= 0x20;
 }
 
-void FixNameSpaces(char* name, size_t len)
+void fixname2(char* name, size_t len)
 {
     for (size_t i=0; i<len-3; i++)
     {
         if(name[i] == ' ')
-            name[i] = '_';
+        name[i] = '_';
     }
 }
 
@@ -80,14 +76,14 @@ char* GetExtension(char* FileName)
 
 extern HANDLE WorldMpq;
 
-ADTFile::ADTFile(char* filename) : ADT(WorldMpq, filename, false)
+ADTFile::ADTFile(char* filename): ADT(WorldMpq, filename)
 {
     Adtfilename.append(filename);
 }
 
 bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
 {
-    if(ADT.isEof())
+    if(ADT.isEof ())
         return false;
 
     uint32 size;
@@ -136,24 +132,23 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
         {
             if (size)
             {
-                char* buf = new char[size];
+                char *buf = new char[size];
                 ADT.read(buf, size);
-                char* p = buf;
-                int t = 0;
-                ModelInstanceNames = new std::string[size];
-                while (p < buf + size)
+                char *p=buf;
+                int t=0;
+                ModelInstansName = new string[size];
+                while (p<buf+size)
                 {
-                    std::string path(p);
-
+                    fixnamen(p,strlen(p));
                     char* s = GetPlainName(p);
-                    FixNameCase(s, strlen(s));
-                    FixNameSpaces(s, strlen(s));
+                    fixname2(s,strlen(s));
 
-                    ModelInstanceNames[t++] = s;
+                    ModelInstansName[t++] = s;
 
+                    string path(p);
                     ExtractSingleModel(path);
 
-                    p += strlen(p) + 1;
+                    p = p+strlen(p)+1;
                 }
                 delete[] buf;
             }
@@ -164,18 +159,16 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
             {
                 char* buf = new char[size];
                 ADT.read(buf, size);
-                char* p = buf;
+                char* p=buf;
                 int q = 0;
-                WmoInstanceNames = new std::string[size];
-                while (p < buf + size)
+                WmoInstansName = new string[size];
+                while (p<buf+size)
                 {
                     char* s = GetPlainName(p);
-                    FixNameCase(s, strlen(s));
-                    FixNameSpaces(s, strlen(s));
-
-                    WmoInstanceNames[q++] = s;
-
+                    fixnamen(s, strlen(s));
+                    fixname2(s, strlen(s));
                     p += strlen(p) + 1;
+                    WmoInstansName[q++] = s;
                 }
                 delete[] buf;
             }
@@ -190,10 +183,9 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 {
                     uint32 id;
                     ADT.read(&id, 4);
-                    ModelInstance inst(ADT, ModelInstanceNames[id].c_str(), map_num, tileX, tileY, dirfile);
+                    ModelInstance inst(ADT,ModelInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
                 }
-                delete[] ModelInstanceNames;
-                ModelInstanceNames = NULL;
+                delete[] ModelInstansName;
             }
         }
         else if (!strcmp(fourcc,"MODF"))
@@ -205,18 +197,14 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 {
                     uint32 id;
                     ADT.read(&id, 4);
-                    WMOInstance inst(ADT, WmoInstanceNames[id].c_str(), map_num, tileX, tileY, dirfile);
+                    WMOInstance inst(ADT,WmoInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
                 }
-
-                delete[] WmoInstanceNames;
-                WmoInstanceNames = NULL;
+                delete[] WmoInstansName;
             }
         }
-
         //======================
         ADT.seek(nextpos);
     }
-
     ADT.close();
     fclose(dirfile);
     return true;
