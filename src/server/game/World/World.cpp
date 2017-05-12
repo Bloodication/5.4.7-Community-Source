@@ -29,6 +29,7 @@
 #include "Opcodes.h"
 #include "WorldSession.h"
 #include "WorldPacket.h"
+#include "MMapFactory.h"
 #include "Player.h"
 #include "Vehicle.h"
 #include "SkillExtraItems.h"
@@ -158,6 +159,7 @@ World::~World()
         delete command;
 
     VMAP::VMapFactory::clear();
+	MMAP::MMapFactory::clear();
 
     //TODO free addSessQueue
 }
@@ -1220,6 +1222,10 @@ void World::LoadConfigSettings(bool reload)
         m_dataPath = dataPath;
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Using DataDir %s", m_dataPath.c_str());
     }
+
+
+	m_bool_configs[CONFIG_ENABLE_MMAPS] = ConfigMgr::GetBoolDefault("mmap.enablePathFinding", false);
+	sLog->outError(LOG_FILTER_SERVER_LOADING, " MMap data directory is : %smmaps", m_dataPath.c_str());
 
     m_bool_configs[CONFIG_VMAP_INDOOR_CHECK] = ConfigMgr::GetBoolDefault("vmap.enableIndoorCheck", 0);
     bool enableIndoor = ConfigMgr::GetBoolDefault("vmap.enableIndoorCheck", true);
