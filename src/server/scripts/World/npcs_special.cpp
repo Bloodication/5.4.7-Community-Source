@@ -5025,6 +5025,7 @@ class npc_psyfiend : public CreatureScript
             npc_psyfiendAI(Creature* c) : Scripted_NoMovementAI(c)
             {
                 me->SetReactState(REACT_PASSIVE);
+				me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 psychicHorrorTimer = 2500;
             }
 
