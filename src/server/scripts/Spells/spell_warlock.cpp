@@ -2219,10 +2219,11 @@ class spell_warl_nightfall : public SpellScriptLoader
 				if (Player* player = GetCaster()->ToPlayer())
 				{
 					if (player->GetActiveSpec() == SPEC_WARLOCK_AFFLICTION)
-					{ 
-					if (roll_chance_i(5))
-						player->CastSpell(player, WARLOCK_NIGHTFALL);
 					{
+						if (roll_chance_i(5))
+							player->CastSpell(player, WARLOCK_NIGHTFALL);
+					}
+
 				}
             }
 
