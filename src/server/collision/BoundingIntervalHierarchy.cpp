@@ -18,10 +18,10 @@
 
 #include "BoundingIntervalHierarchy.h"
 
-#ifdef _MSC_VER
-  #define isnan _isnan
-#else
+#if defined __APPLE__
   #define isnan std::isnan
+#elif defined _MSC_VER
+  #define isnan _isnan
 #endif
 
 void BIH::buildHierarchy(std::vector<uint32> &tempTree, buildData &dat, BuildStats &stats)
@@ -272,7 +272,7 @@ bool BIH::readFromFile(FILE* rf)
     check += fread(&count, sizeof(uint32), 1, rf);
     objects.resize(count); // = new uint32[nObjects];
     check += fread(&objects[0], sizeof(uint32), count, rf);
-    return uint64(check) == uint64(3 + 3 + 1 + 1 + uint64(treeSize) + uint64(count));
+    return check == (3 + 3 + 2 + treeSize + count);
 }
 
 void BIH::BuildStats::updateLeaf(int depth, int n)

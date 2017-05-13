@@ -33,25 +33,6 @@
 
 #define MAX_STACK_SIZE 64
 
-static inline bool fIsNormal(float const& f)
-{
-    if (std::numeric_limits<float>::has_signaling_NaN)
-    {
-        float nan = std::numeric_limits<float>::signaling_NaN();
-        if (!memcmp(&nan, &f, sizeof(float)))
-            return false;
-    }
-
-    if (std::numeric_limits<float>::has_quiet_NaN)
-    {
-        float nan = std::numeric_limits<float>::quiet_NaN();
-        if (!memcmp(&nan, &f, sizeof(float)))
-            return false;
-    }
-
-    return true;
-}
-
 static inline uint32 floatToRawIntBits(float f)
 {
     union
@@ -151,10 +132,6 @@ class BIH
                 {
                     float t1 = (bounds.low()[i]  - org[i]) * invDir[i];
                     float t2 = (bounds.high()[i] - org[i]) * invDir[i];
-
-                    if (!fIsNormal(t1) || !fIsNormal(t2))
-                        return;
-
                     if (t1 > t2)
                         std::swap(t1, t2);
                     if (t1 > intervalMin)
@@ -209,10 +186,6 @@ class BIH
                             // "normal" interior node
                             float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
                             float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
-
-                            if (!fIsNormal(tf) || !fIsNormal(tb))
-                                return;
-
                             // ray passes between clip zones
                             if (tf < intervalMin && tb > intervalMax)
                                 break;
@@ -229,8 +202,6 @@ class BIH
                                 intervalMax = (tf <= intervalMax) ? tf : intervalMax;
                                 continue;
                             }
-                            if (stackPos == MAX_STACK_SIZE)
-                                return;
                             // ray passes through both nodes
                             // push back node
                             stack[stackPos].node = back;
@@ -260,10 +231,6 @@ class BIH
                             return; // should not happen
                         float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
                         float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
-
-                        if (!fIsNormal(tf) || !fIsNormal(tb))
-                            return;
-
                         node = offset;
                         intervalMin = (tf >= intervalMin) ? tf : intervalMin;
                         intervalMax = (tb <= intervalMax) ? tb : intervalMax;
@@ -284,10 +251,6 @@ class BIH
                         continue;
                     node = stack[stackPos].node;
                     intervalMax = stack[stackPos].tfar;
-
-                    if (!fIsNormal(intervalMax))
-                        return;
-
                     break;
                 } while (true);
             }
@@ -331,9 +294,6 @@ class BIH
                             if (tr > p[axis]) {
                                 continue;
                             }
-                            // stack overflow
-                            if (stackPos == MAX_STACK_SIZE)
-                                return;
                             // point is in both nodes
                             // push back right node
                             stack[stackPos].node = right;
