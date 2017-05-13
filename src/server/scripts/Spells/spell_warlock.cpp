@@ -2220,7 +2220,7 @@ class spell_warl_nightfall : public SpellScriptLoader
 				{
 					if (player->GetActiveSpec() == SPEC_WARLOCK_AFFLICTION)
 					{
-						if (roll_chance_i(5))
+						if (roll_chance_i(15))
 							player->CastSpell(player, WARLOCK_NIGHTFALL);
 					}
 
