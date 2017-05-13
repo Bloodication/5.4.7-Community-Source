@@ -211,8 +211,11 @@ class spell_pri_spectral_guise_charges : public SpellScriptLoader
 
                 if (Unit* spectralGuise = GetCaster())
                     if (eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE || eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
-                        if (Aura* spectralGuiseCharges = spectralGuise->GetAura(PRIEST_SPELL_SPECTRAL_GUISE_CHARGES))
-                            spectralGuiseCharges->DropCharge();
+						if (Aura* spectralGuiseCharges = spectralGuise->GetAura(PriestSpells::PRIEST_SPELL_SPECTRAL_GUISE_CHARGES))
+						{
+							if (spectralGuiseCharges->GetCharges() >= 3)
+								spectralGuiseCharges->DropCharge();
+						}
             }
 
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
