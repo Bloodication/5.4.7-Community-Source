@@ -1517,31 +1517,36 @@ class spell_sha_healing_stream : public SpellScriptLoader
                             _player->CastSpell(target, SPELL_SHA_GLYPH_OF_HEALING_STREAM, true);
             }
             
-            void CorrectTargets(std::list<WorldObject*>& targets)
-            {
-                if (targets.empty() || !GetCaster() || !GetCaster()->GetOwner())
-                    return;
+			void TargetCorrect(std::list<WorldObject*>& targets)
+			{
+				if (!GetCaster())
+					return;
 
-                targets.clear();
+				targets.clear();
+				std::list<Unit*> GetTargets;
 
-                if (Player* _player = GetCaster()->GetOwner()->ToPlayer())
-                {
-                    std::list<Unit*> unitList;
-                    _player->GetPartyMembers(unitList, true, false);
+				JadeCore::AnyGroupedUnitInObjectRangeCheck u_check(GetCaster(), GetCaster(), 40.0f, true);
+				JadeCore::UnitListSearcher<JadeCore::AnyGroupedUnitInObjectRangeCheck> searcher(GetCaster(), GetTargets, u_check);
+				GetCaster()->VisitNearbyObject(40.0f, searcher);
 
-                    unitList.sort(JadeCore::HealthPctOrderPred());
-                    if (unitList.size() >= 2)
-                        unitList.resize(2);
+				GetTargets.sort(JadeCore::HealthPctOrderPred());
+				int targetsize = 1;
+				if (GetCaster()->HasAura(138303))
+					targetsize = 2;
+				if (GetCaster()->HasAura(147074))
+					targetsize++;
 
-                    for (auto itr : unitList)
-                        targets.push_back(itr);
-                }
-            }
+				if (targets.size() > 1)
+					GetTargets.resize(targetsize);
+
+				for (auto itr : GetTargets)
+					targets.push_back(itr);
+			}
 
             void Register()
             {
                 OnHit += SpellHitFn(spell_sha_healing_stream_SpellScript::HandleOnHit);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_healing_stream_SpellScript::CorrectTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+				OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_healing_stream_SpellScript::TargetCorrect, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
             }
         };
 
