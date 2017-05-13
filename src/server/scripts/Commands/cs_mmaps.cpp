@@ -41,10 +41,10 @@ class mmaps_commandscript : public CommandScript
 public:
     mmaps_commandscript() : CommandScript("mmaps_commandscript") { }
 
-    std::vector<ChatCommand> GetCommands() const override
-    {
-        static std::vector<ChatCommand> mmapCommandTable =
-        {
+	ChatCommand* GetCommands() const
+	{
+		static ChatCommand mmapCommandTable[] =
+		{
             { "path",           SEC_ADMINISTRATOR,     false, &HandleMmapPathCommand,            "" },
             { "loc",            SEC_ADMINISTRATOR,     false, &HandleMmapLocCommand,             "" },
             { "loadedtiles",    SEC_ADMINISTRATOR,     false, &HandleMmapLoadedTilesCommand,     "" },
@@ -52,7 +52,7 @@ public:
             { "testarea",       SEC_ADMINISTRATOR,     false, &HandleMmapTestArea,               "" },
         };
 
-        static std::vector<ChatCommand> commandTable =
+		static ChatCommand commandTable[] =
         {
             { "mmap",           SEC_ADMINISTRATOR,     true,  NULL,                 "", mmapCommandTable  },
         };
@@ -94,7 +94,7 @@ public:
         bool result = path.CalculatePath(x, y, z);
 
         PointsArray pointPath = path.GetPath();
-        handler->PSendSysMessage("%s's path to %s:", target->GetName().c_str(), player->GetName().c_str());
+        handler->PSendSysMessage("%s's path to %s:", target->GetName(), player->GetName());
         handler->PSendSysMessage("Building: %s", useStraightPath ? "StraightPath" : "SmoothPath");
         handler->PSendSysMessage("Result: %s - Length: " SIZEFMTD " - Type: %u", (result ? "true" : "false"), pointPath.size(), path.GetPathType());
 
@@ -256,15 +256,15 @@ public:
         float radius = 40.0f;
         WorldObject* object = handler->GetSession()->GetPlayer();
 
-        CellCoord pair(Trinity::ComputeCellCoord(object->GetPositionX(), object->GetPositionY()));
+		CellCoord pair(JadeCore::ComputeCellCoord(object->GetPositionX(), object->GetPositionY()));
         Cell cell(pair);
         cell.SetNoCreate();
 
         std::list<Creature*> creatureList;
 
-        JadeCore::AnyUnitInObjectRangeCheck go_check(object, radius);
-        JadeCore::CreatureListSearcher<Trinity::AnyUnitInObjectRangeCheck> go_search(object, creatureList, go_check);
-        TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer> go_visit(go_search);
+		JadeCore::AnyUnitInObjectRangeCheck go_check(object, radius);
+		JadeCore::CreatureListSearcher<JadeCore::AnyUnitInObjectRangeCheck> go_search(object, creatureList, go_check);
+		TypeContainerVisitor<JadeCore::CreatureListSearcher<JadeCore::AnyUnitInObjectRangeCheck>, GridTypeMapContainer> go_visit(go_search);
 
         // Get Creatures
         cell.Visit(pair, go_visit, *(object->GetMap()), *object, radius);
