@@ -20,7 +20,6 @@
 #include "GridStates.h"
 #include "ScriptMgr.h"
 #include "VMapFactory.h"
-#include "MMapFactory.h"
 #include "MapInstanced.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
@@ -69,8 +68,6 @@ Map::~Map()
 
     if (!m_scriptSchedule.empty())
         sScriptMgr->DecreaseScheduledScriptCount(m_scriptSchedule.size());
-
-	MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), i_InstanceId);
 }
 
 bool Map::ExistMap(uint32 mapid, int gx, int gy)
@@ -136,17 +133,6 @@ void Map::LoadVMap(int gx, int gy)
             break;
     }
 }
-
-void Map::LoadMMap(int gx, int gy)
-{
-	bool mmapLoadResult = MMAP::MMapFactory::createOrGetMMapManager()->loadMap((sWorld->GetDataPath() + "mmaps").c_str(), GetId(), gx, gy);
-
-	if (mmapLoadResult)
-		sLog->outInfo(LOG_FILTER_MAPS, "MMAP loaded name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
-	else
-		sLog->outInfo(LOG_FILTER_MAPS, "Could not load MMAP name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
-}
-
 
 void Map::LoadMap(int gx, int gy, bool reload)
 {
@@ -1453,7 +1439,6 @@ bool Map::UnloadGrid(NGridType& ngrid, bool unloadAll)
             }
             // x and y are swapped
             VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(GetId(), gx, gy);
-			MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(GetId(), gx, gy);
         }
         else
             ((MapInstanced*)m_parentMap)->RemoveGridMapReference(GridCoord(gx, gy));

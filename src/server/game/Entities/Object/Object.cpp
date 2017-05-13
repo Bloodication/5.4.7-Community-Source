@@ -1811,10 +1811,10 @@ class StormstoutBrewery
 
 bool WorldObject::IsWithinLOS(float ox, float oy, float oz) const
 {
-    float x, y, z;
+    /*float x, y, z;
     GetPosition(x, y, z);
     VMAP::IVMapManager* vMapManager = VMAP::VMapFactory::createOrGetVMapManager();
-    return vMapManager->isInLineOfSight(GetMapId(), x, y, z+2.0f, ox, oy, oz+2.0f); // time to enable wat!?
+    return vMapManager->isInLineOfSight(GetMapId(), x, y, z+2.0f, ox, oy, oz+2.0f);*/
 
     if (IsInWorld())
     {
