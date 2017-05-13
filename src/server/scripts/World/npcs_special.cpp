@@ -5043,19 +5043,62 @@ class npc_psyfiend : public CreatureScript
             {
                 if (psychicHorrorTimer <= diff)
                 {
-                    if (!me->HasAuraType(SPELL_AURA_MOD_SILENCE))
-                        DoCastAOE(SPELL_PSYCHIC_HORROR);
-                    
+					std::list<Unit*> targetList;
+					float range = 20.0f;
+
+					JadeCore::NearestAttackableUnitInObjectRangeCheck u_check(me, me, range);
+					JadeCore::UnitListSearcher<JadeCore::NearestAttackableUnitInObjectRangeCheck> searcher(me, targetList, u_check);
+					me->VisitNearbyObject(range, searcher);
+
+					targetList.remove_if(JadeCore::UnitAuraCheck(true, SPELL_PSYCHIC_HORROR));
+
+					if (!targetList.empty())
+					{
+						targetList.sort(JadeCore::ObjectDistanceOrderPred(me));
+						targetList.resize(1);
+
+						for (auto itr : targetList)
+							me->CastSpell(itr, SPELL_PSYCHIC_HORROR, true);
+					}
+                   
                     psychicHorrorTimer = 2500;
                 }
                 else
                     psychicHorrorTimer -= diff;
             }
 
-        private:
-            uint32 psychicHorrorTimer;
+		private:
+			uint32 psychicHorrorTimer;
 
-        };
+			class NearestTarget
+			{
+			public:
+				NearestTarget(Creature const* me) : _me(me) { ; }
+
+				bool operator()(Unit* u)
+				{
+					if (u->GetDistance(_me) > 20.0f)
+						return false;
+
+					if (!u->IsHostileTo(_me))
+						return false;
+
+					if (!_me->IsValidAttackTarget(u))
+						return false;
+
+					if (!u->IsWithinLOSInMap(_me))
+						return false;
+
+					if (u->HasAura(SPELL_PSYCHIC_HORROR))
+						return false;
+
+					return true;
+				}
+
+			private:
+				Creature const* _me;
+			};
+		};
 
         CreatureAI* GetAI(Creature *creature) const
         {
