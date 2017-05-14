@@ -50,6 +50,7 @@ public:
 
 		BattlegroundTypeId bgTypeId = bg->GetTypeID();
 		BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, arenatype);
+
 		PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), player->getLevel());
 		if (!bracketEntry)
 			return false;
@@ -64,13 +65,15 @@ public:
 		if (!player->HasFreeBattlegroundQueueId())
 			return false;
 
-		uint32 ateamId = 0;
+		if (arenaRating <= 0)
+			arenaRating = 1;
+		if (matchmakerRating <= 0)
+			matchmakerRating = 1;
+
 
 		BattlegroundQueue &bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
 
 		GroupQueueInfo* ginfo = bgQueue.AddGroup(player, NULL, bgTypeId, bracketEntry, arenatype, true, false, arenaRating, matchmakerRating);
-		//GroupQueueInfo* ginfo = bgQueue.AddGroup(player, NULL, bgTypeId, bracketEntry, arenatype, false, false, 0,0);
-		//uint32 avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
 		uint32 avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
 		uint32 queueSlot = player->AddBattlegroundQueueId(bgQueueTypeId);
 

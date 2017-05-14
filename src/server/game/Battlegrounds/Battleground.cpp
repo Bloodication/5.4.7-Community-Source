@@ -550,12 +550,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         SendMessageToAll(StartMessageIds[BG_STARTING_EVENT_FIRST], CHAT_MSG_BG_SYSTEM_NEUTRAL);
     }
 
-
-    // 1v1 Arena - Start arena after 15s, when all players are in arena
-    if(GetArenaType() == ARENA_TYPE_5v5 && GetStartDelayTime() > StartDelayTimes[BG_STARTING_EVENT_THIRD] && (m_PlayersCount[0] + m_PlayersCount[1]) == 2)
-        SetStartDelayTime(StartDelayTimes[BG_STARTING_EVENT_THIRD]);
-
-
     // After 1 minute or 30 seconds, warning is signaled
     else if (GetStartDelayTime() <= StartDelayTimes[BG_STARTING_EVENT_SECOND] && !(m_Events & BG_STARTING_EVENT_2))
     {
@@ -1062,6 +1056,7 @@ void Battleground::EndBattleground(uint32 p_Winner)
             {
                 // update achievement BEFORE personal rating update
                 uint32 rating = l_Player->GetArenaPersonalRating(slot);
+				if (!GetArenaType() == ARENA_TEAM_5v5)
                 l_Player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, rating ? rating : 1);
                 l_Player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA, GetMapId());
                 if (GetArenaType() != ARENA_TYPE_5v5)

@@ -1948,7 +1948,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
                  default:
                      m_caster->GetNearPosition(pos, dist, angle);
                      break;
-        }
+         }
 
     m_targets.SetDst(*m_caster);
     m_targets.ModDst(pos);
