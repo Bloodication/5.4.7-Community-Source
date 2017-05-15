@@ -24,7 +24,7 @@
 #include "ObjectMgr.h"
 #include "SpellInfo.h"
 #include <type_traits>
-
+#include "PathGenerator.h"
 class Unit;
 class Player;
 class GameObject;
@@ -831,6 +831,7 @@ class Spell
         SpellInfo const* m_triggeredByAuraSpell;
 
         bool m_skipCheck;
+		PathGenerator m_preGeneratedPath;
         uint32 m_auraScaleMask;
 
         bool m_HavocConsumed;

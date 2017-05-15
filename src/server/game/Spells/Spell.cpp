@@ -544,7 +544,7 @@ SpellValue::SpellValue(SpellInfo const* proto)
 Spell::Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, bool skipCheck) :
 m_spellInfo(sSpellMgr->GetSpellForDifficultyFromSpell(info, caster)),
 m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster)
-, m_spellValue(new SpellValue(m_spellInfo)),
+, m_spellValue(new SpellValue(m_spellInfo)), m_preGeneratedPath(PathGenerator(m_caster)),
 m_damage(0), m_healing(0), m_final_damage(0), m_absorbed_damage(0)
 {
     m_customError = SPELL_CUSTOM_ERROR_NONE;
@@ -7671,12 +7671,34 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (m_spellInfo->Id == 114029)
                         m_caster->RemoveMovementImpairingAuras();
                 }
-                if (m_caster->HasUnitState(UNIT_STATE_ROOT))
-                    return SPELL_FAILED_ROOTED;
-                if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    if (Unit* target = m_targets.GetUnitTarget())
-                        if (!target->isAlive())
-                            return SPELL_FAILED_BAD_TARGETS;
+
+				if (GetSpellInfo()->NeedsExplicitUnitTarget())
+				{
+					Unit* target = m_targets.GetUnitTarget();
+					if (!target)
+						return SPELL_FAILED_DONT_REPORT;
+
+					float objSize = target->GetObjectSize();
+					float range = m_spellInfo->GetMaxRange(true, m_caster, this) * 1.5f + objSize; // can't be overly strict
+
+					m_preGeneratedPath.SetPathLengthLimit(range);
+					// first try with raycast, if it fails fall back to normal path
+					bool result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false, true);
+					if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
+						return SPELL_FAILED_OUT_OF_RANGE;
+					else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
+					{
+						result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false, false);
+						if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
+							return SPELL_FAILED_OUT_OF_RANGE;
+						else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
+							return SPELL_FAILED_NOPATH;
+						else if (m_caster->GetMapId() == 618 && !(target->GetPositionZ() <= 28.50f))
+							return SPELL_FAILED_NOPATH;
+					}
+
+					m_preGeneratedPath.ReducePathLenghtByDist(objSize); // move back
+				}
                 break;
             }
             case SPELL_EFFECT_SKINNING:
