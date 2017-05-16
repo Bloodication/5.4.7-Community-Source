@@ -9,10 +9,6 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-# CMake policies (can not be handled elsewhere)
-cmake_minimum_required(VERSION 2.6)
-cmake_policy(SET CMP0043 NEW)
-
 # Include the platform-specific file.
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/os/Windows.cmake)
 

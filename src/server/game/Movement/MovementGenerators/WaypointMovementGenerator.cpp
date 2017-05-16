@@ -371,7 +371,6 @@ void FlightPathMovementGenerator::PreloadEndGrid()
 //
 
 #ifdef __PATHFINDING__
-
 int GetFCost(int to, int num, int parentNum, float *gcost); // Below...
 
 int ShortenASTARRoute(short int *pathlist, int number)
@@ -690,5 +689,5 @@ int GetFCost(int to, int num, int parentNum, float *gcost)
 
     return (int)(gc + hc);
 }
-#endif                                                      //__PATHFINDING__
 
+#endif       

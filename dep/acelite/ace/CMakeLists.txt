@@ -319,6 +319,11 @@ set(ace_STAT_SRCS
   XTI_ATM_Mcast.cpp
 )
 
+if (USE_COREPCH)
+  set(ace_PCH_HDR PrecompiledHeaders/WinAcePCH.h)
+  set(ace_PCH_SRC PrecompiledHeaders/WinAcePCH.cpp)
+endif()
+
 include_directories(
   ${CMAKE_SOURCE_DIR}/dep/acelite
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
@@ -334,6 +339,10 @@ add_library(ace SHARED
   ${ace_STAT_SRCS}
   ${ace_PCH_SRC}
 )
+
+if (MINGW) # GCC ignores "#prama comment"
+  target_link_libraries(ace ws2_32 iphlpapi netapi32 mswsock)
+endif()
 
 if (MINGW) # GCC ignores "#prama comment"
   target_link_libraries(ace ws2_32 iphlpapi netapi32 mswsock)

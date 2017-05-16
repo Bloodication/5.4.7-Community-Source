@@ -34,7 +34,7 @@
  * respectively.
  *
  ******************************************************************************/
-#define	JEMALLOC_CKH_C_
+#define	CKH_C_
 #include "jemalloc/internal/jemalloc_internal.h"
 
 /******************************************************************************/
@@ -70,20 +70,21 @@ ckh_bucket_search(ckh_t *ckh, size_t bucket, const void *key)
 JEMALLOC_INLINE size_t
 ckh_isearch(ckh_t *ckh, const void *key)
 {
-	size_t hashes[2], bucket, cell;
+	size_t hash1, hash2, bucket, cell;
 
 	assert(ckh != NULL);
+	assert(ckh->magic = CKH_MAGIG);
 
-	ckh->hash(key, hashes);
+	ckh->hash(key, ckh->lg_curbuckets, &hash1, &hash2);
 
 	/* Search primary bucket. */
-	bucket = hashes[0] & ((ZU(1) << ckh->lg_curbuckets) - 1);
+	bucket = hash1 & ((ZU(1) << ckh->lg_curbuckets) - 1);
 	cell = ckh_bucket_search(ckh, bucket, key);
 	if (cell != SIZE_T_MAX)
 		return (cell);
 
 	/* Search secondary bucket. */
-	bucket = hashes[1] & ((ZU(1) << ckh->lg_curbuckets) - 1);
+	bucket = hash2 & ((ZU(1) << ckh->lg_curbuckets) - 1);
 	cell = ckh_bucket_search(ckh, bucket, key);
 	return (cell);
 }
@@ -99,7 +100,7 @@ ckh_try_bucket_insert(ckh_t *ckh, size_t bucket, const void *key,
 	 * Cycle through the cells in the bucket, starting at a random position.
 	 * The randomness avoids worst-case search overhead as buckets fill up.
 	 */
-	prng32(offset, LG_CKH_BUCKET_CELLS, ckh->prng_state, CKH_A, CKH_C);
+	prn32(offset, LG_CKH_BUCKET_CELLS, ckh->prn_state, CKH_A, CKH_C);
 	for (i = 0; i < (ZU(1) << LG_CKH_BUCKET_CELLS); i++) {
 		cell = &ckh->tab[(bucket << LG_CKH_BUCKET_CELLS) +
 		    ((i + offset) & ((ZU(1) << LG_CKH_BUCKET_CELLS) - 1))];
@@ -126,7 +127,7 @@ ckh_evict_reloc_insert(ckh_t *ckh, size_t argbucket, void const **argkey,
 {
 	const void *key, *data, *tkey, *tdata;
 	ckhc_t *cell;
-	size_t hashes[2], bucket, tbucket;
+	size_t hash1, hash2, bucket, tbucket;
 	unsigned i;
 
 	bucket = argbucket;
@@ -141,7 +142,7 @@ ckh_evict_reloc_insert(ckh_t *ckh, size_t argbucket, void const **argkey,
 		 * were an item for which both hashes indicated the same
 		 * bucket.
 		 */
-		prng32(i, LG_CKH_BUCKET_CELLS, ckh->prng_state, CKH_A, CKH_C);
+		prn32(i, LG_CKH_BUCKET_CELLS, ckh->prn_state, CKH_A, CKH_C);
 		cell = &ckh->tab[(bucket << LG_CKH_BUCKET_CELLS) + i];
 		assert(cell->key != NULL);
 
@@ -155,11 +156,10 @@ ckh_evict_reloc_insert(ckh_t *ckh, size_t argbucket, void const **argkey,
 #endif
 
 		/* Find the alternate bucket for the evicted item. */
-		ckh->hash(key, hashes);
-		tbucket = hashes[1] & ((ZU(1) << ckh->lg_curbuckets) - 1);
+		ckh->hash(key, ckh->lg_curbuckets, &hash1, &hash2);
+		tbucket = hash2 & ((ZU(1) << ckh->lg_curbuckets) - 1);
 		if (tbucket == bucket) {
-			tbucket = hashes[0] & ((ZU(1) << ckh->lg_curbuckets)
-			    - 1);
+			tbucket = hash1 & ((ZU(1) << ckh->lg_curbuckets) - 1);
 			/*
 			 * It may be that (tbucket == bucket) still, if the
 			 * item's hashes both indicate this bucket.  However,
@@ -193,19 +193,19 @@ ckh_evict_reloc_insert(ckh_t *ckh, size_t argbucket, void const **argkey,
 JEMALLOC_INLINE bool
 ckh_try_insert(ckh_t *ckh, void const**argkey, void const**argdata)
 {
-	size_t hashes[2], bucket;
+	size_t hash1, hash2, bucket;
 	const void *key = *argkey;
 	const void *data = *argdata;
 
-	ckh->hash(key, hashes);
+	ckh->hash(key, ckh->lg_curbuckets, &hash1, &hash2);
 
 	/* Try to insert in primary bucket. */
-	bucket = hashes[0] & ((ZU(1) << ckh->lg_curbuckets) - 1);
+	bucket = hash1 & ((ZU(1) << ckh->lg_curbuckets) - 1);
 	if (ckh_try_bucket_insert(ckh, bucket, key, data) == false)
 		return (false);
 
 	/* Try to insert in secondary bucket. */
-	bucket = hashes[1] & ((ZU(1) << ckh->lg_curbuckets) - 1);
+	bucket = hash2 & ((ZU(1) << ckh->lg_curbuckets) - 1);
 	if (ckh_try_bucket_insert(ckh, bucket, key, data) == false)
 		return (false);
 
@@ -262,18 +262,12 @@ ckh_grow(ckh_t *ckh)
 	lg_prevbuckets = ckh->lg_curbuckets;
 	lg_curcells = ckh->lg_curbuckets + LG_CKH_BUCKET_CELLS;
 	while (true) {
-		size_t usize;
-
 		lg_curcells++;
-		usize = sa2u(sizeof(ckhc_t) << lg_curcells, CACHELINE);
-		if (usize == 0) {
-			ret = true;
-			goto label_return;
-		}
-		tab = (ckhc_t *)ipalloc(usize, CACHELINE, true);
+		tab = (ckhc_t *)ipalloc(sizeof(ckhc_t) << lg_curcells,
+		    ZU(1) << LG_CACHELINE, true);
 		if (tab == NULL) {
 			ret = true;
-			goto label_return;
+			goto RETURN;
 		}
 		/* Swap in new table. */
 		ttab = ckh->tab;
@@ -293,7 +287,7 @@ ckh_grow(ckh_t *ckh)
 	}
 
 	ret = false;
-label_return:
+RETURN:
 	return (ret);
 }
 
@@ -301,7 +295,7 @@ static void
 ckh_shrink(ckh_t *ckh)
 {
 	ckhc_t *tab, *ttab;
-	size_t lg_curcells, usize;
+	size_t lg_curcells;
 	unsigned lg_prevbuckets;
 
 	/*
@@ -310,10 +304,8 @@ ckh_shrink(ckh_t *ckh)
 	 */
 	lg_prevbuckets = ckh->lg_curbuckets;
 	lg_curcells = ckh->lg_curbuckets + LG_CKH_BUCKET_CELLS - 1;
-	usize = sa2u(sizeof(ckhc_t) << lg_curcells, CACHELINE);
-	if (usize == 0)
-		return;
-	tab = (ckhc_t *)ipalloc(usize, CACHELINE, true);
+	tab = (ckhc_t *)ipalloc(sizeof(ckhc_t) << lg_curcells,
+	    ZU(1) << LG_CACHELINE, true);
 	if (tab == NULL) {
 		/*
 		 * An OOM error isn't worth propagating, since it doesn't
@@ -348,7 +340,7 @@ bool
 ckh_new(ckh_t *ckh, size_t minitems, ckh_hash_t *hash, ckh_keycomp_t *keycomp)
 {
 	bool ret;
-	size_t mincells, usize;
+	size_t mincells;
 	unsigned lg_mincells;
 
 	assert(minitems > 0);
@@ -362,7 +354,7 @@ ckh_new(ckh_t *ckh, size_t minitems, ckh_hash_t *hash, ckh_keycomp_t *keycomp)
 	ckh->ninserts = 0;
 	ckh->nrelocs = 0;
 #endif
-	ckh->prng_state = 42; /* Value doesn't really matter. */
+	ckh->prn_state = 42; /* Value doesn't really matter. */
 	ckh->count = 0;
 
 	/*
@@ -383,19 +375,19 @@ ckh_new(ckh_t *ckh, size_t minitems, ckh_hash_t *hash, ckh_keycomp_t *keycomp)
 	ckh->hash = hash;
 	ckh->keycomp = keycomp;
 
-	usize = sa2u(sizeof(ckhc_t) << lg_mincells, CACHELINE);
-	if (usize == 0) {
-		ret = true;
-		goto label_return;
-	}
-	ckh->tab = (ckhc_t *)ipalloc(usize, CACHELINE, true);
+	ckh->tab = (ckhc_t *)ipalloc(sizeof(ckhc_t) << lg_mincells,
+	    (ZU(1) << LG_CACHELINE), true);
 	if (ckh->tab == NULL) {
 		ret = true;
-		goto label_return;
+		goto RETURN;
 	}
 
+#ifdef JEMALLOC_DEBUG
+	ckh->magic = CKH_MAGIG;
+#endif
+
 	ret = false;
-label_return:
+RETURN:
 	return (ret);
 }
 
@@ -404,6 +396,7 @@ ckh_delete(ckh_t *ckh)
 {
 
 	assert(ckh != NULL);
+	assert(ckh->magic = CKH_MAGIG);
 
 #ifdef CKH_VERBOSE
 	malloc_printf(
@@ -418,8 +411,9 @@ ckh_delete(ckh_t *ckh)
 #endif
 
 	idalloc(ckh->tab);
-	if (config_debug)
-		memset(ckh, 0x5a, sizeof(ckh_t));
+#ifdef JEMALLOC_DEBUG
+	memset(ckh, 0x5a, sizeof(ckh_t));
+#endif
 }
 
 size_t
@@ -427,6 +421,7 @@ ckh_count(ckh_t *ckh)
 {
 
 	assert(ckh != NULL);
+	assert(ckh->magic = CKH_MAGIG);
 
 	return (ckh->count);
 }
@@ -457,6 +452,7 @@ ckh_insert(ckh_t *ckh, const void *key, const void *data)
 	bool ret;
 
 	assert(ckh != NULL);
+	assert(ckh->magic = CKH_MAGIG);
 	assert(ckh_search(ckh, key, NULL, NULL));
 
 #ifdef CKH_COUNT
@@ -466,12 +462,12 @@ ckh_insert(ckh_t *ckh, const void *key, const void *data)
 	while (ckh_try_insert(ckh, &key, &data)) {
 		if (ckh_grow(ckh)) {
 			ret = true;
-			goto label_return;
+			goto RETURN;
 		}
 	}
 
 	ret = false;
-label_return:
+RETURN:
 	return (ret);
 }
 
@@ -481,6 +477,7 @@ ckh_remove(ckh_t *ckh, const void *searchkey, void **key, void **data)
 	size_t cell;
 
 	assert(ckh != NULL);
+	assert(ckh->magic = CKH_MAGIG);
 
 	cell = ckh_isearch(ckh, searchkey);
 	if (cell != SIZE_T_MAX) {
@@ -512,6 +509,7 @@ ckh_search(ckh_t *ckh, const void *searchkey, void **key, void **data)
 	size_t cell;
 
 	assert(ckh != NULL);
+	assert(ckh->magic = CKH_MAGIG);
 
 	cell = ckh_isearch(ckh, searchkey);
 	if (cell != SIZE_T_MAX) {
@@ -526,10 +524,31 @@ ckh_search(ckh_t *ckh, const void *searchkey, void **key, void **data)
 }
 
 void
-ckh_string_hash(const void *key, size_t r_hash[2])
+ckh_string_hash(const void *key, unsigned minbits, size_t *hash1, size_t *hash2)
 {
+	size_t ret1, ret2;
+	uint64_t h;
 
-	hash(key, strlen((const char *)key), 0x94122f33U, r_hash);
+	assert(minbits <= 32 || (SIZEOF_PTR == 8 && minbits <= 64));
+	assert(hash1 != NULL);
+	assert(hash2 != NULL);
+
+	h = hash(key, strlen((const char *)key), 0x94122f335b332aeaLLU);
+	if (minbits <= 32) {
+		/*
+		 * Avoid doing multiple hashes, since a single hash provides
+		 * enough bits.
+		 */
+		ret1 = h & ZU(0xffffffffU);
+		ret2 = h >> 32;
+	} else {
+		ret1 = h;
+		ret2 = hash(key, strlen((const char *)key),
+		    0x8432a476666bbc13U);
+	}
+
+	*hash1 = ret1;
+	*hash2 = ret2;
 }
 
 bool
@@ -543,16 +562,41 @@ ckh_string_keycomp(const void *k1, const void *k2)
 }
 
 void
-ckh_pointer_hash(const void *key, size_t r_hash[2])
+ckh_pointer_hash(const void *key, unsigned minbits, size_t *hash1,
+    size_t *hash2)
 {
+	size_t ret1, ret2;
+	uint64_t h;
 	union {
 		const void	*v;
-		size_t		i;
+		uint64_t	i;
 	} u;
 
+	assert(minbits <= 32 || (SIZEOF_PTR == 8 && minbits <= 64));
+	assert(hash1 != NULL);
+	assert(hash2 != NULL);
+
 	assert(sizeof(u.v) == sizeof(u.i));
+#if (LG_SIZEOF_PTR != LG_SIZEOF_INT)
+	u.i = 0;
+#endif
 	u.v = key;
-	hash(&u.i, sizeof(u.i), 0xd983396eU, r_hash);
+	h = hash(&u.i, sizeof(u.i), 0xd983396e68886082LLU);
+	if (minbits <= 32) {
+		/*
+		 * Avoid doing multiple hashes, since a single hash provides
+		 * enough bits.
+		 */
+		ret1 = h & ZU(0xffffffffU);
+		ret2 = h >> 32;
+	} else {
+		assert(SIZEOF_PTR == 8);
+		ret1 = h;
+		ret2 = hash(&u.i, sizeof(u.i), 0x5e2be9aff8709a5dLLU);
+	}
+
+	*hash1 = ret1;
+	*hash2 = ret2;
 }
 
 bool

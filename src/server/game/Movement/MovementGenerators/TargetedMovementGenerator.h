@@ -23,7 +23,15 @@
 #include "FollowerReference.h"
 #include "Timer.h"
 #include "Unit.h"
-
+#include "PathGenerator.h"
+#include "Player.h"
+#include "ByteBuffer.h"
+#include "Errors.h"
+#include "Creature.h"
+#include "CreatureAI.h"
+#include "World.h"
+#include "MoveSplineInit.h"
+#include "MoveSpline.h"
 class TargetedMovementGeneratorBase
 {
     public:
@@ -37,10 +45,11 @@ template<class T, typename D>
 class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, public TargetedMovementGeneratorBase
 {
     protected:
-        TargetedMovementGeneratorMedium(Unit &target, float offset, float angle, bool useExactTargetLocation = false) :
-            TargetedMovementGeneratorBase(target), i_recheckDistance(0),
-            i_offset(offset), i_angle(angle),
-            i_recalculateTravel(false), i_targetReached(false), m_UseExactTargetLocation(useExactTargetLocation)
+protected:
+	TargetedMovementGeneratorMedium(Unit &target, float offset, float angle) :
+		TargetedMovementGeneratorBase(target), i_path(NULL),
+		i_recheckDistance(0), i_offset(offset), i_angle(angle),
+		i_recalculateTravel(false), i_targetReached(false)
         {
         }
         ~TargetedMovementGeneratorMedium() {}
@@ -53,14 +62,14 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         void UpdateFinalDistance(float fDistance);
 
     protected:
-        void _setTargetLocation(T &);
+		void _setTargetLocation(T &, bool updateDestination);
 
-        TimeTrackerSmall i_recheckDistance;
-        float i_offset;
-        float i_angle;
-        bool i_recalculateTravel : 1;
-        bool i_targetReached : 1;
-        bool m_UseExactTargetLocation : 1;
+		PathGenerator* i_path;
+		TimeTrackerSmall i_recheckDistance;
+		float i_offset;
+		float i_angle;
+		bool i_recalculateTravel : 1;
+		bool i_targetReached : 1;
 };
 
 template<class T>
@@ -96,7 +105,7 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
         FollowMovementGenerator(Unit &target, float offset, float angle)
             : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle) {}
         FollowMovementGenerator(Unit &target, float offset, float angle, bool useExactTargetLocation)
-            : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle, useExactTargetLocation) {}
+			: TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle) {}
         ~FollowMovementGenerator() {}
 
         MovementGeneratorType GetMovementGeneratorType() { return FOLLOW_MOTION_TYPE; }
