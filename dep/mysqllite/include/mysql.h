@@ -68,7 +68,7 @@ typedef int my_socket;
 #endif /* my_socket_defined */
 #endif /* _global_h */
 
-
+#include "mysql_version.h"
 #include "mysql_com.h"
 #include "mysql_time.h"
 
