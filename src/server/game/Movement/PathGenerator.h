@@ -56,6 +56,10 @@ public:
     // return: true if new path was calculated, false otherwise (no change needed)
     bool CalculatePath(float destX, float destY, float destZ, bool forceDest = false);
 
+	// option setters - use optional
+	void SetUseStraightPath(bool useStraightPath) { _useStraightPath = useStraightPath; };
+	void SetPathLengthLimit(float distance) { _pointPathLimit = std::min<uint32>(uint32(distance / SMOOTH_PATH_STEP_SIZE) + (std::fmod(distance, SMOOTH_PATH_STEP_SIZE) ? 1 : 0), MAX_POINT_PATH_LENGTH); };
+
     // result getters
     G3D::Vector3 const& GetStartPosition() const { return _startPosition; }
     G3D::Vector3 const& GetEndPosition() const { return _endPosition; }
@@ -65,9 +69,17 @@ public:
 
     PathType GetPathType() const { return _type; }
 
+	void ReducePathLenghtByDist(float dist); // path must be already built
+
 private:
     Movement::PointsArray _pathPoints;  // our actual (x,y,z) path to the target
     PathType _type;                     // tells what kind of path this is
+
+
+	bool           _useStraightPath;  // type of path will be generated
+	bool           _forceDestination; // when set, we will always arrive at given point
+	uint32         _pointPathLimit;   // limit point path size; min(this, MAX_POINT_PATH_LENGTH)
+	bool _straightLine;     // use raycast if true for a straight line path
 
     G3D::Vector3 _startPosition;        // {x, y, z} of current location
     G3D::Vector3 _endPosition;          // {x, y, z} of the destination

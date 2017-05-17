@@ -33,6 +33,7 @@
 #include "Unit.h"
 #include "Totem.h"
 #include "Spell.h"
+#include "PathGenerator.h"
 #include "DynamicObject.h"
 #include "Group.h"
 #include "UpdateData.h"
@@ -7672,12 +7673,33 @@ SpellCastResult Spell::CheckCast(bool strict)
                         m_caster->RemoveMovementImpairingAuras();
                 }
 
-				if (m_caster->HasUnitState(UNIT_STATE_ROOT))
-					return SPELL_FAILED_ROOTED;
-				if (m_caster->GetTypeId() == TYPEID_PLAYER)
-					if (Unit* target = m_targets.GetUnitTarget())
-						if (!target->isAlive())
-							return SPELL_FAILED_BAD_TARGETS;
+				if (GetSpellInfo()->NeedsExplicitUnitTarget())
+				{
+					Unit* target = m_targets.GetUnitTarget();
+					if (!target)
+						return SPELL_FAILED_DONT_REPORT;
+
+					float objSize = target->GetObjectSize();
+					float range = m_spellInfo->GetMaxRange(true, m_caster, this) * 1.5f + objSize; // can't be overly strict
+
+					m_preGeneratedPath.SetPathLengthLimit(range);
+					// first try with raycast, if it fails fall back to normal path
+					bool result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false);
+					if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
+						return SPELL_FAILED_OUT_OF_RANGE;
+					else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
+					{
+						result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false);
+						if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
+							return SPELL_FAILED_OUT_OF_RANGE;
+						else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
+							return SPELL_FAILED_NOPATH;
+						else if (m_caster->GetMapId() == 618 && !(target->GetPositionZ() <= 28.50f))
+							return SPELL_FAILED_NOPATH;
+					}
+
+					m_preGeneratedPath.ReducePathLenghtByDist(objSize); // move back
+				}
                 break;
             }
             case SPELL_EFFECT_SKINNING:

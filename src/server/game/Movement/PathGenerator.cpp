@@ -28,7 +28,7 @@ PathGenerator::PathGenerator(const Unit* owner)
     , _sourceUnit(owner)
 { }
 
-bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool /*forceDest*/)
+bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool forceDest)
 {
     float x, y, z;
     _sourceUnit->GetPosition(x, y, z);
@@ -70,4 +70,42 @@ void PathGenerator::BuildShortcut()
     NormalizePath();
 
     _type = PATHFIND_SHORTCUT;
+}
+
+void PathGenerator::ReducePathLenghtByDist(float dist)
+{
+	if (GetPathType() == PATHFIND_BLANK)
+	{
+		//TC_LOG_ERROR("maps", "PathGenerator::ReducePathLenghtByDist called before path was built");
+		return;
+	}
+
+	if (_pathPoints.size() < 2) // path building failure
+		return;
+
+	uint32 i = _pathPoints.size();
+	G3D::Vector3 nextVec = _pathPoints[--i];
+	while (i > 0)
+	{
+		G3D::Vector3 currVec = _pathPoints[--i];
+		G3D::Vector3 diffVec = (nextVec - currVec);
+		float len = diffVec.length();
+		if (len > dist)
+		{
+			float step = dist / len;
+			// same as nextVec
+			_pathPoints[i + 1] -= diffVec * step;
+			_pathPoints.resize(i + 2);
+			break;
+		}
+		else if (i == 0) // at second point
+		{
+			_pathPoints[1] = _pathPoints[0];
+			_pathPoints.resize(2);
+			break;
+		}
+
+		dist -= len;
+		nextVec = currVec; // we're going backwards
+	}
 }
