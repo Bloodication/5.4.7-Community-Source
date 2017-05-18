@@ -2213,17 +2213,17 @@ class spell_warl_nightfall : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if (!GetCaster())
-                    return;
+				if (!GetCaster())
+					return;
 
-				if (Player* player = GetCaster()->ToPlayer())
+				if (Player* _player = GetCaster()->ToPlayer())
 				{
-					if (player->GetActiveSpec() == SPEC_WARLOCK_AFFLICTION)
-					{
-						if (roll_chance_i(15))
-							player->CastSpell(player, WARLOCK_NIGHTFALL);
-					}
+					if (_player->HasAura(WARLOCK_NIGHTFALL))
+						if (roll_chance_i(10))
+							_player->SetPower(POWER_SOUL_SHARDS, _player->GetPower(POWER_SOUL_SHARDS) + 100);
 
+					if (_player->HasAura(WARLOCK_GLYPH_OF_SIPHON_LIFE) && _player->isAlive())
+						_player->HealBySpell(_player, sSpellMgr->GetSpellInfo(WARLOCK_GLYPH_OF_SIPHON_LIFE), int32(_player->GetMaxHealth() / 200), false);
 				}
             }
 

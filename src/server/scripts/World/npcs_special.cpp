@@ -5038,16 +5038,20 @@ class npc_psyfiend : public CreatureScript
             }
 
 
-            void UpdateAI(uint32 const diff)
-            {
-                if (psychicHorrorTimer <= diff)
-                {
-					std::list<Unit*> targetList;
-					float range = 20.0f;
+			void UpdateAI(uint32 const diff)
+			{
+				if (me->HasUnitState(UNIT_STATE_CASTING))
+					return;
 
-					JadeCore::NearestAttackableUnitInObjectRangeCheck u_check(me, me, range);
+				if (psychicHorrorTimer <= diff)
+				{
+					std::list<Unit*> targetList;
+					float radius = 20.0f;
+
+					JadeCore::NearestAttackableUnitInObjectRangeCheck u_check(me, me, radius);
 					JadeCore::UnitListSearcher<JadeCore::NearestAttackableUnitInObjectRangeCheck> searcher(me, targetList, u_check);
-					me->VisitNearbyObject(range, searcher);
+
+					me->VisitNearbyObject(radius, searcher);
 
 					targetList.remove_if(JadeCore::UnitAuraCheck(true, SPELL_PSYCHIC_HORROR));
 
@@ -5059,12 +5063,13 @@ class npc_psyfiend : public CreatureScript
 						for (auto itr : targetList)
 							me->CastSpell(itr, SPELL_PSYCHIC_HORROR, true);
 					}
-                   
-                    psychicHorrorTimer = 2500;
-                }
-                else
-                    psychicHorrorTimer -= diff;
-            }
+
+					psychicHorrorTimer = 2500;
+				}
+				else
+					psychicHorrorTimer -= diff;
+			}
+
 
 		private:
 			uint32 psychicHorrorTimer;
