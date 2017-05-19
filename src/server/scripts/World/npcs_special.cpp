@@ -3877,6 +3877,29 @@ class npc_frozen_orb : public CreatureScript
 
                 if (!owner)
                     return;
+				float dist;
+
+				Position pos;
+				float angle = me->GetRelativeAngle(me);
+				me->GetNearPosition(pos, me->GetObjectSize(), angle);
+
+				std::list<Unit*> targetList;
+				float radius = 2.00f;
+
+				JadeCore::NearestAttackableUnitInObjectRangeCheck u_check(me, me, radius);
+				JadeCore::UnitListSearcher<JadeCore::NearestAttackableUnitInObjectRangeCheck> searcher(me, targetList, u_check);
+
+				me->VisitNearbyObject(radius, searcher);
+
+				if (!targetList.empty())
+				{
+					targetList.sort(JadeCore::ObjectDistanceOrderPred(me));
+					targetList.resize(1);
+
+					for (auto itr : targetList)
+						me->StopMoving();
+
+				}
 
                 if (frozenOrbTimer <= diff)
                 {
