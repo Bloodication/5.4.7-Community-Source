@@ -2484,9 +2484,9 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
         _player->setFactionForRace(RACE_PANDAREN_HORDE);
         _player->SaveToDB();
-        WorldLocation location(1, 1366.730f, -4371.248f, 26.070f, 3.1266f);
-        _player->TeleportTo(location);
-        _player->SetHomebind(location, 363);
+        //WorldLocation location(1, 1366.730f, -4371.248f, 26.070f, 3.1266f);
+        //_player->TeleportTo(location);
+        //_player->SetHomebind(location, 363);
         _player->learnSpell(669, false); // Language Orcish
         _player->learnSpell(108127, false); // Language Pandaren
     }
@@ -2495,17 +2495,19 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_ALLI);
         _player->setFactionForRace(RACE_PANDAREN_ALLI);
         _player->SaveToDB();
-        WorldLocation location(0, -9096.236f, 411.380f, 92.257f, 3.649f);
-        _player->TeleportTo(location);
-        _player->SetHomebind(location, 9);
+       // WorldLocation location(0, -9096.236f, 411.380f, 92.257f, 3.649f);
+        //_player->TeleportTo(location);
+       // _player->SetHomebind(location, 9);
         _player->learnSpell(668, false); // Language Common
         _player->learnSpell(108127, false); // Language Pandaren
     }
 
+	ChatHandler(_player->GetSession()).PSendSysMessage("Relog for changes to activate!");
+
     if (_player->GetQuestStatus(31450) == QUEST_STATUS_INCOMPLETE)
         _player->KilledMonsterCredit(64594);
 
-    _player->SendMovieStart(116);
+   // _player->SendMovieStart(116);
 }
 
 void WorldSession::HandleSetLfgBonusFactionOpcode(WorldPacket& recvPacket)

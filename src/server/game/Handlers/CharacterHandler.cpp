@@ -1299,6 +1299,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder, PreparedQueryResu
         SendNotification(LANG_RESET_TALENTS);
     }
 
+	if (pCurrChar->getRace() == RACE_PANDAREN_NEUTRAL)
+		pCurrChar->ShowNeutralPlayerFactionSelectUI();
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST))
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_FIRST);
 
