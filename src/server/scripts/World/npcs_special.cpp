@@ -3841,9 +3841,12 @@ class npc_frozen_orb : public CreatureScript
 
         struct npc_frozen_orbAI : public ScriptedAI
         {
+			bool engagedInCombat;
+
             npc_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
             {
                 frozenOrbTimer = 0;
+				engagedInCombat = false;
             }
 
             uint32 frozenOrbTimer;
@@ -3853,13 +3856,11 @@ class npc_frozen_orb : public CreatureScript
                 if (owner && owner->GetTypeId() == TYPEID_PLAYER)
                 {
                     owner->CastSpell(me, SPELL_SNARE_DAMAGE, true);
-                    owner->CastSpell(owner, SPELL_FINGERS_OF_FROST, true);
                     me->AddAura(SPELL_SELF_SNARE_90, me);
 
                     frozenOrbTimer = 1000;
-
-                    me->SetOrientation(owner->GetOrientation());
 					me->SetSpeed(MOVE_RUN, 1.00f, false);
+                    me->SetOrientation(owner->GetOrientation());
 
                     Position pos;
                     owner->GetClosePoint(pos.m_positionX, pos.m_positionY, pos.m_positionZ, owner->GetObjectSize(), 40.0f, owner->GetAngle(owner));
@@ -3870,6 +3871,18 @@ class npc_frozen_orb : public CreatureScript
                 else
                     me->DespawnOrUnsummon();
             }
+
+			void EnterCombat(Unit* /*target*/) override
+			{
+				if (Unit* owner = me->GetOwner())
+				{
+					if (!engagedInCombat)
+					{
+						owner->CastSpell(owner, SPELL_FINGERS_OF_FROST, true);
+						engagedInCombat = true;
+					}
+				}
+			}
 
             void UpdateAI(const uint32 diff)
             {
@@ -3884,7 +3897,7 @@ class npc_frozen_orb : public CreatureScript
 				me->GetNearPosition(pos, me->GetObjectSize(), angle);
 
 				std::list<Unit*> targetList;
-				float radius = 2.00f;
+				float radius = 0.00;
 
 				JadeCore::NearestAttackableUnitInObjectRangeCheck u_check(me, me, radius);
 				JadeCore::UnitListSearcher<JadeCore::NearestAttackableUnitInObjectRangeCheck> searcher(me, targetList, u_check);
@@ -3897,7 +3910,7 @@ class npc_frozen_orb : public CreatureScript
 					targetList.resize(1);
 
 					for (auto itr : targetList)
-						me->StopMoving();
+						me->SetWalk(true);
 
 				}
 
