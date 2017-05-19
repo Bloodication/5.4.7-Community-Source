@@ -91,6 +91,12 @@ void Totem::InitStats(uint32 duration)
         if (GetUInt32Value(UNIT_CREATED_BY_SPELL) == 122773)
             SetDisplayId(11686);
 
+
+		ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_OBS_MOD_HEALTH, true);
+		ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEAL_PCT, true);
+		ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEAL, true);
+		ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEALTH_LEECH, true);
+
         // Totemic Encirclement
         if (m_owner->HasAura(58057)
             && GetUInt32Value(UNIT_CREATED_BY_SPELL) != 120214
