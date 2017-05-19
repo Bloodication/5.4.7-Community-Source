@@ -3841,44 +3841,47 @@ class npc_frozen_orb : public CreatureScript
 
         struct npc_frozen_orbAI : public ScriptedAI
         {
+			float newx, newy, newz;
 			bool engagedInCombat;
+			bool activemovement;
 
             npc_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
             {
-                frozenOrbTimer = 0;
+				newz = me->GetOwner()->GetPositionZ() + 2.0f;
+				float angle = me->GetOwner()->GetAngle(me);
+				newx = me->GetPositionX() + 60 * cos(angle);
+				newy = me->GetPositionY() + 60 * sin(angle);
 				engagedInCombat = false;
+				activemovement = false;
             }
 
             uint32 frozenOrbTimer;
 
-            void IsSummonedBy(Unit* owner)
+            void Reset()
             {
-                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
-                {
-                    owner->CastSpell(me, SPELL_SNARE_DAMAGE, true);
+                    me->GetOwner()->CastSpell(me, SPELL_SNARE_DAMAGE, true);
                     me->AddAura(SPELL_SELF_SNARE_90, me);
 
+					if (!activemovement)
+						me->SetSpeed(MOVE_RUN, 2.0f, false);
+
                     frozenOrbTimer = 1000;
-					me->SetSpeed(MOVE_RUN, 1.00f, false);
-                    me->SetOrientation(owner->GetOrientation());
-
-                    Position pos;
-                    owner->GetClosePoint(pos.m_positionX, pos.m_positionY, pos.m_positionZ, owner->GetObjectSize(), 40.0f, owner->GetAngle(owner));
-
-                    me->GetMotionMaster()->Clear();
-                    me->GetMotionMaster()->MovePoint(0, pos);
-                }
-                else
-                    me->DespawnOrUnsummon();
-            }
+					me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+					me->SetReactState(REACT_PASSIVE);
+					me->GetMotionMaster()->MovePoint(0, newx, newy, newz);
+             }
+            
 
 			void EnterCombat(Unit* /*target*/) override
 			{
+				activemovement = true;
+
 				if (Unit* owner = me->GetOwner())
 				{
 					if (!engagedInCombat)
 					{
 						owner->CastSpell(owner, SPELL_FINGERS_OF_FROST, true);
+						me->SetSpeed(MOVE_RUN, 0.20f, false);
 						engagedInCombat = true;
 					}
 				}
@@ -3890,29 +3893,6 @@ class npc_frozen_orb : public CreatureScript
 
                 if (!owner)
                     return;
-				float dist;
-
-				Position pos;
-				float angle = me->GetRelativeAngle(me);
-				me->GetNearPosition(pos, me->GetObjectSize(), angle);
-
-				std::list<Unit*> targetList;
-				float radius = 0.00;
-
-				JadeCore::NearestAttackableUnitInObjectRangeCheck u_check(me, me, radius);
-				JadeCore::UnitListSearcher<JadeCore::NearestAttackableUnitInObjectRangeCheck> searcher(me, targetList, u_check);
-
-				me->VisitNearbyObject(radius, searcher);
-
-				if (!targetList.empty())
-				{
-					targetList.sort(JadeCore::ObjectDistanceOrderPred(me));
-					targetList.resize(1);
-
-					for (auto itr : targetList)
-						me->SetWalk(true);
-
-				}
 
                 if (frozenOrbTimer <= diff)
                 {
