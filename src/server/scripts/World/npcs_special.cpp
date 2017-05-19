@@ -51,6 +51,7 @@ EndContentData */
 #include "ScriptMgr.h"
 #include "World.h"
 #include "PetAI.h"
+#include "VMapFactory.h"
 #include "PassiveAI.h"
 #include "CombatAI.h"
 #include "GameEventMgr.h"
@@ -3858,6 +3859,7 @@ class npc_frozen_orb : public CreatureScript
                     frozenOrbTimer = 1000;
 
                     me->SetOrientation(owner->GetOrientation());
+					me->SetSpeed(MOVE_RUN, 1.00f, false);
 
                     Position pos;
                     owner->GetClosePoint(pos.m_positionX, pos.m_positionY, pos.m_positionZ, owner->GetObjectSize(), 40.0f, owner->GetAngle(owner));
