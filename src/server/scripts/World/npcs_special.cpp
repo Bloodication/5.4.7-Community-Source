@@ -5081,8 +5081,9 @@ class npc_psyfiend : public CreatureScript
 					std::list<Unit*> targetList;
 					float radius = 20.0f;
 
-					JadeCore::NearestAttackableUnitInObjectRangeCheck u_check(me, me, radius);
-					JadeCore::UnitListSearcher<JadeCore::NearestAttackableUnitInObjectRangeCheck> searcher(me, targetList, u_check);
+					NearestTarget u_check(me);
+
+					JadeCore::UnitListSearcher<NearestTarget> searcher(me, targetList, u_check);
 
 					me->VisitNearbyObject(radius, searcher);
 
