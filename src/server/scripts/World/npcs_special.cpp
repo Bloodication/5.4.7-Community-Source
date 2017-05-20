@@ -3869,23 +3869,8 @@ class npc_frozen_orb : public CreatureScript
 					me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
 					me->SetReactState(REACT_PASSIVE);
 					me->GetMotionMaster()->MovePoint(0, newx, newy, newz);
+					me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
              }
-            
-
-			void EnterCombat(Unit* /*target*/) override
-			{
-				activemovement = true;
-
-				if (Unit* owner = me->GetOwner())
-				{
-					if (!engagedInCombat)
-					{
-						owner->CastSpell(owner, SPELL_FINGERS_OF_FROST, true);
-						me->SetSpeed(MOVE_RUN, 0.20f, false);
-						engagedInCombat = true;
-					}
-				}
-			}
 
             void UpdateAI(const uint32 diff)
             {
@@ -3893,6 +3878,36 @@ class npc_frozen_orb : public CreatureScript
 
                 if (!owner)
                     return;
+
+				float dist;
+
+				Position pos;
+				float angle = me->GetRelativeAngle(me);
+				me->GetNearPosition(pos, me->GetObjectSize(), angle);
+
+				std::list<Unit*> targetList;
+				float radius = 8.00f;
+
+				JadeCore::NearestAttackableUnitInObjectRangeCheck u_check(me, me, radius);
+				JadeCore::UnitListSearcher<JadeCore::NearestAttackableUnitInObjectRangeCheck> searcher(me, targetList, u_check);
+
+				me->VisitNearbyObject(radius, searcher);
+
+				if (!targetList.empty())
+				{
+					targetList.sort(JadeCore::ObjectDistanceOrderPred(me));
+					targetList.resize(1);
+
+					for (auto itr : targetList)
+
+						if (!engagedInCombat)
+						{
+							owner->CastSpell(owner, SPELL_FINGERS_OF_FROST, true);
+							me->SetSpeed(MOVE_RUN, 0.20f, false);
+							engagedInCombat = true;
+							activemovement = true;
+						}
+				}
 
                 if (frozenOrbTimer <= diff)
                 {
