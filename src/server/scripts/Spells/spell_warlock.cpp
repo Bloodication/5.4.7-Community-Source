@@ -2218,9 +2218,11 @@ class spell_warl_nightfall : public SpellScriptLoader
 
 				if (Player* _player = GetCaster()->ToPlayer())
 				{
-					if (_player->HasAura(WARLOCK_NIGHTFALL))
-						if (roll_chance_i(10))
-							_player->SetPower(POWER_SOUL_SHARDS, _player->GetPower(POWER_SOUL_SHARDS) + 100);
+					if (roll_chance_i(10))
+					{
+						_player->AddAura(WARLOCK_NIGHTFALL, _player);
+						_player->SetPower(POWER_SOUL_SHARDS, _player->GetPower(POWER_SOUL_SHARDS) + 100);
+					}
 
 					if (_player->HasAura(WARLOCK_GLYPH_OF_SIPHON_LIFE) && _player->isAlive())
 						_player->HealBySpell(_player, sSpellMgr->GetSpellInfo(WARLOCK_GLYPH_OF_SIPHON_LIFE), int32(_player->GetMaxHealth() / 200), false);
