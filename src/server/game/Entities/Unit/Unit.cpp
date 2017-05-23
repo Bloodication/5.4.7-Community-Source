@@ -587,7 +587,7 @@ bool Unit::IsWithinMeleeRange(const Unit* obj, float dist) const
     return distsq < maxdist * maxdist;
 }
 
-void Unit::GetRandomContactPoint(const Unit* obj, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const
+bool Unit::GetRandomContactPoint(const Unit* obj, float &x, float &y, float &z, bool force) const
 {
     float combat_reach = GetCombatReach();
     if (combat_reach < 0.1f) // sometimes bugged for players
@@ -596,8 +596,30 @@ void Unit::GetRandomContactPoint(const Unit* obj, float &x, float &y, float &z, 
     uint32 attacker_number = getAttackers().size();
     if (attacker_number > 0)
         --attacker_number;
-    GetNearPoint(obj, x, y, z, obj->GetCombatReach(), distance2dMin+(distance2dMax-distance2dMin) * (float)rand_norm()
-        , GetAngle(obj) + (attacker_number ? (static_cast<float>(M_PI/2) - static_cast<float>(M_PI) * (float)rand_norm()) * float(attacker_number) / combat_reach * 0.3f : 0));
+	GetNearPoint(obj, x, y, z, isMoving() ? (obj->GetCombatReach() > 7.75f ? obj->GetCombatReach() - 7.5f : 0.25f) : obj->GetCombatReach(), 0.0f,
+		GetAngle(obj) + (attacker_number ? (static_cast<float>(M_PI / 2) - static_cast<float>(M_PI)* (float)rand_norm()) * float(attacker_number) / combat_reach * 0.3f : 0));
+
+	// pussywizard
+	if (fabs(this->GetPositionZ() - z) > 3.0f || !IsWithinLOS(x, y, z))
+	{
+		x = this->GetPositionX();
+		y = this->GetPositionY();
+		z = this->GetPositionZ();
+		obj->UpdateAllowedPositionZ(x, y, z);
+	}
+	float maxDist = MELEE_RANGE + GetMeleeReach() + obj->GetMeleeReach();
+	if (GetExactDistSq(x, y, z) >= maxDist*maxDist)
+	{
+		if (force)
+		{
+			x = this->GetPositionX();
+			y = this->GetPositionY();
+			z = this->GetPositionZ();
+			return true;
+		}
+		return false;
+	}
+	return true;
 }
 
 void Unit::SetVisibleAura(uint8 slot, AuraApplication * aur)
@@ -17327,11 +17349,30 @@ Unit* Creature::SelectVictim()
     else
         return NULL;
 
-    if (target && _IsTargetAcceptable(target) && canCreatureAttack(target))
-    {
-        SetInFront(target);
-        return target;
-    }
+	if (target && _CanDetectFeignDeathOf(target) && canCreatureAttack(target))
+	{
+		if (m_mmapNotAcceptableStartTime) m_mmapNotAcceptableStartTime = 0; // pussywizard: finding any valid target resets timer
+		SetInFront(target);
+		return target;
+	}
+
+	// pussywizard: if victim is not acceptable only due to mmaps, it may be for example a knockback, wait for a few secs before evading
+	if (!target && !isWorldBoss() && !GetInstanceId() && isAlive() && (!CanHaveThreatList() || !getThreatManager().isThreatListEmpty()))
+		if (Unit* v = getVictim())
+			if (isTargetNotAcceptableByMMaps(v->GetGUID(), sWorld->GetGameTime(), v))
+				if (_CanDetectFeignDeathOf(v) && canCreatureAttack(v))
+				{
+					if (m_mmapNotAcceptableStartTime)
+					{
+						if (sWorld->GetGameTime() <= m_mmapNotAcceptableStartTime + 4)
+							return NULL;
+					}
+					else
+					{
+						m_mmapNotAcceptableStartTime = sWorld->GetGameTime();
+						return NULL;
+					}
+				}
 
     // Case where mob is being kited.
     // Mob may not be in range to attack or may have dropped target. In any case,
@@ -24007,6 +24048,57 @@ void Unit::SetInFront(Unit const* target)
 
     SetOrientation(GetAngle(target));
 }
+
+void Unit::PetSpellFail(const SpellInfo* spellInfo, Unit* target, uint32 result)
+{
+	CharmInfo* charmInfo = GetCharmInfo();
+	if (!charmInfo || GetTypeId() != TYPEID_UNIT)
+		return;
+
+	if ((MMAP::MMapFactory::IsPathfindingEnabled(GetMap()) || result != SPELL_FAILED_LINE_OF_SIGHT) && target)
+	{
+		if ((result == SPELL_FAILED_LINE_OF_SIGHT || result == SPELL_FAILED_OUT_OF_RANGE) || !ToCreature()->HasReactState(REACT_PASSIVE))
+			if (Unit *owner = GetOwner())
+			{
+				if (spellInfo->IsPositive() && IsFriendlyTo(target))
+				{
+					AttackStop();
+					charmInfo->SetIsAtStay(false);
+					charmInfo->SetIsCommandAttack(!ToCreature()->HasReactState(REACT_PASSIVE));
+					charmInfo->SetIsReturning(false);
+					charmInfo->SetIsFollowing(false);
+
+					GetMotionMaster()->MoveFollow(target, PET_FOLLOW_DIST, rand_norm() * 2 * M_PI);
+				}
+				else if (owner->IsValidAttackTarget(target))
+				{
+					AttackStop();
+					charmInfo->SetIsAtStay(false);
+					charmInfo->SetIsCommandAttack(!ToCreature()->HasReactState(REACT_PASSIVE));
+					charmInfo->SetIsReturning(false);
+					charmInfo->SetIsFollowing(false);
+
+					if (!ToCreature()->HasReactState(REACT_PASSIVE))
+						ToCreature()->AI()->AttackStart(target);
+					else
+						GetMotionMaster()->MoveChase(target);
+				}
+			}
+
+		// can be extended in future
+		if (result == SPELL_FAILED_LINE_OF_SIGHT || result == SPELL_FAILED_OUT_OF_RANGE)
+		{
+			charmInfo->SetForcedSpell(spellInfo->IsPositive() ? -int32(spellInfo->Id) : spellInfo->Id);
+			charmInfo->SetForcedTargetGUID(target->GetGUID());
+		}
+		else
+		{
+			charmInfo->SetForcedSpell(0);
+			charmInfo->SetForcedTargetGUID(0);
+		}
+	}
+}
+
 
 void Unit::SetFacingTo(float ori)
 {

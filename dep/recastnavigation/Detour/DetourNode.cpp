@@ -24,7 +24,6 @@
 
 inline unsigned int dtHashRef(dtPolyRef a)
 {
-    // Edited by TC
     a = (~a) + (a << 18);
     a = a ^ (a >> 31);
     a = a * 21;

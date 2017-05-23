@@ -19,6 +19,7 @@
 #include "HomeMovementGenerator.h"
 #include "Creature.h"
 #include "CreatureAI.h"
+#include "MMapFactory.h"
 #include "WorldPacket.h"
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
@@ -34,23 +35,28 @@ void HomeMovementGenerator<Creature>::Reset(Creature &)
 
 void HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
 {
-    if (owner.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
-        return;
+	// Xinef: dont interrupt in any cast!
+	//if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
+	//    return;
+	Movement::MoveSplineInit init(owner);
+	float x, y, z, o;
 
-    Movement::MoveSplineInit init(owner);
-    float x, y, z, o;
-    // at apply we can select more nice return points base at current movegen
-    //if (owner.GetMotionMaster()->empty() || !owner.GetMotionMaster()->top()->GetResetPosition(owner,x,y,z))
-    //{
-    owner.GetHomePosition(x, y, z, o);
-    init.SetFacing(o);
-    //}
-    init.MoveTo(x,y,z);
-    init.SetWalk(false);
-    init.Launch();
+	// Xinef: if there is motion generator on controlled slot, this one is not updated
+	// Xinef: always get reset pos from idle slot
+	MovementGenerator* gen = owner.GetMotionMaster()->GetMotionSlot(MOTION_SLOT_IDLE);
+	if (owner.GetMotionMaster()->empty() || !gen || !gen->GetResetPosition(x, y, z))
+	{
+		owner.GetHomePosition(x, y, z, o);
+		init.SetFacing(o);
+	}
 
-    arrived = false;
-    owner.ClearUnitState(UNIT_STATE_ALL_STATE & ~UNIT_STATE_EVADE);
+	init.MoveTo(x, y, z, MMAP::MMapFactory::IsPathfindingEnabled(owner.FindMap()), true);
+	init.SetWalk(false);
+	init.Launch();
+
+	arrived = false;
+
+	owner.ClearUnitState(uint32(UNIT_STATE_ALL_STATE & ~(UNIT_STATE_POSSESSED | UNIT_STATE_EVADE | UNIT_STATE_IGNORE_PATHFINDING | UNIT_STATE_NO_ENVIRONMENT_UPD)));
 }
 
 bool HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32 /*time_diff*/)

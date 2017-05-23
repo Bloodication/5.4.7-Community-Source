@@ -29,12 +29,12 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
   endif()
   if(TOOLS)
     add_subdirectory(bzip2)
-	add_subdirectory(recastnavigation)
   endif()
   add_subdirectory(zlib)
 endif()
 
 add_subdirectory(g3dlite)
+add_subdirectory(recastnavigation)
 
 if(SERVERS)
   add_subdirectory(gsoap)
