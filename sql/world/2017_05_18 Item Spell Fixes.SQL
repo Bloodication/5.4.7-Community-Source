@@ -1,14 +1,15 @@
 --	Fixed Priest S15 Healer Set not removing Holy Spark Proc
+Delete From spell_linked_spell where spell_trigger = 2061 AND spell_effect = -131567;
+Delete From spell_linked_spell where spell_trigger = 2060 AND spell_effect = -131567;
+Delete From spell_linked_spell where spell_trigger = 88684 AND spell_effect = -131567;
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `comment`) VALUES (2061, -131567, 0, 'Remove Holy Spark on Flash Light');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `comment`) VALUES (2060, -131567, 0, 'Remove Holy Spark on Holy Light');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `comment`) VALUES (88684, -131567, 0, 'Remove Holy Spark on Word: Serenity');
 
 -- Fixed Priest S15 DPS Set adding Holy Spark Proc
+Delete From conditions where SourceTypeOrReferenceId = 17 AND SourceEntry = 131567;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES (17, 0, 131567, 0, 1, 3, 1, 102704, 0, 0, 0, 0, '', 'Fix For Holy Spark Procing with Shadow Gear');
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES (17, 0, 131567, 0, 2, 3, 1, 102615, 0, 0, 0, 0, '', 'Fix For Holy Spark Procing with Shadow Gear');
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES (17, 0, 131567, 0, 3, 3, 1, 102681, 0, 0, 0, 0, '', 'Fix For Holy Spark Procing with Shadow Gear');
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES (17, 0, 131567, 0, 4, 3, 1, 102703, 0, 0, 0, 0, '', 'Fix For Holy Spark Procing with Shadow Gear');
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES (17, 0, 131567, 0, 5, 3, 1, 102750, 0, 0, 0, 0, '', 'Fix For Holy Spark Procing with Shadow Gear');
-
--- Wrath Removes Soul Of Forest
-INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `comment`) VALUES (5176, -114108, 0, '[Wrath] Removes [Soul of the Forest]');
