@@ -44,6 +44,8 @@
 #include "../AreaTrigger/AreaTrigger.h"
 #include "MovementStructures.h"
 #include <utility>
+#include "MMapFactory.h"
+#include "MMapFactory.h"
 
 namespace BattlePet
 {
@@ -542,6 +544,7 @@ enum UnitState
     UNIT_STATE_CHASE_MOVE      = 0x04000000,
     UNIT_STATE_FOLLOW_MOVE     = 0x08000000,
 	UNIT_STATE_IGNORE_PATHFINDING = 0x10000000,                 // do not use pathfinding in any MovementGenerator
+	UNIT_STATE_NO_ENVIRONMENT_UPD = 0x20000000,
     UNIT_STATE_RECAL_CONFUSE   = 0x10000000,
     UNIT_STATE_UNATTACKABLE    = (UNIT_STATE_IN_FLIGHT | UNIT_STATE_ONVEHICLE),
     // for real move using movegen check and stop (except unstoppable flight)
@@ -1171,6 +1174,12 @@ struct CharmInfo
         void SaveStayPosition();
         void GetStayPosition(float &x, float &y, float &z);
 
+
+		void SetForcedSpell(uint32 id) { _forcedSpellId = id; }
+		int32 GetForcedSpell() { return _forcedSpellId; }
+		void SetForcedTargetGUID(uint64 guid) { _forcedTargetGUID = guid; }
+		uint64 GetForcedTarget() { return _forcedTargetGUID; }
+
     private:
 
         Unit* m_unit;
@@ -1191,6 +1200,10 @@ struct CharmInfo
         float m_stayX;
         float m_stayY;
         float m_stayZ;
+
+
+		int32 _forcedSpellId;
+		uint64 _forcedTargetGUID;
 
         GlobalCooldownMgr m_GlobalCooldownMgr;
 };
@@ -1277,6 +1290,32 @@ enum LossOfControlType
 
 struct SpellProcEventEntry;                                 // used only privately
 
+// pussywizard:
+class MMapTargetData
+{
+public:
+	MMapTargetData() {}
+	MMapTargetData(uint32 endTime, const Position* o, const Position* t)
+	{
+		_endTime = endTime;
+		_posOwner.Relocate(o);
+		_posTarget.Relocate(t);
+	}
+	MMapTargetData(const MMapTargetData& c)
+	{
+		_endTime = c._endTime;
+		_posOwner.Relocate(c._posOwner);
+		_posTarget.Relocate(c._posTarget);
+	}
+	bool PosChanged(const Position& o, const Position& t) const
+	{
+		return _posOwner.GetExactDistSq(&o) > 0.5f*0.5f || _posTarget.GetExactDistSq(&t) > 0.5f*0.5f;
+	}
+	uint32 _endTime;
+	Position _posOwner;
+	Position _posTarget;
+};
+
 class Unit : public WorldObject
 {
     public:
@@ -1329,7 +1368,7 @@ class Unit : public WorldObject
         float GetMeleeReach() const { float reach = m_floatValues[UNIT_FIELD_COMBATREACH]; return reach > MIN_MELEE_REACH ? reach : MIN_MELEE_REACH; }
         bool IsWithinCombatRange(const Unit* obj, float dist2compare) const;
         bool IsWithinMeleeRange(const Unit* obj, float dist = MELEE_RANGE) const;
-        void GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const;
+		bool GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, bool force = false) const;
         uint32 m_extraAttacks;
         bool m_canDualWield;
         int32 insightCount;
@@ -2361,6 +2400,11 @@ class Unit : public WorldObject
         virtual bool isBeingLoaded() const { return false;}
         bool IsDuringRemoveFromWorld() const {return m_duringRemoveFromWorld;}
 
+		// MMaps
+		std::map<uint64, MMapTargetData> m_targetsNotAcceptable;
+		bool isTargetNotAcceptableByMMaps(uint64 guid, uint32 currTime, const Position* t = NULL) const { std::map<uint64, MMapTargetData>::const_iterator itr = m_targetsNotAcceptable.find(guid); if (itr != m_targetsNotAcceptable.end() && (itr->second._endTime >= currTime || t && !itr->second.PosChanged(*this, *t))) return true; return false; }
+		uint32 m_mmapNotAcceptableStartTime;
+
         Pet* ToPet() { if (isPet()) return reinterpret_cast<Pet*>(this); else return NULL; }
         Pet const* ToPet() const { if (isPet()) return reinterpret_cast<Pet const*>(this); else return NULL; }
 
@@ -2394,6 +2438,8 @@ class Unit : public WorldObject
         Movement::MoveSpline * movespline;
 
         void OnRelocated();
+
+		void PetSpellFail(const SpellInfo* spellInfo, Unit* target, uint32 result);
 
         // helper for dark simulacrum spell
         Unit* GetSimulacrumTarget();
