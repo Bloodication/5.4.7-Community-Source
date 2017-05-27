@@ -589,13 +589,17 @@ bool Unit::IsWithinMeleeRange(const Unit* obj, float dist) const
 
 bool Unit::GetRandomContactPoint(const Unit* obj, float &x, float &y, float &z, bool force) const
 {
-    float combat_reach = GetCombatReach();
-    if (combat_reach < 0.1f) // sometimes bugged for players
-        combat_reach = DEFAULT_COMBAT_REACH;
+	float combat_reach = GetCombatReach();
+	if (combat_reach < 0.1f) // sometimes bugged for players
+		combat_reach = DEFAULT_COMBAT_REACH;
 
-    uint32 attacker_number = getAttackers().size();
-    if (attacker_number > 0)
-        --attacker_number;
+	uint32 attacker_number = getAttackers().size();
+	if (attacker_number > 0)
+		--attacker_number;
+	const Creature* c = obj->ToCreature();
+	if (c)
+		if (c->isWorldBoss() || c->IsDungeonBoss() || (obj->isPet() && const_cast<Unit*>(obj)->ToPet()->isControlled()))
+			attacker_number = 0; // pussywizard: pets and bosses just come to target from their angle
 	GetNearPoint(obj, x, y, z, isMoving() ? (obj->GetCombatReach() > 7.75f ? obj->GetCombatReach() - 7.5f : 0.25f) : obj->GetCombatReach(), 0.0f,
 		GetAngle(obj) + (attacker_number ? (static_cast<float>(M_PI / 2) - static_cast<float>(M_PI)* (float)rand_norm()) * float(attacker_number) / combat_reach * 0.3f : 0));
 
@@ -620,6 +624,56 @@ bool Unit::GetRandomContactPoint(const Unit* obj, float &x, float &y, float &z, 
 		return false;
 	}
 	return true;
+}
+
+void Unit::PetSpellFail(const SpellInfo* spellInfo, Unit* target, uint32 result)
+{
+	CharmInfo* charmInfo = GetCharmInfo();
+	if (!charmInfo || GetTypeId() != TYPEID_UNIT)
+		return;
+
+	if ((MMAP::MMapFactory::IsPathfindingEnabled(GetMap()) || result != SPELL_FAILED_LINE_OF_SIGHT) && target)
+	{
+		if ((result == SPELL_FAILED_LINE_OF_SIGHT || result == SPELL_FAILED_OUT_OF_RANGE) || !ToCreature()->HasReactState(REACT_PASSIVE))
+			if (Unit *owner = GetOwner())
+			{
+				if (spellInfo->IsPositive() && IsFriendlyTo(target))
+				{
+					AttackStop();
+					charmInfo->SetIsAtStay(false);
+					charmInfo->SetIsCommandAttack(!ToCreature()->HasReactState(REACT_PASSIVE));
+					charmInfo->SetIsReturning(false);
+					charmInfo->SetIsFollowing(false);
+
+					GetMotionMaster()->MoveFollow(target, PET_FOLLOW_DIST, rand_norm() * 2 * M_PI);
+				}
+				else if (owner->IsValidAttackTarget(target))
+				{
+					AttackStop();
+					charmInfo->SetIsAtStay(false);
+					charmInfo->SetIsCommandAttack(!ToCreature()->HasReactState(REACT_PASSIVE));
+					charmInfo->SetIsReturning(false);
+					charmInfo->SetIsFollowing(false);
+
+					if (!ToCreature()->HasReactState(REACT_PASSIVE))
+						ToCreature()->AI()->AttackStart(target);
+					else
+						GetMotionMaster()->MoveChase(target);
+				}
+			}
+
+		// can be extended in future
+		if (result == SPELL_FAILED_LINE_OF_SIGHT || result == SPELL_FAILED_OUT_OF_RANGE)
+		{
+			charmInfo->SetForcedSpell(spellInfo->IsPositive() ? -int32(spellInfo->Id) : spellInfo->Id);
+			charmInfo->SetForcedTargetGUID(target->GetGUID());
+		}
+		else
+		{
+			charmInfo->SetForcedSpell(0);
+			charmInfo->SetForcedTargetGUID(0);
+		}
+	}
 }
 
 void Unit::SetVisibleAura(uint8 slot, AuraApplication * aur)
@@ -3887,6 +3941,211 @@ bool Unit::isInFrontInMap(Unit const* target, float distance,  float arc) const
 bool Unit::isInBackInMap(Unit const* target, float distance, float arc) const
 {
     return IsWithinDistInMap(target, distance) && !HasInArc(2 * M_PI - arc, target);
+}
+
+void Unit::UpdateEnvironmentIfNeeded(const uint8 option)
+{
+	if (m_is_updating_environment)
+		return;
+
+	if (GetTypeId() != TYPEID_UNIT || !isAlive() || (!IsInWorld() && option != 3) || !FindMap() || IsDuringRemoveFromWorld() || !IsPositionValid())
+		return;
+
+	/*if (option <= 2 && GetMotionMaster()->GetCleanFlags() != MMCF_NONE)
+	{
+		if (option == 2)
+			m_last_environment_position.Relocate(-5000.0f, -5000.0f, -5000.0f, 0.0f);
+		return;
+	}*/
+
+	if (option <= 1 && GetExactDistSq(&m_last_environment_position) < 2.5f*2.5f)
+		return;
+	m_last_environment_position.Relocate(GetPositionX(), GetPositionY(), GetPositionZ());
+
+	m_is_updating_environment = true;
+
+	bool changed = false;
+	Creature* c = this->ToCreature();
+	Map* baseMap = const_cast<Map*>(GetBaseMap());
+	if (!c || !baseMap)
+	{
+		m_is_updating_environment = false;
+		return;
+	}
+
+	bool canChangeFlying = option == 3 || ((c->GetScriptId() == 0 || GetInstanceId() == 0) && GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == NULL_MOTION_TYPE);
+	bool canFallGround = option == 0 && canChangeFlying && GetInstanceId() == 0 && !isInCombat() && !GetVehicle() && !GetTransport() && !HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) && !c->isTrigger() && !c->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) && GetMotionMaster()->GetCurrentMovementGeneratorType() <= RANDOM_MOTION_TYPE && !HasUnitState(UNIT_STATE_EVADE) && !IsControlledByPlayer();
+	float x = GetPositionX(), y = GetPositionY(), z = GetPositionZ();
+	bool isInAir = true;
+	float ground_z = z;
+	LiquidData liquidData; liquidData.level = INVALID_HEIGHT;
+
+	ZLiquidStatus liquidStatus = baseMap->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquidData);
+
+	// IsInWater
+	bool enoughWater = (liquidData.level > INVALID_HEIGHT && liquidData.level > liquidData.depth_level && liquidData.level - liquidData.depth_level >= 1.5f); // also check if theres enough water - at least 2yd
+	m_last_isinwater_status = (liquidStatus & (LIQUID_MAP_IN_WATER | LIQUID_MAP_UNDER_WATER)) && enoughWater;
+	m_last_islittleabovewater_status = (liquidData.level > INVALID_HEIGHT && liquidData.level > liquidData.depth_level && liquidData.level <= z + 3.0f && liquidData.level > z - 1.0f);
+
+	// IsUnderWater
+	m_last_isunderwater_status = (liquidStatus & LIQUID_MAP_UNDER_WATER) && enoughWater;
+
+	// UpdateUnderwaterState
+	if (isPet() || IsVehicle())
+	{
+		if (option == 1) // Unit::IsInWater, Unit::IsUnderwater, adding/removing auras can cause crashes (eg threat change while iterating threat table), so skip
+			m_last_environment_position.Relocate(-5000.0f, -5000.0f, -5000.0f, 0.0f);
+		else
+		{
+			if (!liquidStatus)
+			{
+				if (_lastLiquid && _lastLiquid->SpellId)
+					RemoveAurasDueToSpell(_lastLiquid->SpellId);
+
+				RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
+				_lastLiquid = NULL;
+			}
+			else if (uint32 liqEntry = liquidData.entry)
+			{
+				LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
+				if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
+					RemoveAurasDueToSpell(_lastLiquid->SpellId);
+
+				if (liquid && liquid->SpellId)
+				{
+					if (liquidStatus & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+					{
+						if (!HasAura(liquid->SpellId))
+							CastSpell(this, liquid->SpellId, true);
+					}
+					else
+						RemoveAurasDueToSpell(liquid->SpellId);
+				}
+
+				RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_ABOVEWATER);
+				_lastLiquid = liquid;
+			}
+			else if (_lastLiquid && _lastLiquid->SpellId)
+			{
+				RemoveAurasDueToSpell(_lastLiquid->SpellId);
+				RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
+				_lastLiquid = NULL;
+			}
+		}
+	}
+
+	bool flyingBarelyInWater = false;
+	// Refresh being in water
+	if (m_last_isinwater_status)
+	{
+		if (!c->CanFly() || z < liquidData.level - 2.0f)
+		{
+			if (!HasUnitState(UNIT_STATE_NO_ENVIRONMENT_UPD) && c->canSwim() && (!HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING) || !HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY)))
+			{
+				SetSwim(true);
+				SetDisableGravity(true);
+				changed = true;
+			}
+			isInAir = false;
+		}
+		else
+		{
+			m_last_isinwater_status = false;
+			flyingBarelyInWater = true;
+		}
+	}
+
+	if (!m_last_isinwater_status)
+	{
+		if (!HasUnitState(UNIT_STATE_NO_ENVIRONMENT_UPD) && c->canWalk() && HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
+		{
+			SetSwim(false);
+			if (!c->CanFly()) // if can fly, this will be removed below if needed
+				SetDisableGravity(false);
+			changed = true;
+		}
+	}
+
+	// if not in water, check whether in air or not
+	if (isInAir)
+		/*		{
+	if (GetMap()->GetGrid(x, y))
+		{
+			float temp = GetMap()->GetHeight(GetPhaseMask(), x, y, z, true, 100.0f);
+			if (temp > INVALID_HEIGHT)
+			{
+				ground_z = (c->canSwim() && liquidData.level > INVALID_HEIGHT) ? liquidData.level : temp;
+				isInAir = flyingBarelyInWater || G3D::fuzzyGt(z, ground_z + 0.75f) || G3D::fuzzyLt(z, ground_z - 0.5f);
+			}
+			else
+				isInAir = true;
+		}
+		else
+		{
+			m_is_updating_environment = false;
+			return;
+		}
+	}*/
+
+	if (!HasUnitState(UNIT_STATE_NO_ENVIRONMENT_UPD) && canChangeFlying)
+	{
+		// xinef: summoned vehicles are treated as always in air, fixes flying on such units
+		if (IsVehicle() && !c->GetDBTableGUIDLow())
+			isInAir = true;
+
+		// xinef: triggers with inhabit type air are treated as always in air
+		if (c->isTrigger() && c->CanFly())
+			isInAir = true;
+
+		if (IS_PLAYER_GUID(c->GetOwnerGUID()) && c->CanFly() && IsVehicle() && !c->GetDBTableGUIDLow()) // mainly for oculus drakes
+		{
+			if (!HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY) || !HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY))
+			{
+				SetCanFly(true);
+				SetDisableGravity(true);
+				changed = true;
+			}
+		}
+		else if (c->CanFly() && isInAir)
+		{
+			if (!c->IsFalling() && (!HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY) || !HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) /*|| !HasUnitMovementFlag(MOVEMENTFLAG_HOVER)*/))
+			{
+				SetCanFly(true);
+				SetDisableGravity(true);
+				//SetHover(true);
+				changed = true;
+			}
+		}
+		else
+		{
+			if (HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY) || HasUnitMovementFlag(MOVEMENTFLAG_FLYING) /*|| HasUnitMovementFlag(MOVEMENTFLAG_HOVER)*/)
+			{
+				SetCanFly(false);
+				RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
+				//SetHover(false);
+				changed = true;
+			}
+			if (HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) && !HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING) /*&& !HasUnitMovementFlag(MOVEMENTFLAG_HOVER)*/)
+			{
+				SetDisableGravity(false);
+				changed = true;
+			}
+		}
+
+		if (isInAir && !c->CanFly() && option >= 2)
+			m_last_environment_position.Relocate(-5000.0f, -5000.0f, -5000.0f, 0.0f);
+	}
+
+	if (!isInAir && HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
+		RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+
+	if (changed)
+		propagateSpeedChange();
+
+	if (!HasUnitState(UNIT_STATE_NO_ENVIRONMENT_UPD) && canFallGround && !c->CanFly() && !c->IsFalling() && !m_last_isinwater_status && (c->GetUnitMovementFlags()&(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_HOVER | MOVEMENTFLAG_SWIMMING)) == 0 && z - ground_z > 5.0f && z - ground_z < 80.0f)
+		GetMotionMaster()->MoveFall();
+
+	m_is_updating_environment = false;
 }
 
 bool Unit::isInAccessiblePlaceFor(Creature const* c) const
@@ -17349,30 +17608,11 @@ Unit* Creature::SelectVictim()
     else
         return NULL;
 
-	if (target && _CanDetectFeignDeathOf(target) && canCreatureAttack(target))
-	{
-		if (m_mmapNotAcceptableStartTime) m_mmapNotAcceptableStartTime = 0; // pussywizard: finding any valid target resets timer
-		SetInFront(target);
-		return target;
-	}
-
-	// pussywizard: if victim is not acceptable only due to mmaps, it may be for example a knockback, wait for a few secs before evading
-	if (!target && !isWorldBoss() && !GetInstanceId() && isAlive() && (!CanHaveThreatList() || !getThreatManager().isThreatListEmpty()))
-		if (Unit* v = getVictim())
-			if (isTargetNotAcceptableByMMaps(v->GetGUID(), sWorld->GetGameTime(), v))
-				if (_CanDetectFeignDeathOf(v) && canCreatureAttack(v))
-				{
-					if (m_mmapNotAcceptableStartTime)
-					{
-						if (sWorld->GetGameTime() <= m_mmapNotAcceptableStartTime + 4)
-							return NULL;
-					}
-					else
-					{
-						m_mmapNotAcceptableStartTime = sWorld->GetGameTime();
-						return NULL;
-					}
-				}
+    if (target && _IsTargetAcceptable(target) && canCreatureAttack(target))
+    {
+        SetInFront(target);
+        return target;
+    }
 
     // Case where mob is being kited.
     // Mob may not be in range to attack or may have dropped target. In any case,
@@ -23433,14 +23673,6 @@ void Unit::_ExitVehicle(Position const* exitPosition)
         ToPlayer()->SetTeleportFlagForAnticheat(true);
 }
 
-void Unit::SetCanFly(bool apply)
-{
-    if (apply)
-        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-    else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-}
-
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
 {
     DisableSpline();
@@ -23453,6 +23685,11 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
         UpdatePosition(x, y, z, orientation, true);
         SendMovementFlagUpdate();
     }
+}
+
+bool Unit::IsFalling() const
+{
+	return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR) || movespline->isFalling();
 }
 
 void Unit::NearTeleportTo(Position pos, bool casting /* = false */)
@@ -24049,57 +24286,6 @@ void Unit::SetInFront(Unit const* target)
     SetOrientation(GetAngle(target));
 }
 
-void Unit::PetSpellFail(const SpellInfo* spellInfo, Unit* target, uint32 result)
-{
-	CharmInfo* charmInfo = GetCharmInfo();
-	if (!charmInfo || GetTypeId() != TYPEID_UNIT)
-		return;
-
-	if ((MMAP::MMapFactory::IsPathfindingEnabled(GetMap()) || result != SPELL_FAILED_LINE_OF_SIGHT) && target)
-	{
-		if ((result == SPELL_FAILED_LINE_OF_SIGHT || result == SPELL_FAILED_OUT_OF_RANGE) || !ToCreature()->HasReactState(REACT_PASSIVE))
-			if (Unit *owner = GetOwner())
-			{
-				if (spellInfo->IsPositive() && IsFriendlyTo(target))
-				{
-					AttackStop();
-					charmInfo->SetIsAtStay(false);
-					charmInfo->SetIsCommandAttack(!ToCreature()->HasReactState(REACT_PASSIVE));
-					charmInfo->SetIsReturning(false);
-					charmInfo->SetIsFollowing(false);
-
-					GetMotionMaster()->MoveFollow(target, PET_FOLLOW_DIST, rand_norm() * 2 * M_PI);
-				}
-				else if (owner->IsValidAttackTarget(target))
-				{
-					AttackStop();
-					charmInfo->SetIsAtStay(false);
-					charmInfo->SetIsCommandAttack(!ToCreature()->HasReactState(REACT_PASSIVE));
-					charmInfo->SetIsReturning(false);
-					charmInfo->SetIsFollowing(false);
-
-					if (!ToCreature()->HasReactState(REACT_PASSIVE))
-						ToCreature()->AI()->AttackStart(target);
-					else
-						GetMotionMaster()->MoveChase(target);
-				}
-			}
-
-		// can be extended in future
-		if (result == SPELL_FAILED_LINE_OF_SIGHT || result == SPELL_FAILED_OUT_OF_RANGE)
-		{
-			charmInfo->SetForcedSpell(spellInfo->IsPositive() ? -int32(spellInfo->Id) : spellInfo->Id);
-			charmInfo->SetForcedTargetGUID(target->GetGUID());
-		}
-		else
-		{
-			charmInfo->SetForcedSpell(0);
-			charmInfo->SetForcedTargetGUID(0);
-		}
-	}
-}
-
-
 void Unit::SetFacingTo(float ori)
 {
     Movement::MoveSplineInit init(*this);
@@ -24224,6 +24410,55 @@ void Unit::ReleaseFocus(Spell const* focusSpell)
         ClearUnitState(UNIT_STATE_ROTATING);
 }
 
+bool Unit::SetSwim(bool enable)
+{
+	if (enable == HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
+		return false;
+
+	if (enable)
+		AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+	else
+		RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+
+	return true;
+}
+
+bool Unit::SetCanFly(bool enable, bool /*packetOnly = false */)
+{
+	if (enable == HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
+		return false;
+
+	if (enable)
+	{
+		AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
+		RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+	}
+	else
+	{
+		RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_MASK_MOVING_FLY);
+		if (!IsLevitating())
+		{
+			m_movementInfo.SetFallTime(0);
+			//AddUnitMovementFlag(MOVEMENTFLAG_FALLING); // pussywizard: ZOMG!
+		}
+	}
+
+	return true;
+}
+
+bool Unit::SetWaterWalking(bool enable, bool /*packetOnly = false*/)
+{
+	if (enable == HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING))
+		return false;
+
+	if (enable)
+		AddUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+	else
+		RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+
+	return true;
+}
+
 void Unit::SendMovementWaterWalking(bool enable, bool packetOnly /*= false */)
 {
     if (!packetOnly)
@@ -24241,6 +24476,19 @@ void Unit::SendMovementWaterWalking(bool enable, bool packetOnly /*= false */)
         PacketSender(this, SMSG_SPLINE_MOVE_SET_WATER_WALK, SMSG_MOVE_WATER_WALK).Send();
     else
         PacketSender(this, SMSG_SPLINE_MOVE_SET_LAND_WALK, SMSG_MOVE_LAND_WALK).Send();
+}
+
+bool Unit::SetFeatherFall(bool enable, bool /*packetOnly = false*/)
+{
+	if (enable == HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW))
+		return false;
+
+	if (enable)
+		AddUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+	else
+		RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+
+	return true;
 }
 
 void Unit::SendMovementFeatherFall()

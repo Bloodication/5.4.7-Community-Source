@@ -121,6 +121,8 @@ class ObjectAccessor
         static Player* FindPlayerByName(const char* name);
         static Player* FindPlayerByNameInOrOutOfWorld(const char* name);
 
+		void AddCorpsesToGrid(GridCoord const& gridpair, GridType& grid, Map* map);
+
         // when using this, you must use the hashmapholder's lock
         static HashMapHolder<Player>::MapType const& GetPlayers()
         {
@@ -158,6 +160,15 @@ class ObjectAccessor
     private:
         static uint32 k_PlayerCacheMaxGuid;
         static Player** m_PlayersCache;
+
+		typedef UNORDERED_MAP<uint64, Corpse*> Player2CorpsesMapType;
+		typedef UNORDERED_MAP<Player*, UpdateData>::value_type UpdateDataValueType;
+
+		std::set<Object*> i_objects;
+		Player2CorpsesMapType i_player2corpse;
+
+		ACE_Thread_Mutex i_objectLock;
+		ACE_RW_Thread_Mutex i_corpseLock;
 };
 
 #define sObjectAccessor ACE_Singleton<ObjectAccessor, ACE_Null_Mutex>::instance()

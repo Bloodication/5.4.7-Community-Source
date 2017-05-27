@@ -2324,42 +2324,6 @@ bool Creature::_IsTargetAcceptable(const Unit* target) const
     return false;
 }
 
-bool Creature::_CanDetectFeignDeathOf(const Unit* target) const
-{
-	if (target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH))
-		return isGuard();
-	return true;
-}
-
-void Creature::UpdateMoveInLineOfSightState()
-{
-	// xinef: pets, guardians and units with scripts / smartAI should be skipped
-	if (isPet() || HasUnitTypeMask(UNIT_MASK_MINION | UNIT_MASK_SUMMON | UNIT_MASK_GUARDIAN | UNIT_MASK_CONTROLABLE_GUARDIAN) ||
-		GetScriptId() || GetAIName() == "SmartAI")
-	{
-		m_moveInLineOfSightStrictlyDisabled = false;
-		m_moveInLineOfSightDisabled = false;
-		return;
-	}
-
-	if (isTrigger() || isCivilian() || GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET || GetAIName() == "NullCreatureAI")
-	{
-		m_moveInLineOfSightDisabled = true;
-		m_moveInLineOfSightStrictlyDisabled = true;
-		return;
-	}
-
-	bool nonHostile = true;
-	if (FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(getFaction()))
-		if (factionTemplate->hostileMask || factionTemplate->enemyFaction[0] || factionTemplate->enemyFaction[1] || factionTemplate->enemyFaction[2] || factionTemplate->enemyFaction[3])
-			nonHostile = false;
-
-	if (nonHostile)
-		m_moveInLineOfSightDisabled = true;
-	else
-		m_moveInLineOfSightDisabled = false;
-}
-
 void Creature::SaveRespawnTime()
 {
     if (isSummon() || !m_spawnId || (m_creatureData && !m_creatureData->dbData))

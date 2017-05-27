@@ -23,11 +23,10 @@
 #include "CreatureAI.h"
 #include "World.h"
 #include "MoveSplineInit.h"
-#include "PathGenerator.h"
-#include "MMAPFactory.h"
 #include "MoveSpline.h"
 #include "Player.h"
 #include "VehicleDefines.h"
+#include "PathGenerator.h"
 
 #include <cmath>
 
@@ -43,26 +42,39 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T &owner, bool in
 	float x, y, z;
 	bool isPlayerPet = owner.isPet() && IS_PLAYER_GUID(owner.GetOwnerGUID());
 	bool sameTransport = owner.GetTransport() && owner.GetTransport() == i_target->GetTransport();
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same transport");
 	bool useMMaps = MMAP::MMapFactory::IsPathfindingEnabled(owner.FindMap()) && !sameTransport;
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same mmaps");
 	bool forceDest = (owner.FindMap() && owner.FindMap()->IsDungeon() && !isPlayerPet) || // force in instances to prevent exploiting
 		(owner.GetTypeId() == TYPEID_UNIT && ((owner.isPet() && owner.HasUnitState(UNIT_STATE_FOLLOW)))) || // force for all bosses, even not in instances
 		(owner.GetMapId() == 572 && (owner.GetPositionX() < 1275.0f || i_target->GetPositionX() < 1275.0f)) || // pussywizard: Ruins of Lordaeron - special case (acid)
 		sameTransport || // nothing to comment, can't find path on transports so allow it
 		(i_target->GetTypeId() == TYPEID_PLAYER && i_target->ToPlayer()->isGameMaster()); // for .npc follow
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same forcedest");
 	bool forcePoint = ((!isPlayerPet || owner.GetMapId() == 618) && (forceDest || !useMMaps)) || sameTransport;
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same forcepoint");
+
 
 	lastOwnerXYZ.Relocate(owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ());
 	lastTargetXYZ.Relocate(i_target->GetPositionX(), i_target->GetPositionY(), i_target->GetPositionZ());
 
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same lastTargetXYZ.Relocate");
+
 	if (!i_offset)
 	{
+
+		sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same useMMaps && !inRange &&	if (!i_offset)");
 		float allowedRange = MELEE_RANGE;
 		if ((!initial || (owner.movespline->Finalized() && this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)) && i_target->IsWithinMeleeRange(&owner, allowedRange) && i_target->IsWithinLOS(owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ()))
 			return;
 
+		sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same useMMaps && !inRange &&	if ((!initial || (owner.movespline->Finalized() && this->GetMovementGene");
+
 		bool inRange = i_target->GetRandomContactPoint(&owner, x, y, z, forcePoint);
 		if (useMMaps && !inRange && (!isPlayerPet || i_target->GetPositionZ() - z > 50.0f))
 		{
+
+			sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same useMMaps && !inRange && (!isPlayerPet || i_");
 			//useMMaps = false;
 			owner.m_targetsNotAcceptable[i_target->GetGUID()] = MMapTargetData(sWorld->GetGameTime() + DISALLOW_TIME_AFTER_FAIL, &owner, i_target.getTarget());
 			return;
@@ -131,7 +143,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T &owner, bool in
 			if (!forceDest && (i_path->GetPathType() & PATHFIND_NOPATH || !i_offset && !isPlayerPet && i_target->GetExactDistSq(i_path->GetActualEndPosition().x, i_path->GetActualEndPosition().y, i_path->GetActualEndPosition().z) > maxDist*maxDist))
 			{
 				lastPathingFailMSTime = sWorld->GetGameTime();
-				owner.m_targetsNotAcceptable[i_target->GetGUID()] = MMapTargetData(sWorld->GetGameTime() + DISALLOW_TIME_AFTER_FAIL, &owner, i_target.getTarget());
+				owner.m_targetsNotAcceptable[i_target->GetGUID()] = MMapTargetData(sWorld->GetGameTime()+ DISALLOW_TIME_AFTER_FAIL, &owner, i_target.getTarget());
 				return;
 			}
 			else
@@ -216,40 +228,60 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
         return true;
     }
 
+	i_recheckDistanceForced.Update(time_diff);
+	if (i_recheckDistanceForced.Passed())
+	{
+		i_recheckDistanceForced.Reset(2500);
+		lastOwnerXYZ.Relocate(-5000.0f, -5000.0f, -5000.0f);
+	}
+
+
     i_recheckDistance.Update(time_diff);
-    if (i_recheckDistance.Passed())
-    {
-        i_recheckDistance.Reset(50);
-        //More distance let have better performance, less distance let have more sensitive reaction at target move.
-        float allowed_dist = i_target->GetObjectSize() + owner.GetObjectSize() + MELEE_RANGE - 0.5f;
-        G3D::Vector3 dest = owner.movespline->FinalDestination();
-        if (owner.movespline->onTransport)
-            if (TransportBase* transport = owner.GetDirectTransport())
-                transport->CalculatePassengerPosition(dest.x, dest.y, dest.z);
+	if (i_recheckDistance.Passed())
+	{
+		i_recheckDistance.Reset(50);
+		//More distance let have better performance, less distance let have more sensitive reaction at target move.
+		float allowed_dist_sq = i_target->GetObjectSize() + owner.GetObjectSize() + MELEE_RANGE - 0.5f;
 
-        float dist = (dest - G3D::Vector3(i_target->GetPositionX(),i_target->GetPositionY(),i_target->GetPositionZ())).squaredLength();
-        if (dist >= allowed_dist * allowed_dist)
-            _setTargetLocation(owner, false);
-    }
+		// xinef: if offset is negative (follow distance is smaller than just object sizes), reduce minimum allowed distance which is based purely on object sizes
+		if (i_offset < 0.0f)
+		{
+			allowed_dist_sq += i_offset;
+			allowed_dist_sq = std::max<float>(0.0f, allowed_dist_sq);
+		}
 
-    if (owner.movespline->Finalized())
-    {
-        static_cast<D*>(this)->MovementInform(owner);
-        if (i_angle == 0.f && !owner.HasInArc(0.01f, i_target.getTarget()))
-            owner.SetInFront(i_target.getTarget());
+		allowed_dist_sq *= allowed_dist_sq;
 
-        if (!i_targetReached)
-        {
-            i_targetReached = true;
-            static_cast<D*>(this)->_reachTarget(owner);
-        }
-    }
-    else
-    {
-        if (i_recalculateTravel)
-            _setTargetLocation(owner, false);
-    }
-    return true;
+		G3D::Vector3 dest = owner.movespline->FinalDestination();
+		if (owner.movespline->onTransport)
+			if (TransportBase* transport = owner.GetDirectTransport())
+				transport->CalculatePassengerPosition(dest.x, dest.y, dest.z);
+
+		float dist = (dest - G3D::Vector3(i_target->GetPositionX(), i_target->GetPositionY(), i_target->GetPositionZ())).squaredLength();
+		float targetMoveDistSq = i_target->GetExactDistSq(&lastTargetXYZ);
+		if (dist >= allowed_dist_sq || (!i_offset && targetMoveDistSq >= 1.5f*1.5f))
+			if (targetMoveDistSq >= 0.1f*0.1f || owner.GetExactDistSq(&lastOwnerXYZ) >= 0.1f*0.1f)
+				_setTargetLocation(owner, false);
+	}
+
+	if (owner.movespline->Finalized())
+	{
+		static_cast<D*>(this)->MovementInform(owner);
+		if (i_angle == 0.f && !owner.HasInArc(0.01f, i_target.getTarget()))
+			owner.SetInFront(i_target.getTarget());
+
+		if (!i_targetReached)
+		{
+			i_targetReached = true;
+			static_cast<D*>(this)->_reachTarget(owner);
+		}
+	}
+	else
+	{
+		if (i_recalculateTravel)
+			_setTargetLocation(owner, false);
+	}
+	return true;
 }
 
 //-----------------------------------------------//

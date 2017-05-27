@@ -27,6 +27,7 @@
 #include <string>
 #include "TransportMgr.h"
 #include "VehicleDefines.h"
+#include "GameObject.h"
 
 struct CreatureData;
 
@@ -51,6 +52,8 @@ class Transport : public GameObject, public TransportBase
         void AddPassenger(WorldObject* passenger);
         void RemovePassenger(WorldObject* passenger);
         PassengerSet const& GetPassengers() const { return _passengers; }
+
+		uint32 GetPathProgress() const { return GetGOValue()->Transport.PathProgress; }
 
         Creature* CreateNPCPassenger(uint32 guid, CreatureData const* data);
         GameObject* CreateGOPassenger(uint32 guid, GameObjectData const* data);

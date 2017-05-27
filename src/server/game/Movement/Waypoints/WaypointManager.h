@@ -23,6 +23,16 @@
 #include <ace/Null_Mutex.h>
 #include <vector>
 
+enum WaypointMoveType
+{
+	WAYPOINT_MOVE_TYPE_WALK,
+	WAYPOINT_MOVE_TYPE_RUN,
+	WAYPOINT_MOVE_TYPE_LAND,
+	WAYPOINT_MOVE_TYPE_TAKEOFF,
+
+	WAYPOINT_MOVE_TYPE_MAX
+};
+
 struct WaypointData
 {
     uint32 id;
@@ -30,6 +40,7 @@ struct WaypointData
     bool run;
     uint32 delay;
     uint32 event_id;
+	uint32 move_type;
     uint8 event_chance;
 };
 
