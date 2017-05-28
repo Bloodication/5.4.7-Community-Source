@@ -286,39 +286,59 @@ class spell_warr_shield_block : public SpellScriptLoader
 // Storm Bolt - 107570
 class spell_warr_storm_bolt : public SpellScriptLoader
 {
-public:
-	spell_warr_storm_bolt() : SpellScriptLoader("spell_warr_storm_bolt") { }
+    public:
+        spell_warr_storm_bolt() : SpellScriptLoader("spell_warr_storm_bolt") { }
 
-	class spell_warr_storm_bolt_SpellScript : public SpellScript
-	{
-		PrepareSpellScript(spell_warr_storm_bolt_SpellScript);
+        class spell_warr_storm_bolt_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_storm_bolt_SpellScript);
 
-		void HandleOnLaunchTarget(SpellEffIndex effIndex)
-		{
-			if (Player* _player = GetCaster()->ToPlayer())
-			{
-				if (Unit* unitTarget = GetHitUnit())
-				{
-					if (Creature* target = unitTarget->ToCreature())
-						if (target->GetCreatureTemplate())
-							if (float multiplier = target->GetCreatureTemplate()->MechanicImmuneMask & (1 << MECHANIC_STUN) ? 4.0f : 1.0f)
-								SetHitDamage(int32(GetHitDamage() * multiplier));
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* unitTarget = GetHitUnit())
+                        _player->CastSpell(unitTarget, WARRIOR_SPELL_STORM_BOLT_STUN, true);
+            }
 
-					_player->CastSpell(unitTarget, WARRIOR_SPELL_STORM_BOLT_STUN, true);
-				}
-			}
-		}
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_storm_bolt_SpellScript::HandleOnHit);
+            }
+        };
 
-		void Register()
-		{
-			OnEffectLaunchTarget += SpellEffectFn(spell_warr_storm_bolt_SpellScript::HandleOnLaunchTarget, EFFECT_0, SPELL_EFFECT_WEAPON_PERCENT_DAMAGE);
-		}
-	};
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_storm_bolt_SpellScript();
+        }
+};
 
-	SpellScript* GetSpellScript() const
-	{
-		return new spell_warr_storm_bolt_SpellScript();
-	}
+// Storm Bolt damage (145585, 107570)
+class spell_warr_storm_bolt_damage : public SpellScriptLoader
+{
+    public:
+        spell_warr_storm_bolt_damage() : SpellScriptLoader("spell_warr_storm_bolt_damage") { }
+
+        class spell_warr_storm_bolt_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_storm_bolt_damage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* unitTarget = GetHitUnit())
+                    if (unitTarget->GetTypeId() != TYPEID_PLAYER && unitTarget->IsImmunedToSpellEffect(sSpellMgr->GetSpellInfo(WARRIOR_SPELL_STORM_BOLT_STUN), 0))
+                        SetHitDamage(GetHitDamage() * 4);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_storm_bolt_damage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_storm_bolt_damage_SpellScript();
+        }
 };
 
 // Commented out for now

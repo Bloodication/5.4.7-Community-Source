@@ -1629,6 +1629,29 @@ class spell_sha_elemental_blast : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
+                    _player->CastSpell(_player, SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, true);
+
+                    if (Aura* const aura = _player->GetAura(SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, _player->GetGUID()))
+                    {
+                        uint32 randomEffect = 0;
+
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_ENHANCEMENT)
+                            randomEffect = urand(0, 3);
+                        else
+                            randomEffect = urand(0, 2);
+
+                        // Iterate over all aura effects
+                        for (int i = 0; i < 4; ++i)
+                        {
+                            if (i == randomEffect)
+                                aura->GetEffect(i)->ChangeAmount(3500);
+                            else
+                            {
+                                aura->GetEffect(i)->ChangeAmount(0);
+                            }
+                        }
+                    }
+
                     if (Unit* target = GetExplTargetUnit())
                     {
                         _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_FROST_VISUAL, true);
@@ -1637,37 +1660,9 @@ class spell_sha_elemental_blast : public SpellScriptLoader
                 }
             }
 
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (auto aura = _player->AddAura(SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, _player))
-                    {
-                        int32 limit = 4;
-                        if (_player->GetSpecializationId() != SPEC_SHAMAN_ENHANCEMENT)
-                            limit = 3;
-
-                        uint32 _random = urand(0, limit-1);
-                        for (uint8 i = 0; i < 4; ++i) // only 4 effects available
-                        {
-                            if (i == _random)
-                                continue;
-
-                            if (auto _effect = aura->GetEffect(i))
-                                _effect->ChangeAmount(0);
-                        }
-                    }
-
-                    // Unleash Flame increase Elemental Blast damage for 30%
-                    if (_player->HasAura(73683))
-                        SetHitDamage(int32(GetHitDamage() * 1.3f));
-                }
-            }
-
             void Register()
             {
                 AfterCast += SpellCastFn(spell_sha_elemental_blast_SpellScript::HandleAfterCast);
-                OnHit += SpellHitFn(spell_sha_elemental_blast_SpellScript::HandleOnHit);
             }
         };
 
@@ -2133,14 +2128,14 @@ class spell_sha_lava_lash : public SpellScriptLoader
                                 AddPct(hitDamage, 40);
 
                             // Damage is increased by 23%(custom)/40% if your off-hand weapon is enchanted with Flametongue.
-                            if (_player->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0) && _player->HasAura(77661))
-                                AddPct(hitDamage, 21);
-                            else if (_player->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0) && !_player->HasAura(77661))
-                                AddPct(hitDamage, 40);
+                            //if (_player->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0) && _player->HasAura(77661))
+                                //AddPct(hitDamage, 21);
+                            //else if (_player->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0) && !_player->HasAura(77661))
+                                //AddPct(hitDamage, 40);
 
                             // Unleash Flame increase Lava Lash damage for 30%
-                            if (_player->HasAura(73683))
-                                AddPct(hitDamage, 30);
+                            //if (_player->HasAura(73683))
+                                //AddPct(hitDamage, 30);
 
                             // Your Lava Lash ability will consume Searing Flame effect, dealing 20% increased damage for each application
                             if (AuraApplication* searingFlame = _player->GetAuraApplication(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE))
