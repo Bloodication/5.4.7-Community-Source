@@ -17180,58 +17180,33 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
     if (main_speed_mod)
         AddPct(speed, main_speed_mod);
 
-    switch (mtype)
-    {
-        case MOVE_RUN:
-        case MOVE_SWIM:
-        case MOVE_FLIGHT:
-        {
-            // Set creature speed rate
-            if (GetTypeId() == TYPEID_UNIT)
-            {
-                Unit* pOwner = GetCharmerOrOwner();
-                if ((isPet() || isGuardian()) && !isInCombat() && pOwner) // Must check for owner or crash on "Tame Beast"
-                {
-                    // For every yard over 5, increase speed by 0.01
-                    //  to help prevent pet from lagging behind and despawning
-                    float dist = GetDistance(pOwner);
-                    float base_rate = 1.00f; // base speed is 100% of owner speed
+	switch (mtype)
+	{
+	case MOVE_RUN:
+	case MOVE_SWIM:
+	case MOVE_FLIGHT:
+	{
+		// Normalize speed by 191 aura SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED if need
+		// TODO: Possible affect only on MOVE_RUN
+		if (int32 normalization = GetMaxPositiveAuraModifier(SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED))
+		{
+			if (Creature* creature = ToCreature())
+			{
+				uint32 immuneMask = creature->GetCreatureTemplate()->MechanicImmuneMask;
+				if (immuneMask & (1 << MECHANIC_SNARE) || immuneMask & (1 << MECHANIC_DAZE))
+					break;
+			}
 
-                    if (dist < 5)
-                        dist = 5;
-
-                    float mult = base_rate + ((dist - 5) * 0.01f);
-
-                    float petSpeed = 0.0f;
-                    switch (mtype)
-                    {
-                    case MOVE_RUN:
-                    case MOVE_SWIM:
-                        petSpeed = ToCreature()->GetCreatureTemplate()->speed_run;
-                        break;
-                    case MOVE_FLIGHT:
-                        petSpeed = ToCreature()->GetCreatureTemplate()->speed_fly;
-                        break;
-                    }
-                    speed *= petSpeed * mult;
-                }
-                else
-                    speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
-            }
-            // Normalize speed by 191 aura SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED if need
-            // TODO: possible affect only on MOVE_RUN
-            if (int32 normalization = GetMaxPositiveAuraModifier(SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED))
-            {
-                // Use speed from aura
-                float max_speed = normalization / (IsControlledByPlayer() ? playerBaseMoveSpeed[mtype] : baseMoveSpeed[mtype]);
-                if (speed > max_speed)
-                    speed = max_speed;
-            }
-            break;
-        }
-        default:
-            break;
-    }
+			// Use speed from aura
+			float max_speed = normalization / (IsControlledByPlayer() ? playerBaseMoveSpeed[mtype] : baseMoveSpeed[mtype]);
+			if (speed > max_speed)
+				speed = max_speed;
+		}
+		break;
+	}
+	default:
+		break;
+	}
 
     // for creature case, we check explicit if mob searched for assistance
     if (GetTypeId() == TYPEID_UNIT)

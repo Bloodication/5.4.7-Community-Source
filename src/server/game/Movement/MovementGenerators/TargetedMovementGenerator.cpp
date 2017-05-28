@@ -19,6 +19,7 @@
 #include "ByteBuffer.h"
 #include "TargetedMovementGenerator.h"
 #include "Errors.h"
+#include "VMapFactory.h"
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "World.h"
@@ -112,12 +113,54 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T &owner, bool in
 			z = i_target->GetPositionZ();
 		}
 	}
+	
 
 	D::_addUnitStateMove(owner);
 	i_targetReached = false;
 	i_recalculateTravel = false;
 
 	Movement::MoveSplineInit init(owner);
+
+
+	float _z = z;
+	owner.UpdateAllowedPositionZ(x, y, z);
+	VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+	GridMap* gmap = const_cast<Map*>(owner.GetMap())->GetGrid(x, y);
+	if (vmgr && vmgr->isHeightCalcEnabled() && gmap)
+	{
+		float targetFloor = vmgr->getHeight(owner.GetMap()->GetId(), x, y, _z + 2.0f, 50.0f);
+		float targetground = VMAP_INVALID_HEIGHT_VALUE;
+		float targetgridHeight = gmap->getHeight(x, y);
+
+		if (z + 4.0f > targetgridHeight)
+			targetground = targetgridHeight;
+
+		targetFloor = targetFloor != VMAP_INVALID_HEIGHT_VALUE ? targetFloor : targetground;
+
+		if (_z - z >= 4.0f || _z - targetFloor >= 4.0f)
+		{
+			float _ownerZ = owner.GetPositionZ();
+			owner.UpdateAllowedPositionZ(owner.GetPositionX(), owner.GetPositionY(), _ownerZ);
+
+			float ownerFloor = vmgr->getHeight(owner.GetMap()->GetId(), owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ() + 2.0f, 50.0f);
+			float ownerground = VMAP_INVALID_HEIGHT_VALUE;
+			float ownergridHeight = gmap->getHeight(x, y);
+
+			if (_ownerZ + 4.0f > ownergridHeight)
+				ownerground = ownergridHeight;
+
+			ownerFloor = ownerFloor != VMAP_INVALID_HEIGHT_VALUE ? ownerFloor : ownerground;
+
+			if (owner.GetPositionZ() - _ownerZ >= 4.0f || owner.GetPositionZ() - ownerFloor >= 4.0f)
+			{
+				Movement::MoveSplineInit init(owner);
+				init.MoveTo(x, y, _z, false, true);
+				init.Launch();
+			}
+			return;
+		}
+	}
+	
 
 	if (useMMaps) // pussywizard
 	{
@@ -206,6 +249,23 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
         D::_clearUnitStateMove(owner);
         return true;
     }
+
+	// Prevent movement while casting spells with cast time or channel time. Some creatures need adding here.
+	if (owner.HasUnitState(UNIT_STATE_CASTING))
+	{
+		bool glyphwaterelemental = false;
+
+		if (owner.GetOwner() && owner.GetOwner()->HasAura(63090) && owner.GetCharmInfo() && owner.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW) && owner.ToPet() && owner.ToPet()->HasReactState(REACT_HELPER))
+			glyphwaterelemental = true;
+
+		if (!glyphwaterelemental)
+		{
+			if (!owner.IsStopped())
+				owner.StopMoving();
+
+			return true;
+		}
+	}
 
     // prevent movement while casting spells with cast time or channel time
     if (owner.HasUnitState(UNIT_STATE_CASTING))

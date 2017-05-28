@@ -517,6 +517,21 @@ public:
 	void SendInitTransports(Player* player);
 	void SendRemoveTransports(Player* player);
 
+	GridMap* GetGrid(float x, float y)
+	{
+		// Half opt method
+		int gx = (int)(CENTER_GRID_ID - x / SIZE_OF_GRIDS);                       // Grid x
+		int gy = (int)(CENTER_GRID_ID - y / SIZE_OF_GRIDS);                       // Grid y
+
+		if (gx >= MAX_NUMBER_OF_GRIDS || gy >= MAX_NUMBER_OF_GRIDS || gx < 0 || gy < 0)
+			return NULL;
+
+		// Ensure GridMap is loaded
+		EnsureGridCreated(GridCoord((MAX_NUMBER_OF_GRIDS - 1) - gx, (MAX_NUMBER_OF_GRIDS - 1) - gy));
+
+		return GridMaps[gx][gy];
+	}
+
 	template<HighGuid high>
 	inline uint32 GenerateLowGuid()
 	{
@@ -557,7 +572,6 @@ private:
 	void LoadMapAndVMap(int gx, int gy);
 	void LoadVMap(int gx, int gy);
 	void LoadMap(int gx, int gy, bool reload = false);
-	GridMap* GetGrid(float x, float y);
 
 	// Load MMap Data
 	void LoadMMap(int gx, int gy);

@@ -7120,43 +7120,44 @@ void Spell::EffectSkinning(SpellEffIndex /*effIndex*/)
 
 void Spell::EffectCharge(SpellEffIndex effIndex)
 {
-    if (!unitTarget)
-        return;
+	if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
+	{
+		if (!unitTarget)
+			return;
 
-    if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
-    {
-        float angle = unitTarget->GetRelativeAngle(m_caster);
-        Position pos;
+		// charge changes fall time
+		if (m_caster->GetTypeId() == TYPEID_PLAYER)
+			m_caster->ToPlayer()->SetFallInformation(time(NULL), m_caster->GetPositionZ());
 
-        unitTarget->GetContactPoint(m_caster, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
-        unitTarget->GetFirstCollisionPosition(pos, unitTarget->GetObjectSize(), angle);
+		if (m_pathFinder)
+		{
+			m_caster->GetMotionMaster()->MoveCharge(m_pathFinder->GetEndPosition().x, m_pathFinder->GetEndPosition().y, m_pathFinder->GetEndPosition().z, 42.0f, EVENT_CHARGE, &m_pathFinder->GetPath());
+		}
+		else
+		{
+			Position pos;
+			unitTarget->GetContactPoint(m_caster, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+			// assume that target is not in water - else should be always in los
+			if (!m_caster->IsWithinLOS(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()))
+			{
+				float angle = m_caster->GetRelativeAngle(&pos);
+				float dist = m_caster->GetDistance(pos);
+				m_caster->GetFirstCollisionPosition(pos, dist, angle);
+			}
 
-        // Try to find the target feet
-        unitTarget->GetMap()->getObjectHitPos(unitTarget->GetPhaseMask(), pos.m_positionX, pos.m_positionY, pos.m_positionZ + unitTarget->GetObjectSize(), pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_positionX, pos.m_positionY, pos.m_positionZ, 0.f);
+			m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ + 0.5f);
+		}
+	}
 
-        if (uint32 triggerSpell = m_spellInfo->Effects[effIndex].TriggerSpell)
-            m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, SPEED_CHARGE, EVENT_CHARGE, std::make_shared<TriggerAfterMovement>(unitTarget->GetGUID(), TRIGGER_AFTER_MOVEMENT_CAST, triggerSpell));
-        else
-            m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+	if (effectHandleMode == SPELL_EFFECT_HANDLE_HIT_TARGET)
+	{
+		if (!unitTarget)
+			return;
 
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            m_caster->ToPlayer()->SetFallInformation(0, m_caster->GetPositionZ());
-    }
-
-    if (effectHandleMode == SPELL_EFFECT_HANDLE_HIT_TARGET)
-    {
-        // not all charge effects used in negative spells
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        {
-            m_caster->ToPlayer()->SetFallInformation(0, m_caster->GetPositionZ());
-
-            if (!m_spellInfo->IsPositive())
-                m_caster->Attack(unitTarget, true);
-        }
-    }
-
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->ToPlayer()->SetFallInformation(0, unitTarget->GetPositionZ());
+		// not all charge effects used in negative spells
+		if (!m_spellInfo->IsPositive() && m_caster->GetTypeId() == TYPEID_PLAYER)
+			m_caster->Attack(unitTarget, true);
+	}
 }
 
 void Spell::EffectChargeDest(SpellEffIndex effIndex)
@@ -7195,27 +7196,6 @@ void Spell::EffectChargeDest(SpellEffIndex effIndex)
 		}
 
 		m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
-
-        // Racer Slam Hit Destination
-        if (m_spellInfo->Id == 49302)
-        {
-            if (urand(0, 100) < 20)
-            {
-                m_caster->CastSpell(m_caster, 49336, false);
-                m_caster->CastSpell((Unit*)NULL, 49444, false); // achievement counter
-            }
-        }
-
-        if (uint32 triggerSpell = m_spellInfo->Effects[effIndex].TriggerSpell)
-        {
-            m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, SPEED_CHARGE, m_spellValue->EffectBasePoints[0] > 0 ? m_spellInfo->Id : EVENT_CHARGE, std::make_shared<TriggerAfterMovement>(m_caster->GetGUID(), TRIGGER_AFTER_MOVEMENT_CAST, triggerSpell));
-        }
-        else
-        {
-            m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, SPEED_CHARGE, m_spellValue->EffectBasePoints[0] > 0 ? m_spellInfo->Id : EVENT_CHARGE);
-        }
-
-        
     }
 }
 
