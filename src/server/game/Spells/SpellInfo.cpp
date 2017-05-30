@@ -2810,10 +2810,6 @@ uint32 SpellInfo::CalcCastTime(Unit* caster, Spell* spell) const
     if (caster && caster->HasAura(117204))
         if (Aura* overloaded = caster->GetAura(117204))
             castTime -= CalculatePct(castTime, (20 * overloaded->GetStackAmount()));
-
-    // Glyph of Denounce
-    if (Id == 2812 && caster && caster->HasAura(115654))
-        castTime -= 1000;
     
     if (Id == 138728)
         castTime = 0;
