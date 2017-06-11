@@ -482,7 +482,6 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlo
 
 void MotionMaster::MoveFollowExact(Unit* target, float dist, float angle, MovementSlot slot)
 {
-	//QUADRAL::::: THIS CAN CAUSE A CRASH - CHECK HERE!
 	/*// ignore movement request if target not exist
 	if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
 		return;

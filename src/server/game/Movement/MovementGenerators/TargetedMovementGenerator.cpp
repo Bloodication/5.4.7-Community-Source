@@ -42,7 +42,9 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T &owner, bool in
 	float x, y, z;
 	bool isPlayerPet = owner.isPet() && IS_PLAYER_GUID(owner.GetOwnerGUID());
 	bool sameTransport = owner.GetTransport() && owner.GetTransport() == i_target->GetTransport();
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same transport");
 	bool useMMaps = MMAP::MMapFactory::IsPathfindingEnabled(owner.FindMap()) && !sameTransport;
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same mmaps");
 	bool forceDest = (owner.FindMap() && owner.FindMap()->IsDungeon() && !isPlayerPet) || // force in instances to prevent exploiting
 		(owner.GetTypeId() == TYPEID_UNIT && ((owner.isPet() && owner.HasUnitState(UNIT_STATE_FOLLOW)))) || // force for all bosses, even not in instances
 		(owner.GetMapId() == 572 && (owner.GetPositionX() < 1275.0f || i_target->GetPositionX() < 1275.0f)) || // pussywizard: Ruins of Lordaeron - special case (acid)
@@ -56,8 +58,12 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T &owner, bool in
 	lastOwnerXYZ.Relocate(owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ());
 	lastTargetXYZ.Relocate(i_target->GetPositionX(), i_target->GetPositionY(), i_target->GetPositionZ());
 
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same lastTargetXYZ.Relocate");
+
 	if (!i_offset)
 	{
+
+		sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same useMMaps && !inRange &&	if (!i_offset)");
 		float allowedRange = MELEE_RANGE;
 		if ((!initial || (owner.movespline->Finalized() && this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)) && i_target->IsWithinMeleeRange(&owner, allowedRange) && i_target->IsWithinLOS(owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ()))
 			return;
