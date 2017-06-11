@@ -89,8 +89,8 @@ namespace Movement
 
         /* Initializes simple A to B mition, A is current unit's position, B is destination
          */
-		void MoveTo(const Vector3& destination, bool generatePath = false, bool forceDestination = false);
-		void MoveTo(float x, float y, float z, bool generatePath = false, bool forceDestination = false);
+        void MoveTo(const Vector3& destination);
+        void MoveTo(float x, float y, float z);
 
         /* Sets Id of fisrt point of the path. When N-th path point will be done ILisener will notify that pointId + N done
          * Needed for waypoint movement where path splitten into parts
@@ -165,9 +165,10 @@ namespace Movement
         std::transform(controls.begin(), controls.end(), args.path.begin(), TransportPathTransform(unit, args.TransformForTransport));
     }
 
-	inline void MoveSplineInit::MoveTo(float x, float y, float z, bool generatePath, bool forceDestination)
+    inline void MoveSplineInit::MoveTo(float x, float y, float z)
     {
-		MoveTo(G3D::Vector3(x, y, z), generatePath, forceDestination);
+        Vector3 v(x, y, z);
+        MoveTo(v);
     }
 
     inline void MoveSplineInit::SetParabolic(float amplitude, float time_shift)

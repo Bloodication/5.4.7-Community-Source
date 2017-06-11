@@ -20,20 +20,14 @@
 #define TRINITY_POINTMOVEMENTGENERATOR_H
 
 #include "MovementGenerator.h"
-#include "PathGenerator.h"
 #include "FollowerReference.h"
 
 template<class T>
 class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
 {
     public:
-		PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _speed = 0.0f, std::shared_ptr<TriggerAfterMovement const> _afterMovement = nullptr, const Movement::PointsArray* _path = NULL, bool generatePath = false, bool forceDestination = false) : id(_id),
-			i_x(_x), i_y(_y), i_z(_z), speed(_speed), afterMovement(_afterMovement), _generatePath(generatePath), _forceDestination(forceDestination)
-
-		  {
-			  if (_path)
-				  m_precomputedPath = *_path;
-		  }
+        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _speed = 0.0f, std::shared_ptr<TriggerAfterMovement const> _afterMovement = nullptr) : id(_id),
+            i_x(_x), i_y(_y), i_z(_z), speed(_speed), afterMovement(_afterMovement) {}
 
         void Initialize(T &);
         void Finalize(T &);
@@ -52,9 +46,6 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
         float i_x, i_y, i_z;
         float speed;
         bool i_recalculateSpeed;
-		Movement::PointsArray m_precomputedPath;
-		bool _generatePath;
-		bool _forceDestination;
         std::shared_ptr<TriggerAfterMovement const> afterMovement;
 };
 

@@ -20,7 +20,6 @@
 #include "MoveSpline.h"
 #include "MovementPacketBuilder.h"
 #include "Unit.h"
-#include "PathGenerator.h"
 #include "Transport.h"
 #include "Vehicle.h"
 
@@ -417,24 +416,13 @@ namespace Movement
         args.flags.EnableFacingAngle();
     }
 
-	void MoveSplineInit::MoveTo(const Vector3& dest, bool generatePath, bool forceDestination)
-	{
-		if (generatePath)
-		{
-			PathGenerator path(&unit);
-			bool result = path.CalculatePath(dest.x, dest.y, dest.z, forceDestination);
-			if (result && !(path.GetPathType() & PATHFIND_NOPATH))
-			{
-				MovebyPath(path.GetPath());
-				return;
-			}
-		}
-
-		args.path_Idx_offset = 0;
-		args.path.resize(2);
-		TransportPathTransform transform(unit, args.TransformForTransport);
-		args.path[1] = transform(dest);
-	}
+    void MoveSplineInit::MoveTo(Vector3 const& dest)
+    {
+        args.path_Idx_offset = 0;
+        args.path.resize(2);
+        TransportPathTransform transform(unit, args.TransformForTransport);
+        args.path[1] = transform(dest);
+    }
 
     void MoveSplineInit::SetFall()
     {

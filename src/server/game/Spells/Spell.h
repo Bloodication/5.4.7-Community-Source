@@ -594,8 +594,6 @@ class Spell
 
         UsedSpellMods m_appliedMods;
 
-		PathGenerator* m_pathFinder;
-
         DispelChargesList m_dispellData;
 
         int32 GetCastTime() const { return m_casttime; }
