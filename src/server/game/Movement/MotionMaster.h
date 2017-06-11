@@ -20,7 +20,6 @@
 #define TRINITY_MOTIONMASTER_H
 
 #include "Common.h"
-#include "Spline/MoveSpline.h"
 #include <vector>
 #include "SharedDefines.h"
 #include "Object.h"
@@ -230,7 +229,7 @@ public:
 	void MoveTakeoff(uint32 id, Position const& pos);
 	void MoveTakeoff(uint32 id, float x, float y, float z);
 
-	void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, const Movement::PointsArray* path = NULL, bool generatePath = false);
+	void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, std::shared_ptr<TriggerAfterMovement const> afterMovement = nullptr);
 	void MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ);
 	void MoveJumpTo(float angle, float speedXY, float speedZ);
 	void MoveJump(float x, float y, float z, float speedXY, float speedZ, float o = 10.0f, uint32 id = EVENT_JUMP, std::shared_ptr<TriggerAfterMovement const> afterMovement = nullptr);

@@ -676,7 +676,7 @@ void MotionMaster::MoveBackward(uint32 id, float x, float y, float z, float spee
 	Mutate(new EffectMovementGenerator(id), MOTION_SLOT_CONTROLLED);
 }
 
-void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id, const Movement::PointsArray* path, bool generatePath)
+void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id, std::shared_ptr<TriggerAfterMovement const> afterMovement)
 {
 	if (Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
 		return;
@@ -684,13 +684,13 @@ void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id,
 	if (_owner->GetTypeId() == TYPEID_PLAYER)
 	{
 		sLog->outDebug(LOG_FILTER_GENERAL, "Player (GUID: %u) charge point (X: %f Y: %f Z: %f)", _owner->GetGUIDLow(), x, y, z);
-		Mutate(new PointMovementGenerator<Player>(id, x, y, z, speed, path, generatePath, generatePath), MOTION_SLOT_CONTROLLED);
+		Mutate(new PointMovementGenerator<Player>(id, x, y, z, speed, afterMovement), MOTION_SLOT_CONTROLLED);
 	}
 	else
 	{
 		sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u GUID: %u) charge point (X: %f Y: %f Z: %f)",
 			_owner->GetEntry(), _owner->GetGUIDLow(), x, y, z);
-		Mutate(new PointMovementGenerator<Creature>(id, x, y, z, speed, path, generatePath, generatePath), MOTION_SLOT_CONTROLLED);
+		Mutate(new PointMovementGenerator<Creature>(id, x, y, z, speed, afterMovement), MOTION_SLOT_CONTROLLED);
 	}
 
 	if (_owner->ToPlayer())

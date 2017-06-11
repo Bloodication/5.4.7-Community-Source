@@ -2098,6 +2098,22 @@ inline ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, uint8 R
 	return LIQUID_MAP_ABOVE_WATER;
 }
 
+inline GridMap* Map::GetGrid(float x, float y)
+{
+	// half opt method
+	int gx = (int)(32 - x / SIZE_OF_GRIDS);                       //grid x
+	int gy = (int)(32 - y / SIZE_OF_GRIDS);                       //grid y
+
+	if (gx >= MAX_NUMBER_OF_GRIDS || gy >= MAX_NUMBER_OF_GRIDS ||
+		gx < 0 || gy < 0)
+		return NULL;
+
+	// ensure GridMap is loaded
+	EnsureGridCreated(GridCoord(63 - gx, 63 - gy));
+
+	return GridMaps[gx][gy];
+}
+
 float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/) const
 {
 	if (const_cast<Map*>(this)->GetGrid(x, y))
