@@ -475,9 +475,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
         uint32 GetEquipmentId() const { return GetCreatureTemplate()->equipmentId; }
 
-
-		uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
-
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
         uint32 GetCorpseDelay() const { return m_corpseDelay; }
         bool isRacialLeader() const { return GetCreatureTemplate()->RacialLeader; }
@@ -664,7 +661,12 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
         void SetNoSearchAssistance(bool val) { m_AlreadySearchedAssistance = val; }
         bool HasSearchedAssistance() { return m_AlreadySearchedAssistance; }
         bool CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction = true) const;
+		bool _CanDetectFeignDeathOf(const Unit* target) const;
         bool _IsTargetAcceptable(const Unit* target) const;
+
+		void UpdateMoveInLineOfSightState();
+		bool IsMoveInLineOfSightDisabled() { return m_moveInLineOfSightDisabled; }
+		bool IsMoveInLineOfSightStrictlyDisabled() { return m_moveInLineOfSightStrictlyDisabled; }
 
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
@@ -802,7 +804,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
         MovementGeneratorType m_defaultMovementType;
         uint32 m_spawnId;                               ///< For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;
-		uint32 m_DBTableGuid;
 
         bool m_AlreadyCallAssistance;
         bool m_AlreadySearchedAssistance;
@@ -811,6 +812,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
 
         SpellSchoolMask m_meleeDamageSchoolMask;
         uint32 m_originalEntry;
+
+		bool m_moveInLineOfSightDisabled;
+		bool m_moveInLineOfSightStrictlyDisabled;
 
         Position m_homePosition;
         Position m_transportHomePosition;

@@ -42,8 +42,7 @@ class HomeMovementGenerator<Creature> : public MovementGeneratorMedium< Creature
 
     private:
         void _setTargetLocation(Creature &);
-		bool arrived : 1;
-		bool i_recalculateTravel : 1;
+        bool arrived;
 };
 #endif
 
