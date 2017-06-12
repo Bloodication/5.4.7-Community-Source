@@ -11733,6 +11733,9 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, uint32 absorb, Au
 			if (!(procEx & PROC_EX_CRITICAL_HIT))
 				return false;
 
+			if (HasAura(93400))
+				return false;
+			
 			break;
 		}
         case 144586:// Item - Paladin T16 Retribution 2P Bonus - 144586 (proc Warrior of the Light - 144587)

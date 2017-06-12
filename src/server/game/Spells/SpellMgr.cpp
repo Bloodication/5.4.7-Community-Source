@@ -5424,6 +5424,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 34936: // Backlash
                 case 93400: // Shooting Stars
+					spellInfo->ProcCharges = 1;
+					break;
                 case 77762: // Lava Surge
                     spellInfo->ProcFlags = 0;
                     spellInfo->ProcCharges = 1;

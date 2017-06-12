@@ -605,7 +605,9 @@ class spell_dru_soul_of_the_forest : public SpellScriptLoader
                                 caster->AddAura(SPELL_DRUID_DREAM_OF_CENARIUS_BEAR, caster);
                         }
                     }
-
+					
+					
+					
                     if (caster->HasAura(SPELL_DRUID_SOUL_OF_THE_FOREST))
                     {
                         if (GetSpellInfo()->Id == 18562)
@@ -1724,7 +1726,6 @@ class spell_dru_lifebloom : public SpellScriptLoader
             {
                 MakeFinalHeal();
             }
-
             void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 // Final heal only on duration end
@@ -1747,7 +1748,11 @@ class spell_dru_lifebloom : public SpellScriptLoader
                 AuraEffect const* aurEff = aura->GetEffect(EFFECT_1);
                 if (!aurEff)
                     return;
-
+				
+				if (Player* _player = GetCaster()->ToPlayer())
+					if (_player->HasAura(114108))
+						return;
+				
                 int32 healAmount = aurEff->GetAmount();
 
                 // Increase final heal by 50%

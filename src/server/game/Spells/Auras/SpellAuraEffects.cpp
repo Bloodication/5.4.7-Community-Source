@@ -6188,20 +6188,23 @@ void AuraEffect::HandleModCategoryCooldown(AuraApplication const* aurApp, uint8 
     target->ToPlayer()->SendCategoryCooldown(categoryId, value);
 }
 
-void AuraEffect::HandleOverrideActionbarSpells(AuraApplication const* aurApp, uint8 mode, bool apply) const
+void AuraEffect::HandleOverrideActionBarSpells(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
-    if (!(mode & AURA_EFFECT_HANDLE_REAL))
-        return;
-
-    Unit* target = aurApp->GetTarget();
-    if (target->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    if (GetId() == 77616)
-    {
-        target->ToPlayer()->m_HasDarkSimulacrumAura = apply;
-    }
-}
+ 	if (!(mode & AURA_EFFECT_HANDLE_REAL))
+ 		return;
+ 
+ 	Player* target = aurApp->GetTarget()->ToPlayer();
+ 
+ 	if (!target || apply)
+ 		return;
+ 
+ 	Unit::AuraEffectList const& mDumyAuras = target->GetAuraEffectsByType(GetAuraType());
+ 	for (Unit::AuraEffectList::const_iterator i = mDumyAuras.begin(); i != mDumyAuras.end(); ++i)
+ 	{
+ 		if (GetId() != (*i)->GetId())
+ 			(*i)->GetBase()->SetNeedClientUpdateForTargets();
+ 	}
+ }
 
 void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
