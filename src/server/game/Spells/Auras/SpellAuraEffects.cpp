@@ -6188,7 +6188,7 @@ void AuraEffect::HandleModCategoryCooldown(AuraApplication const* aurApp, uint8 
     target->ToPlayer()->SendCategoryCooldown(categoryId, value);
 }
 
-void AuraEffect::HandleOverrideActionBarSpells(AuraApplication const* aurApp, uint8 mode, bool apply) const
+void AuraEffect::HandleOverrideActionbarSpells(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
  	if (!(mode & AURA_EFFECT_HANDLE_REAL))
  		return;

@@ -13251,7 +13251,10 @@ void Unit::SetCharm(Unit* charm, bool apply)
         if (charm->GetTypeId() == TYPEID_PLAYER
             || !charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_MINION)
             || charm->GetOwnerGUID() != GetGUID())
+		{
             m_Controlled.erase(charm);
+			charm->GetMotionMaster()->Clear();
+		}
     }
 }
 
