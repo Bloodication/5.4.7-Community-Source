@@ -31,8 +31,6 @@
 #include "World.h"
 #include "Group.h"
 #include "SpellInfo.h"
-#include "MMapFactory.h"
-#include "MMapManager.h"
 #include "SpellAuraEffects.h"
 
 void WorldSession::HandleDismissCritter(WorldPacket& recvData)
@@ -233,10 +231,6 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     Unit* TargetUnit = ObjectAccessor::GetUnit(*_player, guid2);
                     if (!TargetUnit)
                         return;
-
-					// Not let attack through obstructions
-					bool checkLos = !MMAP::MMapFactory::IsPathfindingEnabled(pet->GetMap()) ||
-						(TargetUnit->GetTypeId() == TYPEID_UNIT && (TargetUnit->ToCreature()->isWorldBoss() || TargetUnit->ToCreature()->IsDungeonBoss()));
 
                     if (Unit* owner = pet->GetOwner())
                         if (!owner->IsValidAttackTarget(TargetUnit))

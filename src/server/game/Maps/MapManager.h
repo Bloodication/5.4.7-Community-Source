@@ -42,13 +42,6 @@ class MapManager
         Map* FindMap(uint32 mapId, uint32 instanceId) const;
         Map* FindRaidMap(uint32 mapId, RaidEncounter* encounter) const;
 
-		Map* FindBaseMap(uint32 mapId) const
-		{
-			MapMapType::const_iterator iter = i_maps.find(mapId);
-			return (iter == i_maps.end() ? NULL : iter->second);
-		}
-
-
         uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
         {
             Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
@@ -163,6 +156,12 @@ class MapManager
 
         MapManager();
         ~MapManager();
+
+        Map* FindBaseMap(uint32 mapId) const
+        {
+            MapMapType::const_iterator iter = i_maps.find(mapId);
+            return (iter == i_maps.end() ? NULL : iter->second);
+        }
 
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);

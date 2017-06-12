@@ -21,7 +21,6 @@
 
 #include "Map.h"
 #include "InstanceSaveMgr.h"
-
 #include "DBCEnums.h"
 
 class RaidEncounter;

@@ -542,7 +542,6 @@ enum UnitState
     UNIT_STATE_CHASE_MOVE      = 0x04000000,
     UNIT_STATE_FOLLOW_MOVE     = 0x08000000,
 	UNIT_STATE_IGNORE_PATHFINDING = 0x10000000,                 // do not use pathfinding in any MovementGenerator
-	UNIT_STATE_NO_ENVIRONMENT_UPD = 0x20000000,
     UNIT_STATE_RECAL_CONFUSE   = 0x10000000,
     UNIT_STATE_UNATTACKABLE    = (UNIT_STATE_IN_FLIGHT | UNIT_STATE_ONVEHICLE),
     // for real move using movegen check and stop (except unstoppable flight)
@@ -1172,12 +1171,6 @@ struct CharmInfo
         void SaveStayPosition();
         void GetStayPosition(float &x, float &y, float &z);
 
-
-		void SetForcedSpell(uint32 id) { _forcedSpellId = id; }
-		int32 GetForcedSpell() { return _forcedSpellId; }
-		void SetForcedTargetGUID(uint64 guid) { _forcedTargetGUID = guid; }
-		uint64 GetForcedTarget() { return _forcedTargetGUID; }
-
     private:
 
         Unit* m_unit;
@@ -1198,9 +1191,6 @@ struct CharmInfo
         float m_stayX;
         float m_stayY;
         float m_stayZ;
-		int32 _forcedSpellId;
-		uint64 _forcedTargetGUID;
-
 
         GlobalCooldownMgr m_GlobalCooldownMgr;
 };
@@ -1287,32 +1277,6 @@ enum LossOfControlType
 
 struct SpellProcEventEntry;                                 // used only privately
 
-// pussywizard:
-class MMapTargetData
-{
-public:
-	MMapTargetData() {}
-	MMapTargetData(uint32 endTime, const Position* o, const Position* t)
-	{
-		_endTime = endTime;
-		_posOwner.Relocate(o);
-		_posTarget.Relocate(t);
-	}
-	MMapTargetData(const MMapTargetData& c)
-	{
-		_endTime = c._endTime;
-		_posOwner.Relocate(c._posOwner);
-		_posTarget.Relocate(c._posTarget);
-	}
-	bool PosChanged(const Position& o, const Position& t) const
-	{
-		return _posOwner.GetExactDistSq(&o) > 0.5f*0.5f || _posTarget.GetExactDistSq(&t) > 0.5f*0.5f;
-	}
-	uint32 _endTime;
-	Position _posOwner;
-	Position _posTarget;
-};
-
 class Unit : public WorldObject
 {
     public:
@@ -1365,7 +1329,7 @@ class Unit : public WorldObject
         float GetMeleeReach() const { float reach = m_floatValues[UNIT_FIELD_COMBATREACH]; return reach > MIN_MELEE_REACH ? reach : MIN_MELEE_REACH; }
         bool IsWithinCombatRange(const Unit* obj, float dist2compare) const;
         bool IsWithinMeleeRange(const Unit* obj, float dist = MELEE_RANGE) const;
-		bool GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, bool force = false) const;
+        void GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const;
         uint32 m_extraAttacks;
         bool m_canDualWield;
         int32 insightCount;
@@ -1687,7 +1651,6 @@ class Unit : public WorldObject
         bool IsValidAssistTarget(Unit const* target) const;
         bool _IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) const;
 
-		void UpdateEnvironmentIfNeeded(const uint8 option);
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
         virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
@@ -1763,12 +1726,8 @@ class Unit : public WorldObject
 
         bool IsLevitating() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);}
         bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING);}
-		virtual bool SetDisableGravity(bool disable, bool packetOnly = false);
-		virtual bool SetSwim(bool enable);
-		virtual bool SetCanFly(bool enable, bool packetOnly = false);
-		virtual bool SetWaterWalking(bool enable, bool packetOnly = false);
-		virtual bool SetFeatherFall(bool enable, bool packetOnly = false);
         virtual bool SetWalk(bool enable);
+        virtual bool SetDisableGravity(bool disable, bool packetOnly = false);
         bool SetHover(bool enable);
 
         void SetInFront(Unit const* target);
@@ -2392,7 +2351,7 @@ class Unit : public WorldObject
         bool isTurning() const  { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING); }
         virtual bool CanFly() const = 0;
         bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
-		bool IsFalling() const;
+        void SetCanFly(bool apply);
 
         void RewardRage(uint32 baseRage, bool attacker);
 
@@ -2417,13 +2376,6 @@ class Unit : public WorldObject
                 SetUInt64Value(UNIT_FIELD_TARGET, guid);
         }
 
-		// pussywizard:
-		// MMaps
-		std::map<uint64, MMapTargetData> m_targetsNotAcceptable;
-		bool isTargetNotAcceptableByMMaps(uint64 guid, uint32 currTime, const Position* t = NULL) const { std::map<uint64, MMapTargetData>::const_iterator itr = m_targetsNotAcceptable.find(guid); if (itr != m_targetsNotAcceptable.end() && (itr->second._endTime >= currTime || t && !itr->second.PosChanged(*this, *t))) return true; return false; }
-		uint32 m_mmapNotAcceptableStartTime;
-
-
         // Handling caster facing during spell cast
         void FocusTarget(Spell const* focusSpell, uint64 target);
         void ReleaseFocus(Spell const* focusSpell);
@@ -2442,8 +2394,6 @@ class Unit : public WorldObject
         Movement::MoveSpline * movespline;
 
         void OnRelocated();
-
-		void PetSpellFail(const SpellInfo* spellInfo, Unit* target, uint32 result);
 
         // helper for dark simulacrum spell
         Unit* GetSimulacrumTarget();
@@ -2677,12 +2627,6 @@ class Unit : public WorldObject
         void SetRooted(bool apply);
 
     public:
-		Position m_last_underwaterstate_position;
-		Position m_last_environment_position;
-		bool m_last_isinwater_status;
-		bool m_last_islittleabovewater_status;
-		bool m_last_isunderwater_status;
-		bool m_is_updating_environment;
         Position m_LastAreaPosition;
         Position m_LastZonePosition;
         uint32 m_LastAreaId;

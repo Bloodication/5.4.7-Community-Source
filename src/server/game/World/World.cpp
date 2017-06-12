@@ -55,7 +55,6 @@
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
-#include "MMapFactory.h"
 #include "GameEventMgr.h"
 #include "PoolMgr.h"
 #include "GridNotifiersImpl.h"
@@ -159,7 +158,6 @@ World::~World()
         delete command;
 
     VMAP::VMapFactory::clear();
-	MMAP::MMapFactory::clear();
 
     //TODO free addSessQueue
 }
@@ -1312,9 +1310,6 @@ void World::LoadConfigSettings(bool reload)
 
     // MySQL ping time interval
     m_int_configs[CONFIG_DB_PING_INTERVAL] = ConfigMgr::GetIntDefault("MaxPingTime", 30);
-
-	// misc
-	m_bool_configs[CONFIG_ENABLE_MMAPS] = ConfigMgr::GetBoolDefault("MoveMaps.Enable", true);
 
     //Reset Duel Cooldown
     m_bool_configs[CONFIG_DUEL_RESET_COOLDOWN_ON_START] = ConfigMgr::GetBoolDefault("DuelReset.Cooldown.OnStart", false);

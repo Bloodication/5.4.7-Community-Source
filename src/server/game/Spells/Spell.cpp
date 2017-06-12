@@ -43,8 +43,6 @@
 #include "SharedDefines.h"
 #include "LootMgr.h"
 #include "VMapFactory.h"
-#include "MMapFactory.h"
-#include "MMapManager.h"
 #include "Battleground.h"
 #include "Util.h"
 #include "TemporarySummon.h"
@@ -7675,46 +7673,34 @@ SpellCastResult Spell::CheckCast(bool strict)
                         m_caster->RemoveMovementImpairingAuras();
                 }
 
-				if (MMAP::MMapFactory::IsPathfindingEnabled(m_caster->FindMap(), true) && m_spellInfo->NeedsExplicitUnitTarget())
+				if (GetSpellInfo()->NeedsExplicitUnitTarget())
 				{
 					Unit* target = m_targets.GetUnitTarget();
 					if (!target)
-						return SPELL_FAILED_BAD_TARGETS;
+						return SPELL_FAILED_DONT_REPORT;
 
-					Position pos;
-					target->GetChargeContactPoint(m_caster, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+					float objSize = target->GetObjectSize();
+					float range = m_spellInfo->GetMaxRange(true, m_caster, this) * 1.5f + objSize; // can't be overly strict
 
-					if (m_caster->GetMapId() == 618) // pussywizard: 618 Ring of Valor
-						pos.m_positionZ = std::max(pos.m_positionZ, 28.28f);
-
-					float maxdist = MELEE_RANGE + m_caster->GetMeleeReach() + target->GetMeleeReach();
-					if (target->GetExactDistSq(&pos) > maxdist*maxdist)
-						return SPELL_FAILED_NOPATH;
-
-					if (m_caster->GetMapId() == 618) // pussywizard: 618 Ring of Valor
+					m_preGeneratedPath.SetPathLengthLimit(range);
+					// first try with raycast, if it fails fall back to normal path
+					bool result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false);
+					if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
+						return SPELL_FAILED_OUT_OF_RANGE;
+					else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
 					{
-						if (!((target->GetPositionZ() > 32.0f) ^ (m_caster->GetPositionZ() > 32.0f)))
-							break;
-						return SPELL_FAILED_NOPATH;
-					}
-					else if (m_caster->GetMapId() == 572) // pussywizard: 572 Ruins of Lordaeron
-					{
-						if (pos.GetPositionX() < 1275.0f || m_caster->GetPositionX() < 1275.0f) // special case (acid)
-							break; // can't force path because the way is around and the path is too long
+						result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false);
+						if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
+							return SPELL_FAILED_OUT_OF_RANGE;
+						else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
+							return SPELL_FAILED_NOPATH;
+						else if (m_caster->GetMapId() == 618 && !(target->GetPositionZ() <= 28.50f))
+							return SPELL_FAILED_NOPATH;
 					}
 
-					if (m_caster->GetTransport() != target->GetTransport())
-						return SPELL_FAILED_NOPATH;
-					if (m_caster->GetTransport())
-						break;
-
-					m_pathFinder = new PathGenerator(m_caster);
-					m_pathFinder->CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + 0.15f, false);
-					G3D::Vector3 endPos = m_pathFinder->GetEndPosition(); // also check distance between target and the point calculated by mmaps
-					if (m_pathFinder->GetPathType()&PATHFIND_NOPATH || target->GetExactDistSq(endPos.x, endPos.y, endPos.z) > maxdist*maxdist || m_pathFinder->getPathLength() > (40.0f + (m_caster->HasAura(58097) ? 5.0f : 0.0f)))
-						return SPELL_FAILED_NOPATH;
+					m_preGeneratedPath.ReducePathLenghtByDist(objSize); // move back
 				}
-				break;
+                break;
             }
             case SPELL_EFFECT_SKINNING:
             {

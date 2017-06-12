@@ -23,7 +23,6 @@
 #include "FollowerReference.h"
 #include "Timer.h"
 #include "Unit.h"
-#include "PathGenerator.h"
 
 class TargetedMovementGeneratorBase
 {
@@ -32,21 +31,19 @@ class TargetedMovementGeneratorBase
         void stopFollowing() { }
     protected:
         FollowerReference i_target;
-		Position lastOwnerXYZ;
-		Position lastTargetXYZ;
 };
 
 template<class T, typename D>
 class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, public TargetedMovementGeneratorBase
 {
     protected:
-		TargetedMovementGeneratorMedium(Unit& target, float offset, float angle) :
-			TargetedMovementGeneratorBase(target), i_path(NULL), lastPathingFailMSTime(0),
-			i_recheckDistance(0), i_recheckDistanceForced(2500), i_offset(offset), i_angle(angle),
-			i_recalculateTravel(false), i_targetReached(false)
+        TargetedMovementGeneratorMedium(Unit &target, float offset, float angle, bool useExactTargetLocation = false) :
+            TargetedMovementGeneratorBase(target), i_recheckDistance(0),
+            i_offset(offset), i_angle(angle),
+            i_recalculateTravel(false), i_targetReached(false), m_UseExactTargetLocation(useExactTargetLocation)
         {
         }
-		~TargetedMovementGeneratorMedium() { delete i_path; }
+        ~TargetedMovementGeneratorMedium() {}
 
     public:
         bool Update(T &, const uint32 &);
@@ -56,17 +53,14 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         void UpdateFinalDistance(float fDistance);
 
     protected:
-        void _setTargetLocation(T &, bool initial);
+        void _setTargetLocation(T &);
 
-		PathGenerator* i_path;
         TimeTrackerSmall i_recheckDistance;
-		TimeTrackerSmall i_recheckDistanceForced;
         float i_offset;
         float i_angle;
         bool i_recalculateTravel : 1;
         bool i_targetReached : 1;
         bool m_UseExactTargetLocation : 1;
-		uint32 lastPathingFailMSTime;
 };
 
 template<class T>
@@ -99,8 +93,10 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
     public:
         FollowMovementGenerator(Unit &target)
             : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target){}
-		FollowMovementGenerator(Unit& target, float offset, float angle)
-			: TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle) {}
+        FollowMovementGenerator(Unit &target, float offset, float angle)
+            : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle) {}
+        FollowMovementGenerator(Unit &target, float offset, float angle, bool useExactTargetLocation)
+            : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle, useExactTargetLocation) {}
         ~FollowMovementGenerator() {}
 
         MovementGeneratorType GetMovementGeneratorType() { return FOLLOW_MOTION_TYPE; }

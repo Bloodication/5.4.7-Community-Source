@@ -1,4 +1,5 @@
-# Copyright (C)
+# Copyright (C) 2011-2015 Project SkyFire <http://www.projectskyfire.org/>
+# Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -9,20 +10,21 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 set(Recast_STAT_SRCS
-    Recast.cpp
-    RecastAlloc.cpp
-    RecastArea.cpp
-    RecastContour.cpp
-    RecastFilter.cpp
-    RecastMesh.cpp
-    RecastMeshDetail.cpp
-    RecastRasterization.cpp
-    RecastRegion.cpp
+    Recast.cpp 
+    RecastAlloc.cpp 
+    RecastArea.cpp 
+    RecastContour.cpp 
+    RecastFilter.cpp 
+    RecastLayers.cpp 
+    RecastMesh.cpp 
+    RecastMeshDetail.cpp 
+    RecastRasterization.cpp 
+    RecastRegion.cpp 
 )
 
 if(WIN32)
   include_directories(
-    ${CMAKE_SOURCE_DIR}/modules/worldengine/deps/zlib
+    ${CMAKE_SOURCE_DIR}/dep/zlib
   )
 endif()
 

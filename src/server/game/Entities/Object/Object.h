@@ -894,7 +894,11 @@ class WorldObject : public Object, public WorldLocation
 
         void GetNearPoint2D(float &x, float &y, float distance, float absAngle) const;
         void GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const;
-		bool GetClosePoint(float &x, float &y, float &z, float size, float distance2d = 0, float angle = 0, const WorldObject* forWho = NULL, bool force = false) const;
+        void GetClosePoint(float &x, float &y, float &z, float size, float distance2d = 0, float angle = 0) const
+        {
+            // angle calculated from current orientation
+            GetNearPoint(NULL, x, y, z, size, distance2d, GetOrientation() + angle);
+        }
         void MovePosition(Position &pos, float dist, float angle);
         void GetNearPosition(Position &pos, float dist, float angle)
         {
@@ -907,12 +911,6 @@ class WorldObject : public Object, public WorldLocation
             GetPosition(&pos);
             MovePositionToFirstCollision(pos, dist, angle);
         }
-		void MovePositionToFirstCollisionForTotem(Position &pos, float dist, float angle, bool forGameObject);
-		void GetFirstCollisionPositionForTotem(Position &pos, float dist, float angle, bool forGameObject)
-		{
-			GetPosition(&pos);
-			MovePositionToFirstCollisionForTotem(pos, dist, angle, forGameObject);
-		}
         void MovePositionToCollisionBetween(Position &pos, float distMin, float distMax, float angle);
         void GetCollisionPositionBetween(Position &pos, float distMin, float distMax, float angle)
         {
@@ -924,13 +922,18 @@ class WorldObject : public Object, public WorldLocation
             GetPosition(&pos);
             MovePosition(pos, radius * (float)rand_norm(), (float)rand_norm() * static_cast<float>(2 * M_PI));
         }
+
+        void GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const
+        {
+            // angle to face `obj` to `this` using distance includes size of `obj`
+            GetNearPoint(obj, x, y, z, obj->GetObjectSize(), distance2d, GetAngle(obj));
+        }
+
         float GetObjectSize() const
         {
             return (m_valuesCount > UNIT_FIELD_COMBATREACH) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;
         }
         void UpdateGroundPositionZ(float x, float y, float &z) const;
-		void GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const;
-		void GetChargeContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const;
         void UpdateAllowedPositionZ(float x, float y, float &z) const;
 
         void GetRandomPoint(const Position &srcPos, float distance, float &rand_x, float &rand_y, float &rand_z) const;

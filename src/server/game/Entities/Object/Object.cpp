@@ -1358,20 +1358,6 @@ std::string Position::ToString() const
     return sstr.str();
 }
 
-void WorldObject::GetChargeContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d) const
-{
-	// angle to face `obj` to `this` using distance includes size of `obj`
-	GetNearPoint(obj, x, y, z, obj->GetObjectSize(), distance2d, GetAngle(obj));
-
-	if (fabs(this->GetPositionZ() - z) > 3.0f || !IsWithinLOS(x, y, z))
-	{
-		x = this->GetPositionX();
-		y = this->GetPositionY();
-		z = this->GetPositionZ();
-		obj->UpdateGroundPositionZ(x, y, z);
-	}
-}
-
 void Position::MovePosition(Position &pos, float dist, float angle, WorldObject* object)
 {
     angle += GetOrientation();
@@ -3681,49 +3667,6 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
 
     UpdateGroundPositionZ(x, y, z);                           // update to LOS height if available
     */
-}
-
-bool WorldObject::GetClosePoint(float &x, float &y, float &z, float size, float distance2d, float angle, const WorldObject* forWho, bool force) const
-{
-	// angle calculated from current orientation
-	GetNearPoint(forWho, x, y, z, size, distance2d, GetOrientation() + angle);
-
-	if (fabs(this->GetPositionZ() - z) > 3.0f || !IsWithinLOS(x, y, z))
-	{
-		x = this->GetPositionX();
-		y = this->GetPositionY();
-		z = this->GetPositionZ();
-		if (forWho)
-			if (const Unit* u = forWho->ToUnit())
-				u->UpdateAllowedPositionZ(x, y, z);
-	}
-	float maxDist = GetObjectSize() + size + distance2d + 1.0f;
-	if (GetExactDistSq(x, y, z) >= maxDist*maxDist)
-	{
-		if (force)
-		{
-			x = this->GetPositionX();
-			y = this->GetPositionY();
-			z = this->GetPositionZ();
-			return true;
-		}
-		return false;
-	}
-	return true;
-}
-
-void WorldObject::GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d) const
-{
-	// angle to face `obj` to `this` using distance includes size of `obj`
-	GetNearPoint(obj, x, y, z, obj->GetObjectSize(), distance2d, GetAngle(obj));
-
-	if (fabs(this->GetPositionZ() - z) > 3.0f || !IsWithinLOS(x, y, z))
-	{
-		x = this->GetPositionX();
-		y = this->GetPositionY();
-		z = this->GetPositionZ();
-		obj->UpdateAllowedPositionZ(x, y, z);
-	}
 }
 
 void WorldObject::MovePosition(Position &pos, float dist, float angle)

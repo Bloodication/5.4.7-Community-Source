@@ -69,183 +69,133 @@ void WaypointMovementGenerator<Creature>::Reset(Creature &creature)
 
 void WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
 {
-	if (!i_path || i_path->empty())
-		return;
-	if (m_isArrivalDone)
-		return;
+    if (!i_path || i_path->empty())
+        return;
+    if (m_isArrivalDone)
+        return;
 
-	creature.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
-	m_isArrivalDone = true;
+    creature.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
+    m_isArrivalDone = true;
 
-	if (i_path->at(i_currentNode)->event_id && urand(0, 99) < i_path->at(i_currentNode)->event_chance)
-	{
-		sLog->outDebug(LOG_FILTER_MAPSCRIPTS, "Creature movement start script %u at point %u for " UI64FMTD ".", i_path->at(i_currentNode)->event_id, i_currentNode, creature.GetGUID());
-		creature.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
-		creature.GetMap()->ScriptsStart(sWaypointScripts, i_path->at(i_currentNode)->event_id, &creature, NULL);
-	}
+    WaypointData const* wp = i_path->at(i_currentNode);
 
-	// Inform script
-	MovementInform(creature);
-	creature.UpdateWaypointID(i_currentNode);
+    if (wp->event_id && urand(0, 99) < wp->event_chance)
+    {
+        sLog->outDebug(LOG_FILTER_MAPSCRIPTS, "Creature movement start script %u at point %u for " UI64FMTD ".", wp->event_id, i_currentNode, creature.GetGUID());
+        creature.GetMap()->ScriptsStart(sWaypointScripts, wp->event_id, &creature, NULL);
+    }
 
-	if (i_path->at(i_currentNode)->delay)
-	{
-		creature.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
-		Stop(i_path->at(i_currentNode)->delay);
-	}
+    // Inform script
+    MovementInform(creature);
+    creature.UpdateWaypointID(i_currentNode);
+    Stop(wp->delay);
 }
-
 
 bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
 {
-	if (!i_path || i_path->empty())
-		return false;
+    if (!i_path || i_path->empty())
+        return false;
+    if (Stopped())
+        return true;
 
-	// Xinef: Dont allow dead creatures to move
-	if (!creature.isAlive())
-		return false;
+    bool transportPath = creature.GetTransGUID() != 0LL;
+    if (m_isArrivalDone)
+    {
+        if ((i_currentNode == i_path->size() - 1) && !repeating) // If that's our last waypoint
+        {
+            float x = i_path->at(i_currentNode)->x;
+            float y = i_path->at(i_currentNode)->y;
+            float z = i_path->at(i_currentNode)->z;
+            float o = creature.GetOrientation();
 
-	if (Stopped())
-		return true;
+            if (!transportPath)
+                creature.SetHomePosition(x, y, z, o);
+            else
+            {
+                if (Transport* trans = creature.GetTransport())
+                {
+                    o -= trans->GetOrientation();
+                    creature.SetTransportHomePosition(x, y, z, o);
+                    trans->CalculatePassengerPosition(x, y, z, &o);
+                    creature.SetHomePosition(x, y, z, o);
+                }
+                else
+                    transportPath = false;
+                // else if (vehicle) - this should never happen, vehicle offsets are const
+            }
 
-	bool transportPath = creature.HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) && creature.GetTransGUID();
+            creature.GetMotionMaster()->Initialize();
+            return false;
+        }
 
-	if (m_isArrivalDone)
-	{
-		// Xinef: not true... update this at every waypoint!
-		//if ((i_currentNode == i_path->size() - 1) && !repeating) // If that's our last waypoint
-		{
-			float x = i_path->at(i_currentNode)->x;
-			float y = i_path->at(i_currentNode)->y;
-			float z = i_path->at(i_currentNode)->z;
-			float o = creature.GetOrientation();
+        i_currentNode = (i_currentNode+1) % i_path->size();
+    }
 
-			if (!transportPath)
-				creature.SetHomePosition(x, y, z, o);
-				// else if (vehicle) - this should never happen, vehicle offsets are const
-		}
+    WaypointData const* node = i_path->at(i_currentNode);
 
-		// Xinef: moved the upper IF here
-		if ((i_currentNode == i_path->size() - 1) && !repeating) // If that's our last waypoint
-		{
-			creature.GetMotionMaster()->Initialize();
-			return false;
-		}
+    m_isArrivalDone = false;
 
-		i_currentNode = (i_currentNode + 1) % i_path->size();
-	}
+    creature.AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
-	// xinef: do not initialize motion if we got stunned in movementinform
-	if (creature.HasUnitState(UNIT_STATE_NOT_MOVE))
-		return true;
+    Movement::Location formationDest(node->x, node->y, node->z, 0.0f);
+    Movement::MoveSplineInit init(creature);
 
-	WaypointData const* node = i_path->at(i_currentNode);
+    //! If creature is on transport, we assume waypoints set in DB are already transport offsets
+    if (transportPath)
+    {
+        init.DisableTransportPathTransformations();
+        if (TransportBase* trans = creature.GetDirectTransport())
+            trans->CalculatePassengerPosition(formationDest.x, formationDest.y, formationDest.z, &formationDest.orientation);
+    }
 
-	m_isArrivalDone = false;
+    //! Do not use formationDest here, MoveTo requires transport offsets due to DisableTransportPathTransformations() call
+    //! but formationDest contains global coordinates
+    
+    init.MoveTo(node->x, node->y, node->z);
 
-	creature.AddUnitState(UNIT_STATE_ROAMING_MOVE);
+    //! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
+    if (node->orientation && node->delay)
+        init.SetFacing(node->orientation);
 
-	Movement::Location formationDest(node->x, node->y, node->z, 0.0f);
-	Movement::MoveSplineInit init(creature);
+    init.SetWalk(!node->run);
+    init.Launch();
 
-	//! If creature is on transport, we assume waypoints set in DB are already transport offsets
-	if (transportPath)
-	{
-		init.DisableTransportPathTransformations();
-		if (TransportBase* trans = creature.GetDirectTransport())
-			trans->CalculatePassengerPosition(formationDest.x, formationDest.y, formationDest.z, &formationDest.orientation);
-	}
+    //Call for creature group update
+    if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
+        creature.GetFormation()->LeaderMoveTo(formationDest.x, formationDest.y, formationDest.z);
 
-	//! Do not use formationDest here, MoveTo requires transport offsets due to DisableTransportPathTransformations() call
-	//! but formationDest contains global coordinates
-	init.MoveTo(node->x, node->y, node->z);
-
-	//! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
-	if (node->orientation && node->delay)
-		init.SetFacing(node->orientation);
-
-	switch (node->move_type)
-	{
-	case WAYPOINT_MOVE_TYPE_LAND:
-		init.SetAnimation(Movement::ToGround);
-		break;
-	case WAYPOINT_MOVE_TYPE_TAKEOFF:
-		init.SetAnimation(Movement::ToFly);
-		break;
-	case WAYPOINT_MOVE_TYPE_RUN:
-		init.SetWalk(false);
-		break;
-	case WAYPOINT_MOVE_TYPE_WALK:
-		init.SetWalk(true);
-		break;
-	}
-
-	init.Launch();
-
-	//Call for creature group update
-	//if (creature.GetFormation() && creature.GetFormation()->getLeader() == creature) quadral check here
-		//creature.GetFormation()->LeaderMoveTo(formationDest.x, formationDest.y, formationDest.z, node->move_type == WAYPOINT_MOVE_TYPE_RUN);
-
-	return true;
+    return true;
 }
 
 bool WaypointMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff)
 {
-	// Waypoint movement can be switched on/off
-	// This is quite handy for escort quests and other stuff
-	if (creature.HasUnitState(UNIT_STATE_NOT_MOVE))
-	{
-		creature.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
-		return true;
-	}
-	// prevent a crash at empty waypoint path.
-	if (!i_path || i_path->empty())
-		return false;
+    // Waypoint movement can be switched on/off
+    // This is quite handy for escort quests and other stuff
+    if (creature.HasUnitState(UNIT_STATE_NOT_MOVE))
+    {
+        creature.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
+        return true;
+    }
+    // prevent a crash at empty waypoint path.
+    if (!i_path || i_path->empty())
+        return false;
 
-	// Xinef: Dont allow dead creatures to move
-	if (!creature.isAlive())
-		return false;
-
-	// prevent movement while casting spells with cast time or channel time
-	if (creature.HasUnitState(UNIT_STATE_CASTING))
-	{
-		bool stop = true;
-		if (Spell* spell = creature.GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-
-		if (stop)
-		{
-			Stop(1000);
-			if (!creature.IsStopped())
-				creature.StopMoving();
-			return true;
-		}
-	}
-
-	if (Stopped())
-	{
-		if (CanMove(diff))
-			return StartMove(creature);
-	}
-	else
-	{
-		if (creature.IsStopped())
-			Stop(STOP_TIME_FOR_PLAYER);
-		else
-		{
-			// xinef: code to detect pre-empetively if we should start movement to next waypoint
-			// xinef: do not start pre-empetive movement if current node has delay or we are ending waypoint movement
-			bool finished = creature.movespline->Finalized();
-			if (!finished && !i_path->at(i_currentNode)->delay && ((i_currentNode != i_path->size() - 1) || repeating))
-				finished = (creature.movespline->_Spline().length(creature.movespline->_currentSplineIdx() + 1) - creature.movespline->timePassed()) < 200;
-
-			if (finished)
-			{
-				OnArrived(creature);
-				return StartMove(creature);
-			}
-		}
-	}
-	return true;
+    if (Stopped())
+    {
+        if (CanMove(diff))
+            return StartMove(creature);
+    }
+    else
+    {
+        if (creature.IsStopped())
+            Stop(STOP_TIME_FOR_PLAYER);
+        else if (creature.movespline->Finalized())
+        {
+            OnArrived(creature);
+            return StartMove(creature);
+        }
+    }
+     return true;
  }
 
 void WaypointMovementGenerator<Creature>::MovementInform(Creature &creature)
