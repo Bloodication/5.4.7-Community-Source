@@ -1946,7 +1946,7 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
                     switch (GetId())
                     {
                         // Drink
-                        /*case 430:
+                        case 430:
                         case 431:
                         case 432:
                         case 1133:
@@ -2026,7 +2026,7 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
                             }
 
                             break;
-                        }*/
+                        }
                         case 58549: // Tenacity
                         case 59911: // Tenacity (vehicle)
                            GetBase()->RefreshDuration();
