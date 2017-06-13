@@ -1,4 +1,4 @@
---	Fixed Priest S15 Healer Set not removing Holy Spark Proc
+-- Fixed Priest S15 Healer Set not removing Holy Spark Proc
 Delete From spell_linked_spell where spell_trigger = 2061 AND spell_effect = -131567;
 Delete From spell_linked_spell where spell_trigger = 2060 AND spell_effect = -131567;
 Delete From spell_linked_spell where spell_trigger = 88684 AND spell_effect = -131567;
