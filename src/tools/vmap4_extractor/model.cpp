@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2005-2013 MaNGOS <http://www.getmangos.com/>
+ * Copyright (C) 2008-2013 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,12 +9,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "vmapexport.h"
@@ -46,7 +47,7 @@ bool Model::open()
     _unload();
 
     memcpy(&header, f.getBuffer(), sizeof(ModelHeader));
-    if(header.nBoundingTriangles > 0)
+    if (header.nBoundingTriangles > 0)
     {
         f.seek(0);
         f.seekRelative(header.ofsBoundingVertices);
@@ -98,19 +99,8 @@ bool Model::ConvertToVMAPModel(const char * outfilename)
     wsize = sizeof(uint32) + sizeof(unsigned short) * nIndexes;
     fwrite(&wsize, sizeof(int), 1, output);
     fwrite(&nIndexes, sizeof(uint32), 1, output);
-    if (nIndexes > 0)
-    {
-        for (uint32 i = 0; i < nIndexes; ++i)
-        {
-            if ((i % 3) - 1 == 0 && i + 1 < nIndexes)
-            {
-                uint16 tmp = indices[i];
-                indices[i] = indices[i + 1];
-                indices[i + 1] = tmp;
-            }
-        }
+    if (nIndexes >0)
         fwrite(indices, sizeof(unsigned short), nIndexes, output);
-    }
 
     fwrite("VERT", 4, 1, output);
     wsize = sizeof(int) + sizeof(float) * 3 * nVertices;
@@ -118,12 +108,8 @@ bool Model::ConvertToVMAPModel(const char * outfilename)
     fwrite(&nVertices, sizeof(int), 1, output);
     if (nVertices >0)
     {
-        for (uint32 vpos = 0; vpos < nVertices; ++vpos)
-        {
-            float tmp = vertices[vpos].y;
-            vertices[vpos].y = -vertices[vpos].z;
-            vertices[vpos].z = tmp;
-        }
+        for(uint32 vpos=0; vpos <nVertices; ++vpos)
+            std::swap(vertices[vpos].y, vertices[vpos].z);
 
         fwrite(vertices, sizeof(float)*3, nVertices, output);
     }
@@ -145,7 +131,6 @@ Vec3D fixCoordSystem2(Vec3D v)
 }
 
 ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE *pDirfile)
-    : model(NULL), d1(0), w(0.0f)
 {
     float ff[3];
     f.read(&id, 4);
@@ -153,7 +138,8 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
     pos = fixCoords(Vec3D(ff[0], ff[1], ff[2]));
     f.read(ff, 12);
     rot = Vec3D(ff[0], ff[1], ff[2]);
-    f.read(&scale, 4);
+    f.read(&scale, 2);
+    f.read(&flags, 2);
     // scale factor - divide by 1024. blizzard devs must be on crack, why not just use a float?
     sc = scale / 1024.0f;
 

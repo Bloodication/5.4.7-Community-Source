@@ -1,5 +1,4 @@
-# Copyright (C) 2005-2009 MaNGOS project <http://getmangos.com/>
-# Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
+# Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -34,5 +33,3 @@ if( UNIX )
 elseif( WIN32 )
   install(TARGETS vmap4assembler DESTINATION "${CMAKE_INSTALL_PREFIX}")
 endif()
-
-set_property(TARGET vmap4assembler PROPERTY FOLDER "tools")

@@ -541,7 +541,6 @@ enum UnitState
     UNIT_STATE_FLEEING_MOVE    = 0x02000000,
     UNIT_STATE_CHASE_MOVE      = 0x04000000,
     UNIT_STATE_FOLLOW_MOVE     = 0x08000000,
-	UNIT_STATE_IGNORE_PATHFINDING = 0x10000000,                 // do not use pathfinding in any MovementGenerator
     UNIT_STATE_RECAL_CONFUSE   = 0x10000000,
     UNIT_STATE_UNATTACKABLE    = (UNIT_STATE_IN_FLIGHT | UNIT_STATE_ONVEHICLE),
     // for real move using movegen check and stop (except unstoppable flight)
@@ -2580,8 +2579,6 @@ class Unit : public WorldObject
         uint32 _skipCount;
         uint32 _skipDiff;
 
-		inline Map const* GetBaseSwapMap() const { return _baseSwapMap; }
-
         bool m_disableHealthRegen;
         bool m_disableEnterEvadeMode;
 
@@ -2682,7 +2679,6 @@ class Unit : public WorldObject
         int32 _eclipsePower;
 
         time_t _lastDamagedTime;
-		const Map *_baseSwapMap;
 
         uint64 m_petBattleId;
 };
