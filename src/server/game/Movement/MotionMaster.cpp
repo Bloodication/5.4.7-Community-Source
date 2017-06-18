@@ -482,6 +482,7 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlo
 
 void MotionMaster::MoveFollowExact(Unit* target, float dist, float angle, MovementSlot slot)
 {
+<<<<<<< HEAD
     // ignore movement request if target not exist
     if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
@@ -502,6 +503,28 @@ void MotionMaster::MoveFollowExact(Unit* target, float dist, float angle, Moveme
             target->GetTypeId() == TYPEID_PLAYER ? target->GetGUIDLow() : target->ToCreature()->GetSpawnId());
         Mutate(new FollowMovementGenerator<Creature>(*target,dist,angle, true), slot);
     }
+=======
+	/*// ignore movement request if target not exist
+	if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+		return;
+
+	//_owner->AddUnitState(UNIT_STATE_FOLLOW);
+	if (_owner->GetTypeId() == TYPEID_PLAYER)
+	{
+		sLog->outDebug(LOG_FILTER_GENERAL, "Player (GUID: %u) follow to %s (GUID: %u)", _owner->GetGUIDLow(),
+			target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature",
+			target->GetTypeId() == TYPEID_PLAYER ? target->GetGUIDLow() : target->ToCreature()->GetSpawnId());
+		Mutate(new FollowMovementGenerator<Player>(*target, dist, angle), slot);
+	}
+	else
+	{
+		sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u GUID: %u) follow to %s (GUID: %u)",
+			_owner->GetEntry(), _owner->GetGUIDLow(),
+			target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature",
+			target->GetTypeId() == TYPEID_PLAYER ? target->GetGUIDLow() : target->ToCreature()->GetSpawnId());
+		Mutate(new FollowMovementGenerator<Creature>(*target, dist, angle, true), slot);
+	}*/
+>>>>>>> parent of 58e376f... core/pathfinding remove un needed code and added comment for crash check
 }
 
 void MotionMaster::MovePoint(uint32 id, float x, float y, float z)

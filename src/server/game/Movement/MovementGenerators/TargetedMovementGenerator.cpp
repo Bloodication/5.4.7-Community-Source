@@ -32,6 +32,7 @@
 template<class T, typename D>
 void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 {
+<<<<<<< HEAD
     if (!i_target.isValid() || !i_target->IsInWorld())
         return;
 
@@ -139,6 +140,145 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     if (i_angle == 0.f)
         init.SetFacing(i_target.getTarget());
     init.Launch();
+=======
+	if (!i_target.isValid() || !i_target->IsInWorld() || !owner.IsInMap(i_target.getTarget()))
+		return;
+
+	if (owner.HasUnitState(UNIT_STATE_NOT_MOVE))
+		return;
+
+	float x, y, z;
+	bool isPlayerPet = owner.isPet() && IS_PLAYER_GUID(owner.GetOwnerGUID());
+	bool sameTransport = owner.GetTransport() && owner.GetTransport() == i_target->GetTransport();
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same transport");
+	bool useMMaps = MMAP::MMapFactory::IsPathfindingEnabled(owner.FindMap()) && !sameTransport;
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same mmaps");
+	bool forceDest = (owner.FindMap() && owner.FindMap()->IsDungeon() && !isPlayerPet) || // force in instances to prevent exploiting
+		(owner.GetTypeId() == TYPEID_UNIT && ((owner.isPet() && owner.HasUnitState(UNIT_STATE_FOLLOW)))) || // force for all bosses, even not in instances
+		(owner.GetMapId() == 572 && (owner.GetPositionX() < 1275.0f || i_target->GetPositionX() < 1275.0f)) || // pussywizard: Ruins of Lordaeron - special case (acid)
+		sameTransport || // nothing to comment, can't find path on transports so allow it
+		(i_target->GetTypeId() == TYPEID_PLAYER && i_target->ToPlayer()->isGameMaster()); // for .npc follow
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same forcedest");
+	bool forcePoint = ((!isPlayerPet || owner.GetMapId() == 618) && (forceDest || !useMMaps)) || sameTransport;
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same forcepoint");
+
+
+	lastOwnerXYZ.Relocate(owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ());
+	lastTargetXYZ.Relocate(i_target->GetPositionX(), i_target->GetPositionY(), i_target->GetPositionZ());
+
+	sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same lastTargetXYZ.Relocate");
+
+	if (!i_offset)
+	{
+
+		sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same useMMaps && !inRange &&	if (!i_offset)");
+		float allowedRange = MELEE_RANGE;
+		if ((!initial || (owner.movespline->Finalized() && this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)) && i_target->IsWithinMeleeRange(&owner, allowedRange) && i_target->IsWithinLOS(owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ()))
+			return;
+
+		sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same useMMaps && !inRange &&	if ((!initial || (owner.movespline->Finalized() && this->GetMovementGene");
+
+		bool inRange = i_target->GetRandomContactPoint(&owner, x, y, z, forcePoint);
+		if (useMMaps && !inRange && (!isPlayerPet || i_target->GetPositionZ() - z > 50.0f))
+		{
+
+			sLog->outError(LOG_FILTER_MAPS, "this is where it crashes after same useMMaps && !inRange && (!isPlayerPet || i_");
+			//useMMaps = false;
+			owner.m_targetsNotAcceptable[i_target->GetGUID()] = MMapTargetData(sWorld->GetGameTime() + DISALLOW_TIME_AFTER_FAIL, &owner, i_target.getTarget());
+			return;
+		}
+	}
+	else
+	{
+		float dist;
+		float size;
+
+		// Pets need special handling.
+		// We need to subtract GetObjectSize() because it gets added back further down the chain
+		//  and that makes pets too far away. Subtracting it allows pets to properly
+		//  be (GetCombatReach() + i_offset) away.
+		// Only applies when i_target is pet's owner otherwise pets and mobs end up
+		//   doing a "dance" while fighting
+		if (owner.isPet() && i_target->GetTypeId() == TYPEID_PLAYER)
+		{
+			dist = i_target->GetCombatReach();
+			size = i_target->GetCombatReach() - i_target->GetObjectSize();
+		}
+		else
+		{
+			dist = i_offset;
+			size = owner.GetObjectSize();
+		}
+
+		if ((!initial || (owner.movespline->Finalized() && this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)) && i_target->IsWithinDistInMap(&owner, dist) && i_target->IsWithinLOS(owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ()))
+			return;
+
+		// Xinef: Fix follow angle for hostile units
+		float angle = i_angle;
+		if (angle == 0.0f && owner.getVictim() && owner.getVictim()->GetGUID() == i_target->GetGUID())
+			angle = MapManager::NormalizeOrientation(i_target->GetAngle(&owner) - i_target->GetOrientation());
+		// to at i_offset distance from target and i_angle from target facing
+		bool inRange = i_target->GetClosePoint(x, y, z, size, dist, angle, &owner, forcePoint);
+		if (!inRange && (forceDest || !useMMaps) && owner.HasUnitState(UNIT_STATE_FOLLOW) && fabs(i_target->GetPositionZ() - z) > 25.0f)
+		{
+			x = i_target->GetPositionX();
+			y = i_target->GetPositionY();
+			z = i_target->GetPositionZ();
+		}
+	}
+
+	D::_addUnitStateMove(owner);
+	i_targetReached = false;
+	i_recalculateTravel = false;
+
+	Movement::MoveSplineInit init(owner);
+
+	if (useMMaps) // pussywizard
+	{
+		if (!i_path)
+			i_path = new PathGenerator(&owner);
+
+		if (!forceDest && getMSTimeDiff(lastPathingFailMSTime, sWorld->GetGameTime()) < 1000)
+		{
+			lastOwnerXYZ.Relocate(-5000.0f, -5000.0f, -5000.0f);
+			return;
+		}
+
+		bool result = i_path->CalculatePath(x, y, z, forceDest);
+		if (result)
+		{
+			float maxDist = MELEE_RANGE + owner.GetMeleeReach() + i_target->GetMeleeReach();
+			if (!forceDest && (i_path->GetPathType() & PATHFIND_NOPATH || !i_offset && !isPlayerPet && i_target->GetExactDistSq(i_path->GetActualEndPosition().x, i_path->GetActualEndPosition().y, i_path->GetActualEndPosition().z) > maxDist*maxDist))
+			{
+				lastPathingFailMSTime = sWorld->GetGameTime();
+				owner.m_targetsNotAcceptable[i_target->GetGUID()] = MMapTargetData(sWorld->GetGameTime()+ DISALLOW_TIME_AFTER_FAIL, &owner, i_target.getTarget());
+				return;
+			}
+			else
+			{
+				owner.m_targetsNotAcceptable.erase(i_target->GetGUID());
+
+				init.MovebyPath(i_path->GetPath());
+				if (i_angle == 0.f)
+					init.SetFacing(i_target.getTarget());
+				init.SetWalk(((D*)this)->EnableWalking());
+				init.Launch();
+				return;
+			}
+		}
+
+		// if failed to generate, just use normal MoveTo
+	}
+
+	init.MoveTo(x, y, z);
+	// Using the same condition for facing target as the one that is used for SetInFront on movement end
+	// - applies to ChaseMovementGenerator mostly
+	if (i_angle == 0.f)
+		init.SetFacing(i_target.getTarget());
+
+	init.SetWalk(((D*)this)->EnableWalking());
+	init.Launch();
+>>>>>>> parent of 58e376f... core/pathfinding remove un needed code and added comment for crash check
 }
 
 template<>
