@@ -1292,6 +1292,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // Enveloping Mist is instantly casted if player is channeling Soothing Mist
     else if (spellInfo->Id == 124682 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
         l_TriggerFlags = TRIGGERED_CAST_DIRECTLY;
+	// Thunder Focus Tea - 116680
+	// Thunder Focus Tea is instantly casted if player is channeling Soothing Mist
+	else if (spellInfo->Id == 116680 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+        l_TriggerFlags = TRIGGERED_CAST_DIRECTLY;
     // Shadow Bolt - 686
     // Glyph of Shadow Bolt - 56240
     else if (spellInfo->Id == 686 && _player->getClass() == CLASS_WARLOCK)
