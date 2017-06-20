@@ -1939,9 +1939,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         // Glyph of Solace
                         if (caster->HasAura(119407))
                         {
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE, 0, target->GetAura(32409));
                             target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
                             target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
+                            target->RemoveAura(131894);
                         }
                         break;
                     }
