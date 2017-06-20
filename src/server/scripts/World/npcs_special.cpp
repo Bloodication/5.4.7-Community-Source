@@ -2256,14 +2256,18 @@ class npc_new_lightwell : public CreatureScript
                 renewTimer = 1000;
                 stacks = false;
 
-				me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-				me->SetFlag(UNIT_NPC_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 				me->SetFlag(UNIT_NPC_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             }
 
             uint32 renewTimer;
             bool stacks;
 
+			void Reset()
+            {
+                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                me->setFaction(35);
+            }
+			
             void EnterEvadeMode()
             {
                 if (!me->isAlive())
@@ -3863,7 +3867,7 @@ class npc_frozen_orb : public CreatureScript
                     me->AddAura(SPELL_SELF_SNARE_90, me);
 
 					if (!activemovement)
-						me->SetSpeed(MOVE_RUN, 2.0f, false);
+						me->SetSpeed(MOVE_RUN, 1.5f, false);
 
                     frozenOrbTimer = 1000;
 					me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
@@ -3903,7 +3907,7 @@ class npc_frozen_orb : public CreatureScript
 						if (!engagedInCombat)
 						{
 							owner->CastSpell(owner, SPELL_FINGERS_OF_FROST, true);
-							me->SetSpeed(MOVE_RUN, 0.20f, false);
+							me->SetSpeed(MOVE_RUN, 0.10f, false);
 							engagedInCombat = true;
 							activemovement = true;
 						}
