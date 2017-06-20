@@ -1,5 +1,4 @@
-# Copyright (C) 2011-2015 Project SkyFire <http://www.projectskyfire.org/>
-# Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
+# Copyright (C) 
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -15,7 +14,6 @@ set(Recast_STAT_SRCS
     RecastArea.cpp 
     RecastContour.cpp 
     RecastFilter.cpp 
-    RecastLayers.cpp 
     RecastMesh.cpp 
     RecastMeshDetail.cpp 
     RecastRasterization.cpp 

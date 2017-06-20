@@ -21,6 +21,7 @@
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "World.h"
+#include "PathGenerator.h"
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 #include "Player.h"
@@ -30,43 +31,94 @@
 template<class T>
 void PointMovementGenerator<T>::Initialize(T &unit)
 {
-    if (!unit.IsStopped())
-        unit.StopMoving();
+	if (!unit.IsStopped())
+		unit.StopMoving();
 
-    unit.AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
-    i_recalculateSpeed = false;
-    Movement::MoveSplineInit init(unit);
-    init.MoveTo(i_x, i_y, i_z);
-    if (speed > 0.0f)
-        init.SetVelocity(speed);
-    init.Launch();
+	unit.AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
+	i_recalculateSpeed = false;
+	Movement::MoveSplineInit init(unit);
+	if (m_precomputedPath.size() > 2) // pussywizard: for charge
+		init.MovebyPath(m_precomputedPath);
+	else if (_generatePath)
+	{
+		PathGenerator path(&unit);
+		bool result = path.CalculatePath(i_x, i_y, i_z, _forceDestination);
+		if (result && !(path.GetPathType() & PATHFIND_NOPATH) && path.GetPath().size() > 2)
+		{
+			m_precomputedPath = path.GetPath();
+			init.MovebyPath(m_precomputedPath);
+		}
+		else
+		{
+			// Xinef: fix strange client visual bug, moving on z coordinate only switches orientation by 180 degrees (visual only)
+			if (G3D::fuzzyEq(unit.GetPositionX(), i_x) && G3D::fuzzyEq(unit.GetPositionY(), i_y))
+			{
+				i_x += 0.2f*cos(unit.GetOrientation());
+				i_y += 0.2f*sin(unit.GetOrientation());
+			}
+
+			init.MoveTo(i_x, i_y, i_z);
+		}
+	}
+	else
+	{
+		// Xinef: fix strange client visual bug, moving on z coordinate only switches orientation by 180 degrees (visual only)
+		if (G3D::fuzzyEq(unit.GetPositionX(), i_x) && G3D::fuzzyEq(unit.GetPositionY(), i_y))
+		{
+			i_x += 0.2f*cos(unit.GetOrientation());
+			i_y += 0.2f*sin(unit.GetOrientation());
+		}
+
+		init.MoveTo(i_x, i_y, i_z);
+	}
+	if (speed > 0.0f)
+		init.SetVelocity(speed);
+	init.Launch();
 }
 
 template<class T>
 bool PointMovementGenerator<T>::Update(T &unit, const uint32 & /*diff*/)
 {
-    if (!&unit)
-        return false;
+	if (&unit)
+		return false;
 
-    if (unit.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
-    {
-        unit.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
-        return true;
-    }
+	if (unit.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
+	{
+		unit.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
+		return true;
+	}
 
-    unit.AddUnitState(UNIT_STATE_ROAMING_MOVE);
+	unit.AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
-    if (i_recalculateSpeed && !unit.movespline->Finalized())
-    {
-        i_recalculateSpeed = false;
-        Movement::MoveSplineInit init(unit);
-        init.MoveTo(i_x, i_y, i_z);
-        if (speed > 0.0f) // Default value for point motion type is 0.0, if 0.0 spline will use GetSpeed on unit
-            init.SetVelocity(speed);
-        init.Launch();
-    }
+	if (i_recalculateSpeed && !unit.movespline->Finalized())
+	{
+		i_recalculateSpeed = false;
+		Movement::MoveSplineInit init(unit);
 
-    return !unit.movespline->Finalized();
+		// xinef: speed changed during path execution, calculate remaining path and launch it once more
+		if (m_precomputedPath.size())
+		{
+			uint32 offset = std::min(uint32(unit.movespline->_currentSplineIdx()), uint32(m_precomputedPath.size()));
+			Movement::PointsArray::iterator offsetItr = m_precomputedPath.begin();
+			std::advance(offsetItr, offset);
+			m_precomputedPath.erase(m_precomputedPath.begin(), offsetItr);
+
+			// restore 0 element (current position)
+			m_precomputedPath.insert(m_precomputedPath.begin(), G3D::Vector3(unit.GetPositionX(), unit.GetPositionY(), unit.GetPositionZ()));
+
+			if (m_precomputedPath.size() > 2)
+				init.MovebyPath(m_precomputedPath);
+			else if (m_precomputedPath.size() == 2)
+				init.MoveTo(m_precomputedPath[1].x, m_precomputedPath[1].y, m_precomputedPath[1].z);
+		}
+		else
+			init.MoveTo(i_x, i_y, i_z);
+		if (speed > 0.0f) // Default value for point motion type is 0.0, if 0.0 spline will use GetSpeed on unit
+			init.SetVelocity(speed);
+		init.Launch();
+	}
+
+	return !unit.movespline->Finalized();
 }
 
 template<class T>

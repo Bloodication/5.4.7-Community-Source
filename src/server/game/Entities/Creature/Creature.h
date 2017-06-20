@@ -661,7 +661,12 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
         void SetNoSearchAssistance(bool val) { m_AlreadySearchedAssistance = val; }
         bool HasSearchedAssistance() { return m_AlreadySearchedAssistance; }
         bool CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction = true) const;
+		bool _CanDetectFeignDeathOf(const Unit* target) const;
         bool _IsTargetAcceptable(const Unit* target) const;
+
+		void UpdateMoveInLineOfSightState();
+		bool IsMoveInLineOfSightDisabled() { return m_moveInLineOfSightDisabled; }
+		bool IsMoveInLineOfSightStrictlyDisabled() { return m_moveInLineOfSightStrictlyDisabled; }
 
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
@@ -807,6 +812,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
 
         SpellSchoolMask m_meleeDamageSchoolMask;
         uint32 m_originalEntry;
+
+		bool m_moveInLineOfSightDisabled;
+		bool m_moveInLineOfSightStrictlyDisabled;
 
         Position m_homePosition;
         Position m_transportHomePosition;
