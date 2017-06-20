@@ -2433,7 +2433,7 @@ class spell_warl_chaos_bolt : public SpellScriptLoader
                         if (Aura* l_Backdraft = l_Caster->GetAura(WarlockSpells::WARLOCK_BACKDRAFT))
                         {
                             if (l_Backdraft->GetCharges() >= 3) ///< Backdraft only applies on Chaos Bolt if over 3 charges
-                                l_Backdraft->ModCharges(-3);
+                                l_Backdraft->ModCharges(-2);
                         }
                     }
                 }
