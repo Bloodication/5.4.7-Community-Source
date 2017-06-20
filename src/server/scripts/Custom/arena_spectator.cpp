@@ -24,11 +24,7 @@ Category: Custom Script
 EndScriptData */
 
 #include "ScriptPCH.h"
-#include "Player.h"
 #include "Chat.h"
-#include "Group.h"
-#include "GroupMgr.h"
-#include "Battleground.h"
 #include "BattlegroundMgr.h"
 
 class arena_spectator_commands : public CommandScript
@@ -38,37 +34,14 @@ class arena_spectator_commands : public CommandScript
 
         static bool HandleSpectateCommand(ChatHandler* handler, const char *args)
         {
-            Player* player = NULL;
-
-            std::string name = handler->extractPlayerNameFromLink((char*)args);
-            if (!name.empty())
-            {
-                player = sObjectAccessor->FindPlayerByNameInOrOutOfWorld(name.c_str());
-            }
-            else
-            {
-                player = handler->getSelectedPlayer();
-            }
-
-            if (!player)
-            {
-                handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
+            Player* target;
+            uint64 target_guid;
+            std::string target_name;
+            if (!handler->extractPlayerTarget((char*)args, &target, &target_guid, &target_name))
                 return false;
-            }
-
-            bool result = SpectateByGuid(handler, player->GetGUID());
-
-            return result;
-        }
-
-        static bool SpectateByGuid(ChatHandler* handler, uint64 guid)
-        {
-            //uint32 lowGuid = atoi(args);
-            //uint64 targetGuid = MAKE_NEW_GUID(lowGuid, 0, HighGuid::Player);
-            uint64 targetGuid = guid;
 
             Player* player = handler->GetSession()->GetPlayer();
-            if (targetGuid == player->GetGUID())
+            if (target == player || target_guid == player->GetGUID())
             {
                 handler->SendSysMessage(LANG_CANT_TELEPORT_SELF);
                 handler->SetSentErrorMessage(true);
@@ -82,9 +55,9 @@ class arena_spectator_commands : public CommandScript
                 return false;
             }
 
-            if (!player->isAlive())
+            if (!target)
             {
-                handler->SendSysMessage("You are dead.");
+                handler->SendSysMessage(LANG_PLAYER_NOT_EXIST_OR_OFFLINE);
                 handler->SetSentErrorMessage(true);
                 return false;
             }
@@ -96,31 +69,61 @@ class arena_spectator_commands : public CommandScript
                 return false;
             }
 
-            if (player->GetSession()->GetInterRealmBG())
+            if (player->GetMap()->IsBattlegroundOrArena() && !player->isSpectator())
             {
-                handler->PSendSysMessage("You are already on interrealm server.");
+                handler->PSendSysMessage("You are already on battleground or arena.");
                 handler->SetSentErrorMessage(true);
                 return false;
             }
 
-            /*if (target && target->GetSession() && !target->GetSession()->GetInterRealmBG())
+            Map* cMap = target->GetMap();
+            if (!cMap->IsBattleArena())
             {
-                handler->PSendSysMessage("Player was not found in arena.");
+                handler->PSendSysMessage("Player didnt found in arena.");
                 handler->SetSentErrorMessage(true);
                 return false;
-            }*/
-
-            if (InterRealmSession *session = sWorld->GetInterRealmSession())
-            {
-                session->SendRegisterSpectator(player, targetGuid);
-                return true;
             }
+
+            if (player->GetMap()->IsBattleground())
+            {
+                handler->PSendSysMessage("Cant do that while you are on battleground.");
+                handler->SetSentErrorMessage(true);
+                return false;
+            }
+
+            // all's well, set bg id
+            // when porting out from the bg, it will be reset to 0
+            player->SetBattlegroundId(target->GetBattlegroundId(), target->GetBattlegroundTypeId());
+            // remember current position as entry point for return at bg end teleportation
+            if (!player->GetMap()->IsBattlegroundOrArena())
+                player->SetBattlegroundEntryPoint();
+
+            if (target->isSpectator())
+            {
+                handler->PSendSysMessage("Can`t do that. Your target is spectator.");
+                handler->SetSentErrorMessage(true);
+                return false;
+            }
+
+            // stop flight if need
+            if (player->isInFlight())
+            {
+                player->GetMotionMaster()->MovementExpired();
+                player->CleanupAfterTaxiFlight();
+            }
+            // save only in non-flight case
             else
-            {
-                handler->PSendSysMessage("InterRealms doesn't work this moment.");
-                handler->SetSentErrorMessage(true);
-                return false;
-            }
+                player->SaveRecallPosition();
+
+            // to point to see at target with same orientation
+            float x, y, z;
+            target->GetContactPoint(player, x, y, z);
+
+            player->TeleportTo(target->GetMapId(), x, y, z, player->GetAngle(target), TELE_TO_GM_MODE);
+            player->SetPhaseMask(target->GetPhaseMask(), true);
+            player->SetSpectate(true);
+            target->GetBattleground()->AddSpectator(player);
+
             return true;
         }
 
@@ -129,13 +132,6 @@ class arena_spectator_commands : public CommandScript
             Player* player =  handler->GetSession()->GetPlayer();
 
             if (!player->isSpectator())
-            {
-                handler->PSendSysMessage("You are not spectator.");
-                handler->SetSentErrorMessage(true);
-                return false;
-            }
-
-            if (!player->GetBattleground())
             {
                 handler->PSendSysMessage("You are not spectator.");
                 handler->SetSentErrorMessage(true);
@@ -159,7 +155,7 @@ class arena_spectator_commands : public CommandScript
 
             Player* player = handler->GetSession()->GetPlayer();
 
-            if (!target || target->isGameMaster())
+            if (!target)
             {
                 handler->PSendSysMessage("Cant find player.");
                 handler->SetSentErrorMessage(true);
@@ -168,7 +164,7 @@ class arena_spectator_commands : public CommandScript
 
             if (!player->isSpectator())
             {
-                handler->PSendSysMessage(LANG_SPECTATOR_NOT_SPECTATOR);
+                handler->PSendSysMessage("You are not spectator, spectate someone first.");
                 handler->SetSentErrorMessage(true);
                 return false;
             }
@@ -191,14 +187,7 @@ class arena_spectator_commands : public CommandScript
             // if exists than battle didn`t begin
             if (target->HasAura(32728) || target->HasAura(32727))
             {
-                handler->PSendSysMessage(LANG_SPECTATOR_BG_NOT_STARTED);
-                handler->SetSentErrorMessage(true);
-                return false;
-            }
-
-            if (target->HasAuraType(SPELL_AURA_MOD_STEALTH) || target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
-            {
-                handler->PSendSysMessage(LANG_SPECTATOR_CANNT_SEE);
+                handler->PSendSysMessage("Cant do that. Arena didn`t started.");
                 handler->SetSentErrorMessage(true);
                 return false;
             }
@@ -221,7 +210,7 @@ class arena_spectator_commands : public CommandScript
 
             if (!player->isSpectator())
             {
-                handler->PSendSysMessage(LANG_SPECTATOR_NOT_SPECTATOR);
+                handler->PSendSysMessage("You are not spectator!");
                 handler->SetSentErrorMessage(true);
                 return false;
             }
@@ -233,34 +222,27 @@ class arena_spectator_commands : public CommandScript
             if (bGround->GetStatus() != STATUS_IN_PROGRESS)
                 return true;
 
-            for (Battleground::BattlegroundScoreMap::const_iterator itr = bGround->GetPlayerScoresBegin(); itr != bGround->GetPlayerScoresEnd(); ++itr)
+            for (Battleground::BattlegroundPlayerMap::const_iterator itr = bGround->GetPlayers().begin(); itr != bGround->GetPlayers().end(); ++itr)
                 if (Player* tmpPlayer = ObjectAccessor::FindPlayer(itr->first))
                 {
+                    if (tmpPlayer->isSpectator())
+                        continue;
+
                     uint32 tmpID = bGround->GetPlayerTeam(tmpPlayer->GetGUID());
 
                     // generate addon massage
-                    uint64 pGuid = tmpPlayer->GetGUID();
                     std::string pName = tmpPlayer->GetName();
-                    uint64 tGuid = NULL;
+                    std::string tName = "";
+					uint64 tGuid = NULL;
+					uint64 pGuid = tmpPlayer->GetGUID();
 
-                    if (Player* target = tmpPlayer->GetSelectedPlayer())
-                        tGuid = target->GetGUID();
+                    if (Player *target = tmpPlayer->GetSelectedPlayer())
+                        tName = target->GetName();
 
                     SpectatorAddonMsg msg;
                     msg.SetPlayer(pGuid);
-                    msg.SetName(pName);
-                    if (tGuid != NULL)
+                    if (tName != "")
                         msg.SetTarget(tGuid);
-                    if (Pet* pPet = tmpPlayer->GetPet())
-                    {
-                        msg.SetPet(pPet->GetCreatureTemplate()->family);
-                        msg.SetPetHP(pPet->GetHealthPct());
-                    }
-                    else
-                    {
-                        msg.SetPet(0);
-                        msg.SetPetHP(0);
-                    }
                     msg.SetStatus(tmpPlayer->isAlive());
                     msg.SetClass(tmpPlayer->getClass());
                     msg.SetCurrentHP(tmpPlayer->GetHealth());
@@ -270,7 +252,6 @@ class arena_spectator_commands : public CommandScript
                     msg.SetCurrentPower(tmpPlayer->GetPower(powerType));
                     msg.SetPowerType(powerType);
                     msg.SetTeam(tmpID);
-                    msg.SetEndTime(uint32(47*MINUTE - bGround->GetElapsedTime() / IN_MILLISECONDS));
                     msg.SendPacket(player->GetGUID());
                 }
 
@@ -297,282 +278,7 @@ class arena_spectator_commands : public CommandScript
         }
 };
 
-
-enum NpcSpectatorAtions {
-
-    // will be used for scrolling
-    NPC_SPECTATOR_REFRESH_LOW               = 1,
-    NPC_SPECTATOR_REFRESH_HIGH              = 2,
-
-    NPC_SPECTATOR_ACTION_LIST_GAMES         = 1000,
-    NPC_SPECTATOR_ACTION_LIST_TOP_GAMES     = 2000,
-
-    // NPC_SPECTATOR_ACTION_SELECTED_PLAYER + player.Guid()
-    NPC_SPECTATOR_ACTION_SELECTED_PLAYER    = 3000
-};
-
-const uint16 TopGamesRating = 1800;
-const uint8  GamesOnPage    = 20;
-
-const uint16 arenas[8] = 
-        { BATTLEGROUND_NA, BATTLEGROUND_BE, 
-        BATTLEGROUND_AA, BATTLEGROUND_RL, 
-        BATTLEGROUND_DS, BATTLEGROUND_RV, 
-        BATTLEGROUND_TV, BATTLEGROUND_TTP };
-
-class npc_arena_spectator : public CreatureScript
-{
-    public:
-        npc_arena_spectator() : CreatureScript("npc_arena_spectator") { }
-
-        bool OnGossipHello(Player* pPlayer, Creature* pCreature)
-        {
-            if (pPlayer->InBattlegroundQueue())
-            {
-                pCreature->MonsterWhisper("You should leave the queue!", pPlayer->GetGUID(), true);
-                return false;
-            }
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "View games with high rating...", GOSSIP_SENDER_MAIN, NPC_SPECTATOR_ACTION_LIST_TOP_GAMES);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "View games with low rating...", GOSSIP_SENDER_MAIN, NPC_SPECTATOR_ACTION_LIST_GAMES);
-            pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pCreature->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
-        {
-            player->PlayerTalkClass->ClearMenus();
-            if (action == NPC_SPECTATOR_REFRESH_LOW ||  (action >= NPC_SPECTATOR_ACTION_LIST_GAMES && action < NPC_SPECTATOR_ACTION_LIST_TOP_GAMES))
-            {
-                uint16 page = action - NPC_SPECTATOR_ACTION_LIST_GAMES;
-                if (action == NPC_SPECTATOR_REFRESH_LOW)
-                    page = 0;
-
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Refresh", GOSSIP_SENDER_MAIN, NPC_SPECTATOR_REFRESH_LOW);
-                ShowPage(player, action == NPC_SPECTATOR_REFRESH_LOW ? 0 : action - NPC_SPECTATOR_ACTION_LIST_GAMES, false);
-                player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
-            }
-            else if (action == NPC_SPECTATOR_REFRESH_HIGH || (action >= NPC_SPECTATOR_ACTION_LIST_TOP_GAMES && action < NPC_SPECTATOR_ACTION_SELECTED_PLAYER))
-            {
-                uint16 page = action - NPC_SPECTATOR_ACTION_LIST_TOP_GAMES;
-                if (action == NPC_SPECTATOR_REFRESH_HIGH)
-                    page = 0;
-
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Refresh", GOSSIP_SENDER_MAIN, NPC_SPECTATOR_REFRESH_HIGH);
-                ShowPage(player, action == NPC_SPECTATOR_REFRESH_HIGH ? 0 : action - NPC_SPECTATOR_ACTION_LIST_TOP_GAMES, true);
-                player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
-            }
-            else
-            {
-                ChatHandler handler(player);
-                uint32 lowGuid = action - NPC_SPECTATOR_ACTION_SELECTED_PLAYER;
-                //char p[100];
-                //ACE_OS::itoa(lowGuid, p, 10);
-                uint64 playerGuid = MAKE_NEW_GUID(lowGuid, 0, HighGuid::Player);
-                arena_spectator_commands::SpectateByGuid(&handler, playerGuid);
-            }
-            return true;
-        }
-
-        std::string GetClassNameById(uint8 id)
-        {
-            std::string sClass = "";
-            switch (id)
-            {
-                case CLASS_WARRIOR:         sClass = "Warrior ";        break;
-                case CLASS_PALADIN:         sClass = "Pala ";           break;
-                case CLASS_HUNTER:          sClass = "Hunt ";           break;
-                case CLASS_ROGUE:           sClass = "Rogue ";          break;
-                case CLASS_PRIEST:          sClass = "Priest ";         break;
-                case CLASS_DEATH_KNIGHT:    sClass = "DK ";             break;
-                case CLASS_SHAMAN:          sClass = "Shama ";          break;
-                case CLASS_MAGE:            sClass = "Mage ";           break;
-                case CLASS_WARLOCK:         sClass = "Warlock ";        break;
-                case CLASS_DRUID:           sClass = "Druid ";          break;
-                case CLASS_MONK:            sClass = "Monk ";           break;
-            }
-            return sClass;
-        }
-
-        std::string GetGamesStringData(Battleground *arena, uint16 firstTeamMMR, uint16 secondTeamMMR)
-        {
-            std::string teamsMember[BG_TEAMS_COUNT];
-            uint32 firstTeamId = 0;
-            for (Battleground::BattlegroundPlayerMap::const_iterator itr = arena->GetPlayers().begin(); itr != arena->GetPlayers().end(); ++itr)
-                if (Player* player = ObjectAccessor::FindPlayer(itr->first))
-                {
-                    if (player->isSpectator())
-                        continue;
-
-                    uint32 team = itr->second.Team;
-                    if (!firstTeamId)
-                        firstTeamId = team;
-
-                    teamsMember[firstTeamId == team] += GetSpecClassNameById(player->getClass(), player->GetSpecializationId(player->GetActiveSpec()));
-                }
-
-            std::stringstream data;
-            data << teamsMember[0] << "[" << firstTeamMMR << "] - " << teamsMember[1] << "[" << secondTeamMMR << "]";
-            return data.str();
-        }
-
-        Player* GetFirstPlayer(Battleground *arena)
-        {
-            for (Battleground::BattlegroundPlayerMap::const_iterator itr = arena->GetPlayers().begin(); itr != arena->GetPlayers().end(); ++itr)
-                if (Player* player = ObjectAccessor::FindPlayer(itr->first))
-                    return player;
-            return NULL;
-        }
-
-        void ShowPage(Player *player, uint16 page, bool isTop)
-        {
-            uint16 highGames  = 0;
-            uint16 lowGames   = 0;
-            bool haveNextPage = false;
-
-            SpectatorDataStore& sdataStore = sBattlegroundMgr->GetSpectatorDataStore();
-
-            for (auto &kv : sdataStore)
-            {
-                std::string data = kv.second;
-
-                if (isTop && data[0] == 'H')
-                {
-                    highGames++;
-                    if (highGames > (page + 1) * GamesOnPage)
-                    {
-                        haveNextPage = true;
-                        break;
-                    }
-
-                    uint32 lowGuid = GUID_LOPART(kv.first);
-
-                    if (highGames >= page * GamesOnPage)
-                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, data, GOSSIP_SENDER_MAIN, NPC_SPECTATOR_ACTION_SELECTED_PLAYER + lowGuid);
-                }
-                else if (!isTop && data[0] == 'L')
-                {
-                    lowGames++;
-                    if (lowGames >(page + 1) * GamesOnPage)
-                    {
-                        haveNextPage = true;
-                        break;
-                    }
-
-                    uint32 lowGuid = GUID_LOPART(kv.first);
-
-                    if (lowGames >= page * GamesOnPage)
-                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, data, GOSSIP_SENDER_MAIN, NPC_SPECTATOR_ACTION_SELECTED_PLAYER + lowGuid);
-                }
-            }
-
-            if (page > 0)
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "Prev...", GOSSIP_SENDER_MAIN, NPC_SPECTATOR_ACTION_LIST_GAMES + page - 1);
-
-            if (haveNextPage)
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "Next...", GOSSIP_SENDER_MAIN, NPC_SPECTATOR_ACTION_LIST_GAMES + page + 1);
-        }
-
-        std::string GetSpecClassNameById(uint8 Id, uint32 Spec)
-        {
-            std::string sClass = "";
-            switch (Id)
-            {
-                case CLASS_WARRIOR:
-                    switch (Spec)
-                    {
-                        case SPEC_WARRIOR_ARMS: sClass = "AWarrior "; break;
-                        case SPEC_WARRIOR_FURY: sClass = "FWarrior "; break;
-                        case SPEC_WARRIOR_PROTECTION: sClass = "PWarrior "; break;
-                    }      
-                    break;
-                case CLASS_PALADIN:
-                    switch (Spec)
-                    {
-                        case SPEC_PALADIN_HOLY: sClass = "HPala "; break;
-                        case SPEC_PALADIN_PROTECTION: sClass = "PPala "; break;
-                        case SPEC_PALADIN_RETRIBUTION: sClass = "RPala "; break;
-                    }    
-                    break;
-                case CLASS_HUNTER:
-                    switch (Spec)
-                    {
-                        case SPEC_HUNTER_BEASTMASTER: sClass = "BHunt "; break;
-                        case SPEC_HUNTER_MARKSMAN: sClass = "MHunt "; break;
-                        case SPEC_HUNTER_SURVIVAL: sClass = "SHunt "; break;
-                    }      
-                    break;
-                case CLASS_ROGUE:
-                    switch (Spec)
-                    {
-                        case SPEC_ROGUE_ASSASSINATION: sClass = "ARogue "; break;
-                        case SPEC_ROGUE_COMBAT: sClass = "CRogue "; break;
-                        case SPEC_ROGUE_SUBTLETY: sClass = "SRogue "; break;
-                    }    
-                    break;
-                case CLASS_PRIEST:
-                    switch (Spec)
-                    {
-                        case SPEC_PRIEST_DISCIPLINE: sClass = "DPriest "; break;
-                        case SPEC_PRIEST_HOLY: sClass = "HPriest "; break;
-                        case SPEC_PRIEST_SHADOW: sClass = "SPriest "; break;
-                    }  
-                    break;
-                case CLASS_DEATH_KNIGHT:
-                    switch (Spec)
-                    {
-                        case SPEC_DK_BLOOD: sClass = "BDk "; break;
-                        case SPEC_DK_FROST: sClass = "FDk "; break;
-                        case SPEC_DK_UNHOLY: sClass = "UDk "; break;
-                    }
-                    break;
-                case CLASS_SHAMAN:
-                    switch (Spec)
-                    {
-                        case SPEC_SHAMAN_ELEMENTAL: sClass = "ELShaman "; break;
-                        case SPEC_SHAMAN_ENHANCEMENT: sClass = "ENShaman "; break;
-                        case SPEC_SHAMAN_RESTORATION: sClass = "RShaman "; break;
-                    }
-                    break;
-                case CLASS_MAGE:
-                    switch (Spec)
-                    {
-                        case SPEC_MAGE_ARCANE: sClass = "AMage "; break;
-                        case SPEC_MAGE_FIRE: sClass = "FIMage "; break;
-                        case SPEC_MAGE_FROST: sClass = "FRMage "; break;
-                    }
-                    break;
-                case CLASS_WARLOCK:
-                    switch (Spec)
-                    {
-                        case SPEC_WARLOCK_AFFLICTION: sClass = "ALock "; break;
-                        case SPEC_WARLOCK_DEMONOLOGY: sClass = "DemoLock "; break;
-                        case SPEC_WARLOCK_DESTRUCTION: sClass = "DestLock "; break;
-                    }
-                    break;
-                case CLASS_DRUID:
-                    switch (Spec)
-                    {
-                        case SPEC_DRUID_BALANCE: sClass = "BDruid "; break;
-                        case SPEC_DRUID_CAT: sClass = "FDruid "; break;
-                        case SPEC_DRUID_BEAR: sClass = "FDruid "; break;
-                        case SPEC_DRUID_RESTORATION: sClass = "RDruid "; break;
-                    }
-                    break;
-                case CLASS_MONK:
-                    switch (Spec)
-                    {
-                        case SPEC_MONK_BREWMASTER: sClass = "BmMonk "; break;
-                        case SPEC_MONK_WINDWALKER: sClass = "WwMonk "; break;
-                        case SPEC_MONK_MISTWEAVER: sClass = "MwMonk "; break;
-                    }
-                    break;
-            }
-            return sClass;
-        }
-};
-
 void AddSC_arena_spectator_script()
 {
     new arena_spectator_commands();
-    new npc_arena_spectator();
 }
