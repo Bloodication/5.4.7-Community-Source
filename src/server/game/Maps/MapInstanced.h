@@ -20,7 +20,8 @@
 #define TRINITY_MAP_INSTANCED_H
 
 #include "Map.h"
-#include "C:/Users/Quadral/Documents/WoWCircle/New source/ardor-i90-at-realm/src/server/game/Instances/InstanceSaveMgr.h"
+#include "InstanceSaveMgr.h"
+
 #include "DBCEnums.h"
 
 class RaidEncounter;

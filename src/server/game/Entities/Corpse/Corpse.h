@@ -65,6 +65,9 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         static void DeleteFromDB(uint64 ownerGuid, SQLTransaction& trans);
 
         uint64 GetOwnerGUID() const { return GetUInt64Value(CORPSE_FIELD_OWNER); }
+		GridCoord const& GetGridCoord() const { return _gridCoord; }
+		void SetGridCoord(GridCoord const& gridCoord) { _gridCoord = gridCoord; }
+
 
         time_t const& GetGhostTime() const { return m_time; }
         void ResetGhostTime() { m_time = time(NULL); }
@@ -89,5 +92,6 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         CorpseType m_type;
         time_t m_time;
         CellCoord _cellCoord;
+		GridCoord _gridCoord;                                    // gride for corpse position for fast search
 };
 #endif

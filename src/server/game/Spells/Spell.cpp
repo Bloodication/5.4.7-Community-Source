@@ -25,11 +25,8 @@
 #include "Opcodes.h"
 #include "Log.h"
 #include "UpdateMask.h"
-#include "PathGenerator.h"
 #include "World.h"
 #include "ObjectMgr.h"
-#include "MMapFactory.h"
-#include "MMapManager.h"
 #include "SpellMgr.h"
 #include "Player.h"
 #include "Pet.h"
@@ -46,6 +43,8 @@
 #include "SharedDefines.h"
 #include "LootMgr.h"
 #include "VMapFactory.h"
+#include "MMapFactory.h"
+#include "MMapManager.h"
 #include "Battleground.h"
 #include "Util.h"
 #include "TemporarySummon.h"
@@ -548,7 +547,7 @@ SpellValue::SpellValue(SpellInfo const* proto)
 Spell::Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, bool skipCheck) :
 m_spellInfo(sSpellMgr->GetSpellForDifficultyFromSpell(info, caster)),
 m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster)
-, m_spellValue(new SpellValue(m_spellInfo)),
+, m_spellValue(new SpellValue(m_spellInfo)), m_preGeneratedPath(PathGenerator(m_caster)),
 m_damage(0), m_healing(0), m_final_damage(0), m_absorbed_damage(0)
 {
     m_customError = SPELL_CUSTOM_ERROR_NONE;
@@ -7664,25 +7663,18 @@ SpellCastResult Spell::CheckCast(bool strict)
                             return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
-			case SPELL_EFFECT_CHARGE:
-			{
+            case SPELL_EFFECT_CHARGE:
+            {
+                if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR)
+                {
+                    // Warbringer - can't be handled in proc system - should be done before checkcast root check and charge effect process
+                    if (strict && m_caster->IsScriptOverriden(m_spellInfo, 6953))
+                        m_caster->RemoveMovementImpairingAuras();
+                    // Safeguard can be casted in root effects, so we need to remove movement impairing auras before check cast result
+                    if (m_spellInfo->Id == 114029)
+                        m_caster->RemoveMovementImpairingAuras();
+                }
 
-				if (m_caster->HasUnitState(UNIT_STATE_ROOT))
-					return SPELL_FAILED_ROOTED;
-
-
-				if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR)
-				{
-					// Warbringer - can't be handled in proc system - should be done before checkcast root check and charge effect process
-					if (strict && m_caster->IsScriptOverriden(m_spellInfo, 6953))
-						m_caster->RemoveMovementImpairingAuras();
-					// Safeguard can be casted in root effects, so we need to remove movement impairing auras before check cast result
-					if (m_spellInfo->Id == 114029)
-						m_caster->RemoveMovementImpairingAuras();
-				}
-
-				// Xinef: Pass only explicit unit target spells
-				// pussywizard:
 				if (MMAP::MMapFactory::IsPathfindingEnabled(m_caster->FindMap(), true) && m_spellInfo->NeedsExplicitUnitTarget())
 				{
 					Unit* target = m_targets.GetUnitTarget();
@@ -7692,40 +7684,38 @@ SpellCastResult Spell::CheckCast(bool strict)
 					Position pos;
 					target->GetChargeContactPoint(m_caster, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
 
+					if (m_caster->GetMapId() == 618) // pussywizard: 618 Ring of Valor
+						pos.m_positionZ = std::max(pos.m_positionZ, 28.28f);
+
 					float maxdist = MELEE_RANGE + m_caster->GetMeleeReach() + target->GetMeleeReach();
 					if (target->GetExactDistSq(&pos) > maxdist*maxdist)
 						return SPELL_FAILED_NOPATH;
 
-					if (m_caster->GetMapId() == 572) // pussywizard: 572 Ruins of Lordaeron
+					if (m_caster->GetMapId() == 618) // pussywizard: 618 Ring of Valor
+					{
+						if (!((target->GetPositionZ() > 32.0f) ^ (m_caster->GetPositionZ() > 32.0f)))
+							break;
+						return SPELL_FAILED_NOPATH;
+					}
+					else if (m_caster->GetMapId() == 572) // pussywizard: 572 Ruins of Lordaeron
 					{
 						if (pos.GetPositionX() < 1275.0f || m_caster->GetPositionX() < 1275.0f) // special case (acid)
 							break; // can't force path because the way is around and the path is too long
 					}
 
-					float objSize = target->GetObjectSize();
-					float range = m_spellInfo->GetMaxRange(true, m_caster, this) * 1.5f + objSize; // can't be overly strict
+					if (m_caster->GetTransport() != target->GetTransport())
+						return SPELL_FAILED_NOPATH;
+					if (m_caster->GetTransport())
+						break;
 
-					m_preGeneratedPath.SetPathLengthLimit(range);
-					// first try with raycast, if it fails fall back to normal path
-					bool result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false, true);
-					if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
-						return SPELL_FAILED_OUT_OF_RANGE;
-					else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
-					{
-						result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false, false);
-						if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
-							return SPELL_FAILED_OUT_OF_RANGE;
-						else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
-							return SPELL_FAILED_NOPATH;
-						else if (m_caster->GetMapId() == 618 && !(target->GetPositionZ() <= 28.50f))
-							return SPELL_FAILED_NOPATH;
-					}
-
-					m_preGeneratedPath.ReducePathLenghtByDist(objSize); // move back
+					m_pathFinder = new PathGenerator(m_caster);
+					m_pathFinder->CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + 0.15f, false);
+					G3D::Vector3 endPos = m_pathFinder->GetEndPosition(); // also check distance between target and the point calculated by mmaps
+					if (m_pathFinder->GetPathType()&PATHFIND_NOPATH || target->GetExactDistSq(endPos.x, endPos.y, endPos.z) > maxdist*maxdist || m_pathFinder->getPathLength() > (40.0f + (m_caster->HasAura(58097) ? 5.0f : 0.0f)))
+						return SPELL_FAILED_NOPATH;
 				}
-
 				break;
-			}
+            }
             case SPELL_EFFECT_SKINNING:
             {
                 if (m_caster->GetTypeId() != TYPEID_PLAYER || !m_targets.GetUnitTarget() || m_targets.GetUnitTarget()->GetTypeId() != TYPEID_UNIT)

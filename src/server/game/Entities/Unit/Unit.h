@@ -44,8 +44,6 @@
 #include "../AreaTrigger/AreaTrigger.h"
 #include "MovementStructures.h"
 #include <utility>
-#include "MMapFactory.h"
-#include "MMapFactory.h"
 
 namespace BattlePet
 {
@@ -1200,10 +1198,9 @@ struct CharmInfo
         float m_stayX;
         float m_stayY;
         float m_stayZ;
-
-
 		int32 _forcedSpellId;
 		uint64 _forcedTargetGUID;
+
 
         GlobalCooldownMgr m_GlobalCooldownMgr;
 };
@@ -1690,6 +1687,7 @@ class Unit : public WorldObject
         bool IsValidAssistTarget(Unit const* target) const;
         bool _IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) const;
 
+		void UpdateEnvironmentIfNeeded(const uint8 option);
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
         virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
@@ -1765,8 +1763,12 @@ class Unit : public WorldObject
 
         bool IsLevitating() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);}
         bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING);}
+		virtual bool SetDisableGravity(bool disable, bool packetOnly = false);
+		virtual bool SetSwim(bool enable);
+		virtual bool SetCanFly(bool enable, bool packetOnly = false);
+		virtual bool SetWaterWalking(bool enable, bool packetOnly = false);
+		virtual bool SetFeatherFall(bool enable, bool packetOnly = false);
         virtual bool SetWalk(bool enable);
-        virtual bool SetDisableGravity(bool disable, bool packetOnly = false);
         bool SetHover(bool enable);
 
         void SetInFront(Unit const* target);
@@ -2390,7 +2392,7 @@ class Unit : public WorldObject
         bool isTurning() const  { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING); }
         virtual bool CanFly() const = 0;
         bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
-        void SetCanFly(bool apply);
+		bool IsFalling() const;
 
         void RewardRage(uint32 baseRage, bool attacker);
 
@@ -2399,11 +2401,6 @@ class Unit : public WorldObject
         void OutDebugInfo() const;
         virtual bool isBeingLoaded() const { return false;}
         bool IsDuringRemoveFromWorld() const {return m_duringRemoveFromWorld;}
-
-		// MMaps
-		std::map<uint64, MMapTargetData> m_targetsNotAcceptable;
-		bool isTargetNotAcceptableByMMaps(uint64 guid, uint32 currTime, const Position* t = NULL) const { std::map<uint64, MMapTargetData>::const_iterator itr = m_targetsNotAcceptable.find(guid); if (itr != m_targetsNotAcceptable.end() && (itr->second._endTime >= currTime || t && !itr->second.PosChanged(*this, *t))) return true; return false; }
-		uint32 m_mmapNotAcceptableStartTime;
 
         Pet* ToPet() { if (isPet()) return reinterpret_cast<Pet*>(this); else return NULL; }
         Pet const* ToPet() const { if (isPet()) return reinterpret_cast<Pet const*>(this); else return NULL; }
@@ -2419,6 +2416,13 @@ class Unit : public WorldObject
             if (!_focusSpell)
                 SetUInt64Value(UNIT_FIELD_TARGET, guid);
         }
+
+		// pussywizard:
+		// MMaps
+		std::map<uint64, MMapTargetData> m_targetsNotAcceptable;
+		bool isTargetNotAcceptableByMMaps(uint64 guid, uint32 currTime, const Position* t = NULL) const { std::map<uint64, MMapTargetData>::const_iterator itr = m_targetsNotAcceptable.find(guid); if (itr != m_targetsNotAcceptable.end() && (itr->second._endTime >= currTime || t && !itr->second.PosChanged(*this, *t))) return true; return false; }
+		uint32 m_mmapNotAcceptableStartTime;
+
 
         // Handling caster facing during spell cast
         void FocusTarget(Spell const* focusSpell, uint64 target);
@@ -2673,6 +2677,12 @@ class Unit : public WorldObject
         void SetRooted(bool apply);
 
     public:
+		Position m_last_underwaterstate_position;
+		Position m_last_environment_position;
+		bool m_last_isinwater_status;
+		bool m_last_islittleabovewater_status;
+		bool m_last_isunderwater_status;
+		bool m_is_updating_environment;
         Position m_LastAreaPosition;
         Position m_LastZonePosition;
         uint32 m_LastAreaId;

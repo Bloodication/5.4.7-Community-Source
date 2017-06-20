@@ -26,7 +26,6 @@
 #include "Common.h"
 #include "SharedDefines.h"
 #include "AddonMgr.h"
-#include "MMapFactory.h"
 #include "DatabaseEnv.h"
 #include "World.h"
 #include "WorldPacket.h"

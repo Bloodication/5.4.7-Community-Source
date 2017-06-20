@@ -7187,6 +7187,15 @@ void Spell::EffectChargeDest(SpellEffIndex effIndex)
             }
         }
 
+		if (!m_caster->IsWithinLOS(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()))
+		{
+			float angle = m_caster->GetRelativeAngle(pos.GetPositionX(), pos.GetPositionY());
+			float dist = m_caster->GetDistance(pos);
+			m_caster->GetFirstCollisionPosition(pos, dist, angle);
+		}
+
+		m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+
         // Racer Slam Hit Destination
         if (m_spellInfo->Id == 49302)
         {
