@@ -7404,7 +7404,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     }
 
     // Check for line of sight for spells with dest
-    if (m_targets.HasDst())
+    if (m_targets.HasDst() && !(_triggeredCastFlags & TRIGGERED_IGNORE_LINE_OF_SIGHT_CHECK))
     {
         float x, y, z;
         m_targets.GetDstPos()->GetPosition(x, y, z);
