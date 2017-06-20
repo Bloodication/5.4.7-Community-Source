@@ -223,88 +223,88 @@ a_prefix##reverse_iter(a_rbt_type *rbtree, a_type *start,		\
  * The following API is generated:
  *
  *   static void
- *   ex_new(ex_t *tree);
+ *   ex_new(ex_t *extree);
  *       Description: Initialize a red-black tree structure.
  *       Args:
- *         tree: Pointer to an uninitialized red-black tree object.
+ *         extree: Pointer to an uninitialized red-black tree object.
  *
  *   static ex_node_t *
- *   ex_first(ex_t *tree);
+ *   ex_first(ex_t *extree);
  *   static ex_node_t *
- *   ex_last(ex_t *tree);
- *       Description: Get the first/last node in tree.
+ *   ex_last(ex_t *extree);
+ *       Description: Get the first/last node in extree.
  *       Args:
- *         tree: Pointer to an initialized red-black tree object.
- *       Ret: First/last node in tree, or NULL if tree is empty.
+ *         extree: Pointer to an initialized red-black tree object.
+ *       Ret: First/last node in extree, or NULL if extree is empty.
  *
  *   static ex_node_t *
- *   ex_next(ex_t *tree, ex_node_t *node);
+ *   ex_next(ex_t *extree, ex_node_t *node);
  *   static ex_node_t *
- *   ex_prev(ex_t *tree, ex_node_t *node);
+ *   ex_prev(ex_t *extree, ex_node_t *node);
  *       Description: Get node's successor/predecessor.
  *       Args:
- *         tree: Pointer to an initialized red-black tree object.
- *         node: A node in tree.
- *       Ret: node's successor/predecessor in tree, or NULL if node is
+ *         extree: Pointer to an initialized red-black tree object.
+ *         node : A node in extree.
+ *       Ret: node's successor/predecessor in extree, or NULL if node is
  *            last/first.
  *
  *   static ex_node_t *
- *   ex_search(ex_t *tree, ex_node_t *key);
+ *   ex_search(ex_t *extree, ex_node_t *key);
  *       Description: Search for node that matches key.
  *       Args:
- *         tree: Pointer to an initialized red-black tree object.
- *         key : Search key.
- *       Ret: Node in tree that matches key, or NULL if no match.
+ *         extree: Pointer to an initialized red-black tree object.
+ *         key  : Search key.
+ *       Ret: Node in extree that matches key, or NULL if no match.
  *
  *   static ex_node_t *
- *   ex_nsearch(ex_t *tree, ex_node_t *key);
+ *   ex_nsearch(ex_t *extree, ex_node_t *key);
  *   static ex_node_t *
- *   ex_psearch(ex_t *tree, ex_node_t *key);
+ *   ex_psearch(ex_t *extree, ex_node_t *key);
  *       Description: Search for node that matches key.  If no match is found,
  *                    return what would be key's successor/predecessor, were
- *                    key in tree.
+ *                    key in extree.
  *       Args:
- *         tree: Pointer to an initialized red-black tree object.
- *         key : Search key.
- *       Ret: Node in tree that matches key, or if no match, hypothetical node's
- *            successor/predecessor (NULL if no successor/predecessor).
+ *         extree: Pointer to an initialized red-black tree object.
+ *         key   : Search key.
+ *       Ret: Node in extree that matches key, or if no match, hypothetical
+ *            node's successor/predecessor (NULL if no successor/predecessor).
  *
  *   static void
- *   ex_insert(ex_t *tree, ex_node_t *node);
- *       Description: Insert node into tree.
+ *   ex_insert(ex_t *extree, ex_node_t *node);
+ *       Description: Insert node into extree.
  *       Args:
- *         tree: Pointer to an initialized red-black tree object.
- *         node: Node to be inserted into tree.
+ *         extree: Pointer to an initialized red-black tree object.
+ *         node  : Node to be inserted into extree.
  *
  *   static void
- *   ex_remove(ex_t *tree, ex_node_t *node);
- *       Description: Remove node from tree.
+ *   ex_remove(ex_t *extree, ex_node_t *node);
+ *       Description: Remove node from extree.
  *       Args:
- *         tree: Pointer to an initialized red-black tree object.
- *         node: Node in tree to be removed.
+ *         extree: Pointer to an initialized red-black tree object.
+ *         node  : Node in extree to be removed.
  *
  *   static ex_node_t *
- *   ex_iter(ex_t *tree, ex_node_t *start, ex_node_t *(*cb)(ex_t *,
+ *   ex_iter(ex_t *extree, ex_node_t *start, ex_node_t *(*cb)(ex_t *,
  *     ex_node_t *, void *), void *arg);
  *   static ex_node_t *
- *   ex_reverse_iter(ex_t *tree, ex_node_t *start, ex_node *(*cb)(ex_t *,
+ *   ex_reverse_iter(ex_t *extree, ex_node_t *start, ex_node *(*cb)(ex_t *,
  *     ex_node_t *, void *), void *arg);
- *       Description: Iterate forward/backward over tree, starting at node.  If
- *                    tree is modified, iteration must be immediately
+ *       Description: Iterate forward/backward over extree, starting at node.
+ *                    If extree is modified, iteration must be immediately
  *                    terminated by the callback function that causes the
  *                    modification.
  *       Args:
- *         tree : Pointer to an initialized red-black tree object.
- *         start: Node at which to start iteration, or NULL to start at
- *                first/last node.
- *         cb   : Callback function, which is called for each node during
- *                iteration.  Under normal circumstances the callback function
- *                should return NULL, which causes iteration to continue.  If a
- *                callback function returns non-NULL, iteration is immediately
- *                terminated and the non-NULL return value is returned by the
- *                iterator.  This is useful for re-starting iteration after
- *                modifying tree.
- *         arg  : Opaque pointer passed to cb().
+ *         extree: Pointer to an initialized red-black tree object.
+ *         start : Node at which to start iteration, or NULL to start at
+ *                 first/last node.
+ *         cb    : Callback function, which is called for each node during
+ *                 iteration.  Under normal circumstances the callback function
+ *                 should return NULL, which causes iteration to continue.  If a
+ *                 callback function returns non-NULL, iteration is immediately
+ *                 terminated and the non-NULL return value is returned by the
+ *                 iterator.  This is useful for re-starting iteration after
+ *                 modifying extree.
+ *         arg   : Opaque pointer passed to cb().
  *       Ret: NULL if iteration completed, or the non-NULL callback return value
  *            that caused termination of the iteration.
  */

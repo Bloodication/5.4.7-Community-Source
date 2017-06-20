@@ -3,6 +3,7 @@
 
 /******************************************************************************/
 
+#if (defined(JEMALLOC_SWAP) || defined(JEMALLOC_DSS))
 static inline int
 extent_szad_comp(extent_node_t *a, extent_node_t *b)
 {
@@ -24,6 +25,7 @@ extent_szad_comp(extent_node_t *a, extent_node_t *b)
 /* Generate red-black tree functions. */
 rb_gen(, extent_tree_szad_, extent_tree_t, extent_node_t, link_szad,
     extent_szad_comp)
+#endif
 
 static inline int
 extent_ad_comp(extent_node_t *a, extent_node_t *b)

@@ -344,9 +344,8 @@ if (MINGW) # GCC ignores "#prama comment"
   target_link_libraries(ace ws2_32 iphlpapi netapi32 mswsock)
 endif()
 
-# Generate precompiled header
-#if( USE_COREPCH )
-  #add_cxx_pch(ace ${ace_PCH_HDR} ${ace_PCH_SRC})
-#endif()
+if (MINGW) # GCC ignores "#prama comment"
+  target_link_libraries(ace ws2_32 iphlpapi netapi32 mswsock)
+endif()
 
 install(TARGETS ace RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
