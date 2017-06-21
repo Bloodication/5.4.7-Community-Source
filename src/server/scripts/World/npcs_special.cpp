@@ -4583,7 +4583,7 @@ class npc_wild_mushroom : public CreatureScript
 };*/
 
 #define WILD_MUSHROOM_INVISIBILITY   92661
-
+#define DRUID_NPC_WILD_MUSHROOM 47649
 class npc_wild_mushroom : public CreatureScript
 {
     public:
@@ -4637,6 +4637,7 @@ class npc_wild_mushroom : public CreatureScript
             {
                 if (DynamicObject* dynObj = owner->GetDynObject(81262))
                     dynObj->Remove();
+				//owner->RemoveAllMinionsByEntry(DRUID_NPC_WILD_MUSHROOM);
             }
 
             void UpdateAI(uint32 const diff)
