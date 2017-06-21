@@ -25,11 +25,8 @@
 #include "Opcodes.h"
 #include "Log.h"
 #include "UpdateMask.h"
-#include "PathGenerator.h"
 #include "World.h"
 #include "ObjectMgr.h"
-#include "MMapFactory.h"
-#include "MMapManager.h"
 #include "SpellMgr.h"
 #include "Player.h"
 #include "Pet.h"
@@ -548,7 +545,7 @@ SpellValue::SpellValue(SpellInfo const* proto)
 Spell::Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, bool skipCheck) :
 m_spellInfo(sSpellMgr->GetSpellForDifficultyFromSpell(info, caster)),
 m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster)
-, m_spellValue(new SpellValue(m_spellInfo)),
+, m_spellValue(new SpellValue(m_spellInfo)), m_preGeneratedPath(PathGenerator(m_caster)),
 m_damage(0), m_healing(0), m_final_damage(0), m_absorbed_damage(0)
 {
     m_customError = SPELL_CUSTOM_ERROR_NONE;
@@ -7664,55 +7661,35 @@ SpellCastResult Spell::CheckCast(bool strict)
                             return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
-			case SPELL_EFFECT_CHARGE:
-			{
+            case SPELL_EFFECT_CHARGE:
+            {
+                if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR)
+                {
+                    // Warbringer - can't be handled in proc system - should be done before checkcast root check and charge effect process
+                    if (strict && m_caster->IsScriptOverriden(m_spellInfo, 6953))
+                        m_caster->RemoveMovementImpairingAuras();
+                    // Safeguard can be casted in root effects, so we need to remove movement impairing auras before check cast result
+                    if (m_spellInfo->Id == 114029)
+                        m_caster->RemoveMovementImpairingAuras();
+                }
 
-				if (m_caster->HasUnitState(UNIT_STATE_ROOT))
-					return SPELL_FAILED_ROOTED;
-
-
-				if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR)
-				{
-					// Warbringer - can't be handled in proc system - should be done before checkcast root check and charge effect process
-					if (strict && m_caster->IsScriptOverriden(m_spellInfo, 6953))
-						m_caster->RemoveMovementImpairingAuras();
-					// Safeguard can be casted in root effects, so we need to remove movement impairing auras before check cast result
-					if (m_spellInfo->Id == 114029)
-						m_caster->RemoveMovementImpairingAuras();
-				}
-
-				// Xinef: Pass only explicit unit target spells
-				// pussywizard:
-				if (MMAP::MMapFactory::IsPathfindingEnabled(m_caster->FindMap(), true) && m_spellInfo->NeedsExplicitUnitTarget())
+				if (GetSpellInfo()->NeedsExplicitUnitTarget())
 				{
 					Unit* target = m_targets.GetUnitTarget();
 					if (!target)
-						return SPELL_FAILED_BAD_TARGETS;
-
-					Position pos;
-					target->GetChargeContactPoint(m_caster, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
-
-					float maxdist = MELEE_RANGE + m_caster->GetMeleeReach() + target->GetMeleeReach();
-					if (target->GetExactDistSq(&pos) > maxdist*maxdist)
-						return SPELL_FAILED_NOPATH;
-
-					if (m_caster->GetMapId() == 572) // pussywizard: 572 Ruins of Lordaeron
-					{
-						if (pos.GetPositionX() < 1275.0f || m_caster->GetPositionX() < 1275.0f) // special case (acid)
-							break; // can't force path because the way is around and the path is too long
-					}
+						return SPELL_FAILED_DONT_REPORT;
 
 					float objSize = target->GetObjectSize();
 					float range = m_spellInfo->GetMaxRange(true, m_caster, this) * 1.5f + objSize; // can't be overly strict
 
 					m_preGeneratedPath.SetPathLengthLimit(range);
 					// first try with raycast, if it fails fall back to normal path
-					bool result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false, true);
+					bool result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false);
 					if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
 						return SPELL_FAILED_OUT_OF_RANGE;
 					else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
 					{
-						result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false, false);
+						result = m_preGeneratedPath.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + target->GetObjectSize(), false);
 						if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
 							return SPELL_FAILED_OUT_OF_RANGE;
 						else if (!result || m_preGeneratedPath.GetPathType() & PATHFIND_NOPATH)
@@ -7723,9 +7700,8 @@ SpellCastResult Spell::CheckCast(bool strict)
 
 					m_preGeneratedPath.ReducePathLenghtByDist(objSize); // move back
 				}
-
-				break;
-			}
+                break;
+            }
             case SPELL_EFFECT_SKINNING:
             {
                 if (m_caster->GetTypeId() != TYPEID_PLAYER || !m_targets.GetUnitTarget() || m_targets.GetUnitTarget()->GetTypeId() != TYPEID_UNIT)

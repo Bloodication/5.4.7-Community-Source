@@ -55,14 +55,6 @@ class MapManager
         {
             return Map::GetZoneIdByAreaFlag(GetAreaFlag(mapid, x, y, z), mapid);
         }
-
-		Map* FindBaseMap(uint32 mapId) const
-		{
-			MapMapType::const_iterator iter = i_maps.find(mapId);
-			return (iter == i_maps.end() ? NULL : iter->second);
-		}
-
-
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z)
         {
             Map::GetZoneAndAreaIdByAreaFlag(zoneid, areaid, GetAreaFlag(mapid, x, y, z), mapid);
@@ -164,6 +156,12 @@ class MapManager
 
         MapManager();
         ~MapManager();
+
+        Map* FindBaseMap(uint32 mapId) const
+        {
+            MapMapType::const_iterator iter = i_maps.find(mapId);
+            return (iter == i_maps.end() ? NULL : iter->second);
+        }
 
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);

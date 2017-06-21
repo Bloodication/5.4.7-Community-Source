@@ -22,7 +22,6 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 #include "Log.h"
-#include "MMapFactory.h"
 #include "Opcodes.h"
 #include "Spell.h"
 #include "ObjectAccessor.h"
@@ -236,15 +235,6 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     if (Unit* owner = pet->GetOwner())
                         if (!owner->IsValidAttackTarget(TargetUnit))
                             return;
-
-					// pussywizard:
-					if (Creature* creaturePet = pet->ToCreature())
-						if (!creaturePet->_CanDetectFeignDeathOf(TargetUnit) || !creaturePet->canCreatureAttack(TargetUnit) || creaturePet->isTargetNotAcceptableByMMaps(TargetUnit->GetGUID(), sWorld->GetGameTime(), TargetUnit))
-							return;
-
-					// Not let attack through obstructions
-					bool checkLos = !MMAP::MMapFactory::IsPathfindingEnabled(pet->GetMap()) ||
-						(TargetUnit->GetTypeId() == TYPEID_UNIT && (TargetUnit->ToCreature()->isWorldBoss() || TargetUnit->ToCreature()->IsDungeonBoss()));
 
                     // Not let attack through obstructions
                     if (sWorld->getBoolConfig(CONFIG_PET_LOS))

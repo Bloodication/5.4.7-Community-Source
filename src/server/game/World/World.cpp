@@ -30,7 +30,6 @@
 #include "WorldSession.h"
 #include "WorldPacket.h"
 #include "Player.h"
-#include "MMapFactory.h"
 #include "Vehicle.h"
 #include "SkillExtraItems.h"
 #include "SkillDiscovery.h"
@@ -159,7 +158,6 @@ World::~World()
         delete command;
 
     VMAP::VMapFactory::clear();
-	MMAP::MMapFactory::clear();
 
     //TODO free addSessQueue
 }
@@ -1223,10 +1221,7 @@ void World::LoadConfigSettings(bool reload)
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Using DataDir %s", m_dataPath.c_str());
     }
 
-	m_bool_configs[CONFIG_ENABLE_MMAPS] = ConfigMgr::GetBoolDefault("MoveMaps.Enable", true);
-
     m_bool_configs[CONFIG_VMAP_INDOOR_CHECK] = ConfigMgr::GetBoolDefault("vmap.enableIndoorCheck", 0);
-
     bool enableIndoor = ConfigMgr::GetBoolDefault("vmap.enableIndoorCheck", true);
     bool enableLOS = ConfigMgr::GetBoolDefault("vmap.enableLOS", true);
     bool enableHeight = ConfigMgr::GetBoolDefault("vmap.enableHeight", true);
@@ -1241,7 +1236,6 @@ void World::LoadConfigSettings(bool reload)
     //VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "VMap support included. LineOfSight:%i, getHeight:%i, indoorCheck:%i PetLOS:%i", enableLOS, enableHeight, enableIndoor, enablePetLOS);
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "VMap data directory is: %svmaps", m_dataPath.c_str());
-	sLog->outInfo(LOG_FILTER_SERVER_LOADING, "MMap data directory is: %smmaps", m_dataPath.c_str());
 
     m_int_configs[CONFIG_MAX_WHO] = ConfigMgr::GetIntDefault("MaxWhoListReturns", 49);
     m_bool_configs[CONFIG_LIMIT_WHO_ONLINE] = ConfigMgr::GetBoolDefault("LimitWhoOnline", true);
@@ -1434,7 +1428,6 @@ void World::LoadConfigSettings(bool reload)
 
     // InterRealm settings
     m_bool_configs[CONFIG_INTERREALM_ENABLE] = ConfigMgr::GetBoolDefault("InterRealm.Enabled", false);
-
 
     if (reload)
         sScriptMgr->OnConfigLoad(reload);

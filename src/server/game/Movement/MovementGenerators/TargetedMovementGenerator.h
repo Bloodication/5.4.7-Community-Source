@@ -22,7 +22,6 @@
 #include "MovementGenerator.h"
 #include "FollowerReference.h"
 #include "Timer.h"
-#include "PathGenerator.h"
 #include "Unit.h"
 
 class TargetedMovementGeneratorBase
@@ -32,8 +31,6 @@ class TargetedMovementGeneratorBase
         void stopFollowing() { }
     protected:
         FollowerReference i_target;
-		Position lastOwnerXYZ;
-		Position lastTargetXYZ;
 };
 
 template<class T, typename D>
@@ -56,7 +53,7 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         void UpdateFinalDistance(float fDistance);
 
     protected:
-		void _setTargetLocation(T &, bool initial);
+        void _setTargetLocation(T &);
 
         TimeTrackerSmall i_recheckDistance;
         float i_offset;
@@ -64,8 +61,6 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         bool i_recalculateTravel : 1;
         bool i_targetReached : 1;
         bool m_UseExactTargetLocation : 1;
-		PathGenerator* i_path;
-		uint32 lastPathingFailMSTime;
 };
 
 template<class T>
