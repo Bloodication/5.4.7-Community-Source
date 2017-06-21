@@ -4538,7 +4538,7 @@ class npc_ring_of_frost : public CreatureScript
 
 /*######
 # npc_wild_mushroom
-######*/
+######
 
 #define WILD_MUSHROOM_INVISIBILITY   92661
 
@@ -4572,6 +4572,85 @@ class npc_wild_mushroom : public CreatureScript
 
                     if (!stealthed)
                         me->RemoveAura(WILD_MUSHROOM_INVISIBILITY);
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_wild_mushroomAI(creature);
+        }
+};*/
+
+#define WILD_MUSHROOM_INVISIBILITY   92661
+
+class npc_wild_mushroom : public CreatureScript
+{
+    public:
+        npc_wild_mushroom() : CreatureScript("npc_wild_mushroom") { }
+
+        struct npc_wild_mushroomAI : public ScriptedAI
+        {
+            uint32 invisTimer;
+
+            npc_wild_mushroomAI(Creature *creature) : ScriptedAI(creature)
+            {
+                invisTimer = 6000;
+            }
+
+            void Reset()
+            {
+                Unit* owner = me->GetOwner();
+                if (!owner)
+                    return;
+
+                me->SetLevel(owner->getLevel());
+                me->SetMaxHealth(5);
+                me->setFaction(owner->getFaction());
+                me->CastSpell(me, 94081, true); // Wild Mushroom : Detonate Birth Visual
+            }
+
+            void IsSummonedBy(Unit* summoner)
+            {
+                if (!summoner)
+                    return;
+
+                if (Player* owner = summoner->ToPlayer())
+                {
+                    if (owner->HasAura(145529) && owner->GetSpecializationId(owner->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
+                    {
+                        owner->RemoveDynObject(81262);
+                        owner->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 81262, true);
+                        if (DynamicObject* dynObj = owner->GetDynObject(81262))
+                            dynObj->SetDuration(-1);
+                        if (Aura* aura = owner->GetAura(81262))
+                        {
+                            aura->SetDuration(-1);
+                            aura->SetMaxDuration(-1);
+                        }
+                    }
+                }
+                
+            }
+
+            void JustUnsummoned(Unit* owner)
+            {
+                if (DynamicObject* dynObj = owner->GetDynObject(81262))
+                    dynObj->Remove();
+            }
+
+            void UpdateAI(uint32 const diff)
+            {
+                if (invisTimer > 0)
+                {
+                    if (invisTimer > diff)
+                        invisTimer -= diff;
+                    else
+                    {
+                        invisTimer = 0;
+                        DoCast(me, 92661);
+                    }
+                    return;
                 }
             }
         };
