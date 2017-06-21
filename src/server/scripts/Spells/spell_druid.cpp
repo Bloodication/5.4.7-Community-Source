@@ -2620,7 +2620,7 @@ class spell_dru_faerie_swarm : public SpellScriptLoader
 };
 
 // Wild Mushroom (Heal effect with growing) - 102792
-class spell_dru_wild_mushroom_heal : public SpellScriptLoader
+/*class spell_dru_wild_mushroom_heal : public SpellScriptLoader
 {
     public:
         spell_dru_wild_mushroom_heal() : SpellScriptLoader("spell_dru_wild_mushroom_heal") { }
@@ -2673,7 +2673,7 @@ class spell_dru_wild_mushroom_heal : public SpellScriptLoader
         }
 };
 
-/* Wild Mushroom (Growing effect) - 138611
+// Wild Mushroom (Growing effect) - 138611
 class spell_dru_wild_mushroom_growing : public SpellScriptLoader
 {
     public:
@@ -3134,7 +3134,7 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
 };*/
 
 // Wild Mushroom (Heal effect with growing) - 102792
-/*class spell_dru_wild_mushroom_heal : public SpellScriptLoader
+class spell_dru_wild_mushroom_heal : public SpellScriptLoader
 {
     public:
         spell_dru_wild_mushroom_heal() : SpellScriptLoader("spell_dru_wild_mushroom_heal") { }
@@ -3163,7 +3163,7 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
 
                 if (Unit* mushroom = GetCaster())
                 {
-                    if (AuraEffectPtr growing = mushroom->GetAuraEffect(SPELL_DRUID_WILD_MUSHROOM_MOD_SCALE, EFFECT_1))
+                    if (AuraEffect *growing = mushroom->GetAuraEffect(SPELL_DRUID_WILD_MUSHROOM_MOD_SCALE, EFFECT_1))
                     {
                         int32 bonus = growing->GetAmount() / count;
                         SetHitHeal(GetHitHeal() + bonus);
@@ -3182,7 +3182,7 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
         {
             return new spell_dru_wild_mushroom_heal_SpellScript();
         }
-};*/
+};
 
 // Wild Mushroom (Growing effect) - 138611
 class spell_dru_wild_mushroom_growing : public SpellScriptLoader
@@ -3277,7 +3277,7 @@ class spell_dru_wild_mushroom_resto : public SpellScriptLoader
             {
                 if (Player* player = GetCaster()->ToPlayer())
                 {
-					player->RemoveAllMinionsByEntry(DRUID_NPC_WILD_MUSHROOM);
+					GetCaster()->RemoveAllMinionsByEntry(DRUID_NPC_WILD_MUSHROOM);
                     PreventHitDefaultEffect(effIndex);
                     const SpellInfo* spell = GetSpellInfo();
                     std::list<Creature*> tempList;
@@ -3363,7 +3363,6 @@ class spell_dru_wild_mushroom : public SpellScriptLoader
             {
                 if (Player* player = GetCaster()->ToPlayer())
                 {
-					GetCaster()->RemoveAllMinionsByEntry(DRUID_NPC_WILD_MUSHROOM);
                     PreventHitDefaultEffect(effIndex);
 
                     const SpellInfo* spell = GetSpellInfo();
