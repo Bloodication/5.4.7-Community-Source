@@ -28,7 +28,6 @@
 #include "Item.h"
 #include "Corpse.h"
 #include "GridNotifiers.h"
-#include "Common.h"
 #include "MapManager.h"
 #include "Map.h"
 #include "CellImpl.h"
@@ -240,30 +239,6 @@ void ObjectAccessor::SaveAllPlayers()
     HashMapHolder<Player>::MapType const& m = GetPlayers();
     for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
         itr->second->SaveToDB();
-}
-
-void ObjectAccessor::AddCorpsesToGrid(GridCoord const& gridpair, GridType& grid, Map* map)
-{
-	TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, i_corpseLock);
-
-	for (Player2CorpsesMapType::iterator iter = i_player2corpse.begin(); iter != i_player2corpse.end(); ++iter)
-	{
-		// We need this check otherwise a corpose may be added to a grid twice
-		if (iter->second->IsInGrid())
-			continue;
-
-		if (iter->second->GetGridCoord() == gridpair)
-		{
-			// verify, if the corpse in our instance (add only corpses which are)
-			if (map->Instanceable())
-			{
-				if (iter->second->GetInstanceId() == map->GetInstanceId())
-					grid.AddWorldObject(iter->second);
-			}
-			else
-				grid.AddWorldObject(iter->second);
-		}
-	}
 }
 
 /// Define the static members of HashMapHolder

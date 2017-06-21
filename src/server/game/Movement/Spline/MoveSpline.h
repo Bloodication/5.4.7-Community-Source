@@ -84,12 +84,12 @@ namespace Movement
         int32 segment_time_elapsed() const { return next_timestamp()-time_passed; }
         int32 Duration() const { return spline.length(); }
         int32 timeElapsed() const { return Duration() - time_passed; }
+        int32 timePassed() const { return time_passed; }
 
     public:
         const MySpline& _Spline() const { return spline; }
         int32 _currentSplineIdx() const { return point_Idx; }
         void _Finalize();
-		int32 timePassed() const { return time_passed; }
         void _Interrupt() { splineflags.done = true;}
 
     public:
@@ -119,8 +119,9 @@ namespace Movement
 
         uint32 GetId() const { return m_Id; }
         bool Finalized() const { return splineflags.done; }
-		bool isFalling() const { return splineflags.falling; }
         bool isCyclic() const { return splineflags.cyclic; }
+		bool isFalling() const { return splineflags.falling; }
+		bool isWalking() const { return splineflags.walkmode; }
         const Vector3 FinalDestination() const { return Initialized() ? spline.getPoint(spline.last()) : Vector3(); }
         const Vector3 CurrentDestination() const { return Initialized() ? spline.getPoint(point_Idx+1) : Vector3(); }
         int32 currentPathIdx() const;

@@ -4459,7 +4459,7 @@ enum SpellFamilyNames
     SPELLFAMILY_UNK10       = 97
 };
 
-#define MMAP_MAGIC 0x4d4d4150   // 'MMAP'
+const uint32 MMAP_MAGIC = 0x4d4d4150; // 'MMAP'
 #define MMAP_VERSION 3
 
 struct MmapTileHeader
