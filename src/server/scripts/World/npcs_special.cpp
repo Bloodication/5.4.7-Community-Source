@@ -3929,6 +3929,8 @@ class npc_frozen_orb : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
+			if (!creature->ToTempSummon())
+				return NULL;
             return new npc_frozen_orbAI(creature);
         }
 };
