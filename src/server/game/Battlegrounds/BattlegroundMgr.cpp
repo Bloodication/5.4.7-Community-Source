@@ -833,11 +833,11 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         auto const& score1 = bg->_arenaTeamScores[BG_TEAM_HORDE];
 
         *data << int32(score0.OldRating);
-        *data << int32(score1.MatchmakerRating);
+        *data << int32(score0.MatchmakerRating);
         *data << int32(score1.NewRating);
         *data << int32(score0.NewRating);
         *data << int32(score1.OldRating);
-        *data << int32(score0.MatchmakerRating);
+        *data << int32(score1.MatchmakerRating);
     }
 }
 
