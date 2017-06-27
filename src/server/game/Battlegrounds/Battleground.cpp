@@ -270,7 +270,7 @@ void Battleground::Update(uint32 diff)
         case STATUS_IN_PROGRESS:
             _ProcessOfflineQueue();
             // after 20 minutes without one team losing, the arena closes with no winner and no rating change
-            if (isArena())
+            /*if (isArena())
             {
                 if (GetElapsedTime() >= 20 * MINUTE * IN_MILLISECONDS)
                 {
@@ -324,6 +324,31 @@ void Battleground::Update(uint32 diff)
                 }
                 else
                     m_BattleFatigueUpdateTimer += diff;
+            }*/
+			if (isArena())
+            {
+                if (GetElapsedTime() >= 6 * MINUTE * IN_MILLISECONDS) // Dampening
+                {
+                    for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+                    {
+                        if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+                        {
+                            if (player->HasAura(110310))
+                                continue;
+
+                            player->CastSpell(player, 110310, true);
+                            if (AuraEffect *auraEff = player->GetAuraEffect(110310, EFFECT_0)) // Defaults to 0%, we need to add 1%
+                                auraEff->ChangeAmount(1);
+                        }
+                    }
+                }
+
+                if (GetElapsedTime() >= 20 *  MINUTE * IN_MILLISECONDS)
+                {
+                    UpdateArenaWorldState();
+                    CheckArenaAfterTimerConditions();
+                    return;
+                }
             }
             else
             {
@@ -2555,7 +2580,7 @@ uint8 Battleground::ClickFastStart(Player *player, GameObject *go)
             playersNeeded = 6;
             break;
         case ARENA_TYPE_5v5:
-            playersNeeded = 10;
+            playersNeeded = 2;
             break;
     }
 
