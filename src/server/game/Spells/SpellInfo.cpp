@@ -4146,6 +4146,8 @@ float SpellInfo::GetBonusValueForOldBonus(float defaultValue) const
         case 138702:  // Surge of Strength
             return 8800.0f;
         // Synapse Springs (Engineering) - 126734
+		case 82174: // Synapse Springs (Engineering)
+			return 1920.0f;
         case 105697:
         case 105702:
         case 105706:
