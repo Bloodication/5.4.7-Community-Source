@@ -199,7 +199,9 @@ bool DynamicMapTree::getObjectHitPos(const uint32 phasemask, const G3D::Vector3&
 	bool result = false;
 	float maxDist = (endPos - startPos).magnitude();
 	// valid map coords should *never ever* produce float overflow, but this would produce NaNs too
-	ASSERT(maxDist < std::numeric_limits<float>::max());
+	//ASSERT(maxDist < std::numeric_limits<float>::max());
+	if (maxDist > std::numeric_limits<float>::max())
+        return false;
 	// prevent NaN values which can cause BIH intersection to enter infinite loop
 	if (maxDist < 1e-10f)
 	{

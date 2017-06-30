@@ -27,6 +27,7 @@ set(scripts_STAT_SRCS
 	Custom/titlenpc.cpp
 	Custom/SpellRegulator.cpp
 	Custom/SpellRegulator.h
+	Custom/transmog_vendor.cpp
 )
 
 message("  -> Prepared: Custom")

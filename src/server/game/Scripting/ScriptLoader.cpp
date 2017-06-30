@@ -41,6 +41,7 @@ void AddSC_BattlegroundDGScripts();
 // Customs
 void AddSC_event_april();
 void AddSC_teleguy();
+void AddSC_NPC_TransmogVendor();
 void AddSC_petguy();
 void AddSC_arena_spectator_script();
 void AddSC_transmogrify_script();
@@ -1859,6 +1860,7 @@ void AddCustomScripts()
 	AddSC_DuelReset();
 	AddSC_Vip_Access();
 	AddSC_Morph_npc();
+	AddSC_NPC_TransmogVendor();
 	AddSC_Title_gossip_codebox();
 	AddSC_proff_npc();
 	AddSC_SpellRegulator();
