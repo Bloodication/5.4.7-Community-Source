@@ -34,6 +34,7 @@ void AddSC_Morph_npc();
 void AddSC_Title_gossip_codebox();
 void AddSC_proff_npc();
 void AddSC_SpellRegulator();
+void AddSC_Skirmish_npc();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -1864,5 +1865,6 @@ void AddCustomScripts()
 	AddSC_Title_gossip_codebox();
 	AddSC_proff_npc();
 	AddSC_SpellRegulator();
+	AddSC_Skirmish_npc();
 #endif
 }
