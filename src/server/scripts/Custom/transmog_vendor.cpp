@@ -268,7 +268,7 @@ public:
         }
 
         // Item level check
-        if (itemTemplate->ItemLevel > 470)
+        if (itemTemplate->ItemLevel > 521)
             return false;
 
         return true;
