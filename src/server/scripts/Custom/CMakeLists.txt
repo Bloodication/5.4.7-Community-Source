@@ -29,6 +29,7 @@ set(scripts_STAT_SRCS
 	Custom/SpellRegulator.h
 	Custom/transmog_vendor.cpp
 	Custom/Skirmish_npc.cpp
+	Custom/arena_top.cpp
 )
 
 message("  -> Prepared: Custom")

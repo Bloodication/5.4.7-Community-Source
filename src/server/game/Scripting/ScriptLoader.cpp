@@ -30,6 +30,7 @@ void AddSC_tele();
 void AddSC_vipcommands();
 void AddSC_DuelReset();
 void AddSC_Vip_Access();
+void AddSC_npc_arena_setup();
 void AddSC_Morph_npc();
 void AddSC_Title_gossip_codebox();
 void AddSC_proff_npc();
@@ -1866,5 +1867,6 @@ void AddCustomScripts()
 	AddSC_proff_npc();
 	AddSC_SpellRegulator();
 	AddSC_Skirmish_npc();
+	AddSC_npc_arena_setup();
 #endif
 }
