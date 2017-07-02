@@ -209,13 +209,17 @@ class spell_pri_spectral_guise_charges : public SpellScriptLoader
                 if (eventInfo.GetActor()->GetGUID() != GetCaster()->GetGUID())
                     return;
 
-                if (Unit* spectralGuise = GetCaster())
+                /*if (Unit* spectralGuise = GetCaster())
                     if (eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE || eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
 						if (Aura* spectralGuiseCharges = spectralGuise->GetAura(PriestSpells::PRIEST_SPELL_SPECTRAL_GUISE_CHARGES))
 						{
 							if (spectralGuiseCharges->GetCharges() >= 3)
 								spectralGuiseCharges->DropCharge();
-						}
+						}*/
+				if (Unit* spectralGuise = GetCaster())
+                    if (eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE || eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
+                        if (Aura* spectralGuiseCharges = spectralGuise->GetAura(PRIEST_SPELL_SPECTRAL_GUISE_CHARGES))
+                            spectralGuiseCharges->DropCharge();
             }
 
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
@@ -749,6 +753,48 @@ class spell_pri_surge_of_light : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_surge_of_light_SpellScript();
+        }
+};
+
+// From Darkness, Comes Light - 109186
+class spell_pri_from_darkness_comes_light : public SpellScriptLoader
+{
+    public:
+        spell_pri_from_darkness_comes_light() : SpellScriptLoader("spell_pri_from_darkness_comes_light") { }
+
+        class spell_pri_from_darkness_comes_light_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_from_darkness_comes_light_AuraScript);
+
+            void OnProc(const AuraEffect* aurEff, ProcEventInfo& procInfo)
+            {
+                PreventDefaultAction();
+
+                if (!procInfo.GetHealInfo() || !procInfo.GetHealInfo()->GetHeal() || !procInfo.GetActor())
+                    return;
+
+                if (Player* player = procInfo.GetActor()->ToPlayer())
+                {
+					if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
+                        return;
+
+                    if (Unit* target = procInfo.GetActionTarget())
+                    {
+                        if (roll_chance_i(15))
+                            player->CastSpell(player, PRIEST_SURGE_OF_LIGHT, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_pri_from_darkness_comes_light_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_from_darkness_comes_light_AuraScript();
         }
 };
 
@@ -3222,6 +3268,7 @@ void AddSC_priest_spell_scripts()
     new spell_pri_leap_of_faith();
     new spell_pri_void_shift();
     new spell_pri_psychic_horror();
+	new spell_pri_from_darkness_comes_light();
     new spell_pri_guardian_spirit();
     new spell_pri_penance();
     new spell_pri_reflective_shield_trigger();
