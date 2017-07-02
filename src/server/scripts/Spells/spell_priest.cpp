@@ -2031,7 +2031,7 @@ class spell_pri_void_shift : public SpellScriptLoader
                 return SPELL_CAST_OK;
             }
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+            void HandleOnLaunchTarget(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
@@ -2060,7 +2060,7 @@ class spell_pri_void_shift : public SpellScriptLoader
             void Register()
             {
                 OnCheckCast += SpellCheckCastFn(spell_pri_void_shift_SpellScript::CheckTarget);
-                OnEffectHitTarget += SpellEffectFn(spell_pri_void_shift_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+                OnEffectLaunchTarget += SpellEffectFn(spell_pri_void_shift_SpellScript::HandleOnLaunchTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
             }
         };
 
