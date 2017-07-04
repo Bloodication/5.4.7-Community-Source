@@ -7673,6 +7673,13 @@ SpellCastResult Spell::CheckCast(bool strict)
                         m_caster->RemoveMovementImpairingAuras();
                 }
 
+				if (m_caster->HasUnitState(UNIT_STATE_ROOT))
+					return SPELL_FAILED_ROOTED;
+				if (m_caster->GetTypeId() == TYPEID_PLAYER)
+					if (Unit* target = m_targets.GetUnitTarget())
+						if (!target->isAlive())
+							return SPELL_FAILED_BAD_TARGETS;
+
 				if (GetSpellInfo()->NeedsExplicitUnitTarget())
 				{
 					Unit* target = m_targets.GetUnitTarget();
