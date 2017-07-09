@@ -1365,6 +1365,9 @@ class spell_pri_spirit_shell : public SpellScriptLoader
                             }
                             else
                                 _player->CastCustomSpell(target, PRIEST_SPIRIT_SHELL_ABSORPTION, &bp, NULL, NULL, true);
+                                
+                            else if (_player->HasAura(PRIEST_SPELL_4P_T16_AURA))
+                                     _player->CastSpell(_player, PRIEST_SPELL_4P_T16_DISC_BUFF, true);
                         }
                     }
                 }
