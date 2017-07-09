@@ -1578,6 +1578,9 @@ class spell_pri_archangel : public SpellScriptLoader
                         {
                             archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
                             _player->RemoveAura(PRIEST_EVANGELISM_STACK);
+                            
+                        else if (_player->HasAura(PRIEST_SPELL_2P_T16_DISC))
+                                 _player->CastSpell(_player, PRIEST_SPELL_2P_T16_DISC_BUFF, true);
                         }
                     }
                 }
