@@ -31,6 +31,7 @@ enum MasterySpells
     MASTERY_SPELL_CHAIN_LIGHTNING       = 45297,
     MASTERY_SPELL_LAVA_BURST            = 77451,
     MASTERY_SPELL_ELEMENTAL_BLAST       = 120588,
+    MASTERY_SHAMAN_ELEMENTAL            = 77222,
     MASTERY_SPELL_HAND_OF_LIGHT         = 96172,
     MASTERY_SPELL_IGNITE                = 12654,
     MASTERY_SPELL_BLOOD_SHIELD          = 77535,
@@ -614,6 +615,102 @@ class spell_mastery_divine_bulwark : public SpellScriptLoader
         }
 };
 
+// 77222 - Mastery : Elemental Overload
+class spell_mastery_elemental_overload : public SpellScriptLoader
+{
+    public:
+        spell_mastery_elemental_overload() : SpellScriptLoader("spell_mastery_elemental_overload") { }
+ 
+        class spell_mastery_elemental_overload_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mastery_elemental_overload_SpellScript);
+ 
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421) || !sSpellMgr->GetSpellInfo(51505) || !sSpellMgr->GetSpellInfo(117014))
+                    return false;
+                return true;
+            }
+ 
+            void HandleOnHit()
+            {
+                SpellInfo const* procSpell = GetSpellInfo();
+ 
+                if (procSpell)
+                {
+                    if (Unit* caster = GetCaster())
+                    {
+                        if (Unit* unitTarget = GetHitUnit())
+                        {
+                            if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(77222))
+                            {
+                                // Every Lightning Bolt, Chain Lightning and Lava Burst spells have duplicate vs 75% damage and no cost
+                                switch (procSpell->Id)
+                                {
+                                    // Lava Burst
+                                    case 51505:
+                                    {
+                                        float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.0f;
+ 
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LAVA_BURST, true);
+ 
+                                        break;
+                                    }
+                                    // Lightning Bolt
+                                    case 403:
+                                    {
+                                        float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.0f;
+ 
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LIGHTNING_BOLT, true);
+ 
+                                        break;
+                                    }
+                                    // Chain Lightning
+                                    case 421:
+                                    {
+                                        float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.0f;
+ 
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_CHAIN_LIGHTNING, true);
+ 
+                                        break;
+                                    }
+                                    // Elemental Blast
+                                    case 117014:
+                                    {
+                                        float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.0f;
+ 
+                                        if (roll_chance_f(Mastery))
+                                        {
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_ELEMENTAL_BLAST, true);
+                                            caster->CastSpell(unitTarget, 118517, true); // Nature visual
+                                            caster->CastSpell(unitTarget, 118515, true); // Frost visual
+                                        }
+ 
+                                        break;
+                                    }
+                                    default: break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+ 
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mastery_elemental_overload_SpellScript::HandleOnHit);
+            }
+        };
+ 
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mastery_elemental_overload_SpellScript();
+        }
+};
+
 void AddSC_mastery_spell_scripts()
 {
     new spell_mastery_shield_discipline();
@@ -625,4 +722,5 @@ void AddSC_mastery_spell_scripts()
     new spell_mastery_icicles_periodic();
     new spell_mastery_echo_of_light();
     new spell_mastery_divine_bulwark();
+    new spell_mastery_elemental_overload();
 }
