@@ -24,6 +24,7 @@
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
+#include "Player.h"
 
 enum MasterySpells
 {
@@ -31,7 +32,6 @@ enum MasterySpells
     MASTERY_SPELL_CHAIN_LIGHTNING       = 45297,
     MASTERY_SPELL_LAVA_BURST            = 77451,
     MASTERY_SPELL_ELEMENTAL_BLAST       = 120588,
-    MASTERY_SHAMAN_ELEMENTAL            = 77222,
     MASTERY_SPELL_HAND_OF_LIGHT         = 96172,
     MASTERY_SPELL_IGNITE                = 12654,
     MASTERY_SPELL_BLOOD_SHIELD          = 77535,
@@ -691,7 +691,8 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
  
                                         break;
                                     }
-                                    default: break;
+                                    default: 
+                                        break;
                                 }
                             }
                         }
