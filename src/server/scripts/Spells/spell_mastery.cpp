@@ -650,7 +650,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                                     // Lava Burst
                                     case 51505:
                                     {
-                                        float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.0f;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
  
                                         if (roll_chance_f(Mastery))
                                             caster->CastSpell(unitTarget, MASTERY_SPELL_LAVA_BURST, true);
@@ -660,7 +660,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                                     // Lightning Bolt
                                     case 403:
                                     {
-                                        float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.0f;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
  
                                         if (roll_chance_f(Mastery))
                                             caster->CastSpell(unitTarget, MASTERY_SPELL_LIGHTNING_BOLT, true);
@@ -670,7 +670,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                                     // Chain Lightning
                                     case 421:
                                     {
-                                        float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.0f;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
  
                                         if (roll_chance_f(Mastery))
                                             caster->CastSpell(unitTarget, MASTERY_SPELL_CHAIN_LIGHTNING, true);
@@ -680,7 +680,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                                     // Elemental Blast
                                     case 117014:
                                     {
-                                        float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.0f;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
  
                                         if (roll_chance_f(Mastery))
                                         {

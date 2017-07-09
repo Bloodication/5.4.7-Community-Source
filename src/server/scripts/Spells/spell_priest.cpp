@@ -1254,7 +1254,7 @@ class spell_pri_atonement : public SpellScriptLoader
 
                             if (groupList.size() > 1)
                             {
-                                groupList.sort(TrinityCore::HealthPctOrderPred());
+                                groupList.sort(JadeCore::HealthPctOrderPred());
                                 groupList.resize(1);
                             }
 
@@ -1366,7 +1366,7 @@ class spell_pri_spirit_shell : public SpellScriptLoader
                             else
                                 _player->CastCustomSpell(target, PRIEST_SPIRIT_SHELL_ABSORPTION, &bp, NULL, NULL, true);
                                 
-                            else if (_player->HasAura(PRIEST_SPELL_4P_T16_AURA))
+                            if (_player->HasAura(PRIEST_SPELL_4P_T16_AURA))
                                      _player->CastSpell(_player, PRIEST_SPELL_4P_T16_DISC_BUFF, true);
                         }
                     }
@@ -1642,8 +1642,8 @@ class spell_pri_archangel : public SpellScriptLoader
                             archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
                             _player->RemoveAura(PRIEST_EVANGELISM_STACK);
                             
-                        else if (_player->HasAura(PRIEST_SPELL_2P_T16_AURA))
-                                 _player->CastSpell(_player, PRIEST_SPELL_2P_T16_DISC_BUFF, true);
+                        if (_player->HasAura(PRIEST_SPELL_2P_T16_AURA))
+                             _player->CastSpell(_player, PRIEST_SPELL_2P_T16_DISC_BUFF, true);
                         }
                     }
                 }
