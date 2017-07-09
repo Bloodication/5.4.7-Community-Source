@@ -142,7 +142,9 @@ enum PriestSpells
     PRIEST_GLYPH_OF_PRAYER_OF_MENDING               = 55685,
     PRIEST_SPELL_PRAYER_OF_MENDING                  = 41635,
     PRIEST_SPELL_4P_T16_SHADOW                      = 145179,
-    PRIEST_SPELL_EMPOWERED_SHADOWS                  = 145180
+    PRIEST_SPELL_EMPOWERED_SHADOWS                  = 145180,
+    PRIEST_SPELL_2P_T16_DISC                        = 145306,
+    PRIEST_SPELL_2P_T16_DISC_BUFF                   = 145330
 };
 
 // Power Word : Fortitude - 21562
