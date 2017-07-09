@@ -143,8 +143,12 @@ enum PriestSpells
     PRIEST_SPELL_PRAYER_OF_MENDING                  = 41635,
     PRIEST_SPELL_4P_T16_SHADOW                      = 145179,
     PRIEST_SPELL_EMPOWERED_SHADOWS                  = 145180,
-    PRIEST_SPELL_2P_T16_DISC                        = 145306,
-    PRIEST_SPELL_2P_T16_DISC_BUFF                   = 145330
+    PRIEST_SPELL_2P_T16_AURA                        = 145306,
+    PRIEST_SPELL_2P_T16_DISC_BUFF                   = 145330,
+    PRIEST_SPELL_2P_T16_HOLY_BUFF                   = 145327,
+    PRIEST_SPELL_4P_T16_AURA                        = 145334,
+    PRIEST_SPELL_4P_T16_DISC_BUFF                   = 145374,
+    PRIEST_SPELL_4P_T16_HOLY_BUFF                   = 145336
 };
 
 // Power Word : Fortitude - 21562
@@ -1581,7 +1585,7 @@ class spell_pri_archangel : public SpellScriptLoader
                             archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
                             _player->RemoveAura(PRIEST_EVANGELISM_STACK);
                             
-                        else if (_player->HasAura(PRIEST_SPELL_2P_T16_DISC))
+                        else if (_player->HasAura(PRIEST_SPELL_2P_T16_AURA))
                                  _player->CastSpell(_player, PRIEST_SPELL_2P_T16_DISC_BUFF, true);
                         }
                     }
