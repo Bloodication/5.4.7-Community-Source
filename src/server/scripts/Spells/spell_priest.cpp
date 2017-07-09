@@ -1228,6 +1228,60 @@ class spell_pri_train_of_thought : public SpellScriptLoader
         }
 };
 
+// Called by Smite - 585, Holy Fire - 14914 and Penance - 47666
+// Atonement - 81749
+class spell_pri_atonement : public SpellScriptLoader
+{
+    public:
+        spell_pri_atonement() : SpellScriptLoader("spell_pri_atonement") { }
+
+        class spell_pri_atonement_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_atonement_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(PRIEST_ATONEMENT_AURA))
+                        {
+                            int32 bp = GetHitDamage();
+                            std::list<Unit*> groupList;
+
+                            _player->GetPartyMembers(groupList);
+
+                            if (groupList.size() > 1)
+                            {
+                                groupList.sort(TrinityCore::HealthPctOrderPred());
+                                groupList.resize(1);
+                            }
+
+                            for (auto itr : groupList)
+                            {
+                                if (itr->GetGUID() == _player->GetGUID())
+                                    bp /= 2;
+
+                                _player->CastCustomSpell(itr, PRIEST_ATONEMENT_HEAL, &bp, NULL, NULL, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_atonement_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_atonement_SpellScript();
+        }
+};
+
 // Called by Power Word : Shield - 17
 // Rapture - 47536
 class spell_pri_rapture : public SpellScriptLoader
@@ -3262,6 +3316,7 @@ void AddSC_priest_spell_scripts()
     new spell_pri_strength_of_soul();
     new spell_pri_grace();
     new spell_pri_train_of_thought();
+    new spell_pri_atonement();
     new spell_pri_rapture();
     new spell_pri_spirit_shell();
     new spell_pri_devouring_plague();
