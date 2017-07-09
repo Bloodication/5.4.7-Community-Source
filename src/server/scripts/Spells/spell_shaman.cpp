@@ -2335,35 +2335,47 @@ class spell_sha_glyph_of_telluric_currents : public SpellScriptLoader
 // Lava Burst - 51505
 class spell_sha_lava_burst : public SpellScriptLoader
 {
-	class spell_sha_lava_burst_SpellScript : public SpellScript
-	{
-		PrepareSpellScript(spell_sha_lava_burst_SpellScript)
+    public:
+        spell_sha_lava_burst() : SpellScriptLoader("spell_sha_lava_burst") { }
 
-		void HandleOnHit()
-		{
-			if (Player* _player = GetCaster()->ToPlayer())
-			{
-				if (_player->HasAura(77756))
-				{
-					_player->RemoveAura(SPELL_SHA_LAVA_SURGE);
-				}
-			}
-		}
+        class spell_sha_lava_burst_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_lava_burst_SpellScript)
 
-		void Register()
-		{
-			OnHit += SpellHitFn(spell_sha_lava_burst_SpellScript::HandleOnHit);
-		}
-	};
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_SHA_T15_ELEM_SET_4P_BONUS))
+                    {
+                        _player->ReduceSpellCooldown(114049, 1000);
+                        _player->ReduceSpellCooldown(114050, 1000);
+                        _player->ReduceSpellCooldown(114051, 1000);
+                        _player->ReduceSpellCooldown(114052, 1000);
+                    }
+                }
+            }
 
-public:
-	spell_sha_lava_burst() : SpellScriptLoader("spell_sha_lava_burst")
-	{ }
+            void HandleOnHit(SpellEffIndex /*effIndex*/)
+            {
+                Unit* target = GetHitUnit();
+                if (!target || !target->HasAura(SPELL_SHA_FLAME_SHOCK, GetCaster()->GetGUID()))
+                    return;
 
-	SpellScript * GetSpellScript() const
-	{
-		return new spell_sha_lava_burst_SpellScript();
-	}
+                SetHitDamage(GetHitDamage() * 1.5f); // If Flame Shock is on the target, Lava Burst will deal 50% additional damage
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_sha_lava_burst_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+                AfterHit += SpellHitFn(spell_sha_lava_burst_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_lava_burst_SpellScript();
+        }
 };
 
 // Triggered by Flame Shock - 8050
