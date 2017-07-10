@@ -952,10 +952,7 @@ public:
 			TriggerTransdence->CastSpell(TriggerTransdence, 119053);
             
             // Glyph of Fighting Pose
-            if (player->HasAura(125872))
-                TriggerTransdence->HandleEmote(27);
-            else
-                TriggerTransdence->CastSpell(TriggerTransdence, 124416);
+			//TODO: Glyph of Fighting Pose
 
 		}
 

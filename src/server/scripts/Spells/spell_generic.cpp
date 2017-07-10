@@ -3661,13 +3661,13 @@ class spell_gen_bloody_dancing_steel : public SpellScriptLoader
         {
             PrepareAuraScript(spell_gen_bloody_dancing_steel_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     int32 agility = _player->GetTotalStatValue(STAT_AGILITY);
                     int32 strength = _player->GetTotalStatValue(STAT_STRENGTH);
-                    if (AuraPtr dancingSteel = _player->GetAura(142530))
+                    if (Aura* dancingSteel = _player->GetAura(142530))
                     {
                         if (agility > strength)
                             dancingSteel->GetEffect(1)->SetAmount(0);

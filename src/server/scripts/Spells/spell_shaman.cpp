@@ -2545,13 +2545,13 @@ class spell_sha_glyph_of_rain_of_frogs : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_glyph_of_rain_of_frogs_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     _player->learnSpell(SPELL_SHA_RAIN_OF_FROGS, false);
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     if (_player->HasSpell(SPELL_SHA_GLYPH_OF_RAIN_OF_FROGS))
@@ -2581,13 +2581,13 @@ class spell_sha_glyph_of_elemental_familiars : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_glyph_of_elemental_familiars_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     _player->learnSpell(SPELL_SHA_ELEMENTAL_FAMILIAR, false);
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     if (_player->HasSpell(SPELL_SHA_GLYPH_OF_ELEMENTAL_FAMILIARS))
