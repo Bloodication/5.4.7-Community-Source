@@ -293,6 +293,38 @@ class spell_item_shaman_t16_restoration_4p : public SpellScriptLoader
         }
 };
 
+// Item - Priest T16 Healer 4P Bonus - 145334
+// Circle of Healing - 34861 | Prayer of Mending - 33076
+class spell_item_priest_t16_holy_4p : public SpellScriptLoader
+{
+    public:
+        sspell_item_priest_t16_holy_4p() : SpellScriptLoader("spell_item_priest_t16_holy_4p") { }
+
+        class spell_item_priest_t16_holy_4p_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_priest_t16_holy_4p_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(145334))
+                        _player->CastSpell(_player, 145336, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_item_priest_t16_holy_4p_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_priest_t16_holy_4p_SpellScript();
+        }
+};
+
 // Item - Rogue T16 4P Bonus - 145210
 // Backstab - 53
 class spell_item_rogue_t16_4p : public SpellScriptLoader
@@ -454,4 +486,5 @@ void AddSC_t16_spell_scripts()
     new spell_item_rogue_t16_4p();
     new spell_item_hunter_t16_2p();
     new spell_item_hunter_t16_4p();
+    new spell_item_priest_t16_holy_4p();
 }
