@@ -23,6 +23,8 @@
 #include "World.h"
 #include "DatabaseEnv.h"
 #include "AccountMgr.h"
+#include "Player.h"
+#include "LexicalCast.h"
 
 Channel::Channel(const std::string& name, uint32 channel_id, uint32 Team)
  : m_announce(true), m_ownership(true), m_name(name), m_password(""), m_flags(0), m_channelId(channel_id), m_ownerGUID(0), m_Team(Team), _special(false)
@@ -679,11 +681,11 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
     else
     {
         uint32 messageLength = strlen(what) + 1;
-
-        WorldPacket data;
-        player->BuildPlayerChat(&data, CHAT_MSG_CHANNEL, what, lang, NULL, m_name);
-        SendToAll(&data, !players[p].IsModerator() ? p : false);
     }
+	
+	WorldPacket data;
+    player->BuildPlayerChat(&data, CHAT_MSG_CHANNEL, what, lang, NULL, m_name);
+    SendToAll(&data, !players[p].IsModerator() ? p : false);
 }
 
 void Channel::Invite(uint64 p, const char *newname)
