@@ -440,47 +440,6 @@ class spell_item_death_knight_t16_blood_2p : public SpellScriptLoader
         }
 };
 
-// Endurance of Niuzao - 146193
-class spell_endurance_of_niuzao : public SpellScriptLoader
-{
-    public:
-        spell_endurance_of_niuzao() : SpellScriptLoader("spell_endurance_of_niuzao") { }
-
-        class spell_endurance_of_niuzao_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_endurance_of_niuzao_AuraScript);
-
-            void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & canBeRecalculated)
-            {
-                amount = -1;
-            }
-
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                Unit* victim = GetTarget();
-                int32 remainingHealth = victim->GetHealth() - dmgInfo.GetDamage();
-
-                // If damage kills us
-                if (remainingHealth <= 0 && !victim->HasAura(148010))
-                {
-                    absorbAmount = dmgInfo.GetDamage();
-                    victim->AddAura(148010, victim);
-                }
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_endurance_of_niuzao_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-                OnEffectAbsorb += AuraEffectAbsorbFn(spell_endurance_of_niuzao_AuraScript::Absorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_endurance_of_niuzao_AuraScript();
-        }
-};
-
 void AddSC_t16_spell_scripts()
 {
     new spell_item_paladin_t16_protection_2p();
@@ -495,5 +454,4 @@ void AddSC_t16_spell_scripts()
     new spell_item_rogue_t16_4p();
     new spell_item_hunter_t16_2p();
     new spell_item_hunter_t16_4p();
-    new spell_endurance_of_niuzao();
 }
