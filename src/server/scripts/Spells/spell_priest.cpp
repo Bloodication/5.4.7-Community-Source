@@ -1335,10 +1335,7 @@ class spell_pri_spirit_shell : public SpellScriptLoader
             PrepareSpellScript(spell_pri_spirit_shell_SpellScript);
 
             void HandleOnHit()
-            {
-                if (_player->HasAura(PRIEST_SPELL_4P_T16_AURA))
-                    _player->CastSpell(_player, PRIEST_SPELL_4P_T16_DISC_BUFF, true);
-                    
+            {                  
                 if (!GetCaster())
                     return;
 
@@ -1371,6 +1368,9 @@ class spell_pri_spirit_shell : public SpellScriptLoader
                         }
                     }
                 }
+                
+                if (_player->HasAura(PRIEST_SPELL_4P_T16_AURA))
+                    _player->CastSpell(_player, PRIEST_SPELL_4P_T16_DISC_BUFF, true);
             }
 
             void Register()
