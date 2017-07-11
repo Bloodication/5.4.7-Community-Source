@@ -108,6 +108,89 @@ enum MageSpells
     SPELL_MAGE_RING_OF_FROST_FROZEN              = 82691
 };
 
+// Arcane Missiles - 5143 | Frostfire Bolt - 44614 | Pyroblast - 11366
+// Item - Mage T16 2P Bonus - 145251
+class spell_item_mage_t16_2p : public SpellScriptLoader
+{
+    public:
+        spell_item_mage_t16_2p() : SpellScriptLoader("spell_item_mage_t16_2p") { }
+
+        class spell_item_mage_t16_2p_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_mage_t16_2p_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(145251))
+                    {
+                        if (m_scriptSpellId == 5143)
+                        {
+                            _player->CastSpell(_player, 145252, true);
+                        }
+                        else if (m_scriptSpellId == 44614)
+                        {
+                            if (_player->HasAura(57761))
+                                _player->CastSpell(_player, 146557, true);
+
+                            if (_player->HasAura(145257)) // Item - Mage T16 4P Bonus
+                                if (roll_chance_i(30))
+                                    _player->CastSpell(GetHitUnit(), 145264, true);
+                        }
+                        else if (m_scriptSpellId == 11366)
+                        {
+                            if (_player->HasAura(48108))
+                                _player->CastSpell(_player, 145254, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_item_mage_t16_2p_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_mage_t16_2p_SpellScript();
+        }
+};
+
+// Item - Mage T16 4P Bonus - 145257
+// Inferno Blast - 108853
+class spell_item_mage_t16_4p : public SpellScriptLoader
+{
+    public:
+        spell_item_mage_t16_4p() : SpellScriptLoader("spell_item_mage_t16_4p") { }
+
+        class spell_item_mage_t16_4p_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_mage_t16_4p_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(145257))
+                        _player->CastSpell(_player, 145261, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_item_mage_t16_4p_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_mage_t16_4p_SpellScript();
+        }
+};
+
 // Flamestrike - 2120
 class spell_mage_flamestrike : public SpellScriptLoader
 {
@@ -2160,4 +2243,7 @@ void AddSC_mage_spell_scripts()
     new spell_mage_ring_of_frost_frozen();
     new spell_mage_ring_of_frost_boot();
     new spell_mage_polymorph();
+    new spell_item_mage_t16_2p();
+    new spell_item_mage_t16_4p();
+    
 }
