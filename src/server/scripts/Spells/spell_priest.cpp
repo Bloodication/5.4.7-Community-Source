@@ -1273,6 +1273,8 @@ class spell_pri_atonement : public SpellScriptLoader
 
             void HandleOnHit()
             {
+                _player->GetSession()->SendAreaTriggerMessage("test");
+                
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
