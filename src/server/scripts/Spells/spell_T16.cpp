@@ -41,7 +41,7 @@ class spell_item_paladin_t16_protection_2p : public SpellScriptLoader
                 return GetTarget()->HasAura(138244);
             }
 
-            void HandleProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            void HandleProc(const AuraEffect* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
                 amount += eventInfo.GetDamageInfo()->GetDamage();
@@ -74,7 +74,7 @@ class spell_item_druid_t16_restoration_2p : public SpellScriptLoader
         {
             PrepareAuraScript(spell_item_druid_t16_restoration_2p_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(const AuraEffect* aurEff)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -232,7 +232,7 @@ class spell_item_shaman_t16_enhancement_4p : public SpellScriptLoader
         {
             PrepareAuraScript(spell_item_shaman_t16_enhancement_2p_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(const AuraEffect* aurEff)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -240,7 +240,7 @@ class spell_item_shaman_t16_enhancement_4p : public SpellScriptLoader
                     {
                         if (roll_chance_i(5))
                         {
-                            if (AuraPtr aura = caster->AddAura(77661, caster))
+                            if (Aura* aura = caster->AddAura(77661, caster))
                                 aura->SetStackAmount(5);
 
                             if (Player* player = caster->ToPlayer())
@@ -407,7 +407,7 @@ class spell_item_death_knight_t16_blood_2p : public SpellScriptLoader
                 count = 0;
             }
 
-            void HandleProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            void HandleProc(const AuraEffect* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
                 if (Unit* target = GetTarget())
@@ -450,12 +450,12 @@ class spell_endurance_of_niuzao : public SpellScriptLoader
         {
             PrepareAuraScript(spell_endurance_of_niuzao_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & canBeRecalculated)
+            void CalculateAmount(const AuraEffect* aurEff, int32 & amount, bool & canBeRecalculated)
             {
                 amount = -1;
             }
 
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 Unit* victim = GetTarget();
                 int32 remainingHealth = victim->GetHealth() - dmgInfo.GetDamage();
