@@ -993,15 +993,14 @@ class spell_mage_blazing_speed : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mage_blazing_speed_SpellScript);
 
-			void HandleOnHit()
-			{
-				if (GetCaster()->isInStun())
-					return;
-				{
-					if (Player* _player = GetCaster()->ToPlayer())
-						_player->RemoveMovementImpairingAuras();
-				}
-			}
+            void HandleOnHit()
+            {
+                if (GetCaster()->isInStun())
+                    return SPELL_FAILED_STUNNED;
+                    
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->RemoveMovementImpairingAuras();
+            }
 
             void Register()
             {
