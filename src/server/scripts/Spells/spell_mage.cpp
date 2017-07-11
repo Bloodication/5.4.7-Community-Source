@@ -995,6 +995,9 @@ class spell_mage_blazing_speed : public SpellScriptLoader
 
             void HandleOnHit()
             {
+                if (GetCaster()->isInStun())
+                    return SPELL_FAILED_STUNNED;
+                    
                 if (Player* _player = GetCaster()->ToPlayer())
                     _player->RemoveMovementImpairingAuras();
             }
