@@ -9262,6 +9262,37 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
         {
             switch (dummySpell->Id)
             {
+                // Elemental Overload (Shaman Elemental Mastery)
+                  case 77222:
+                  {
+                    if (!procSpell || !target || GetTypeId() != TYPEID_PLAYER || effIndex != 0)
+                        return false;
+
+                    float chance = GetFloatValue(PLAYER_MASTERY) * 2.0f;
+
+                    // Chain Lightning has /3 chance to proc instead of other spells (kinda 8% for 25%)
+                    if (procSpell->Id == 421)
+                        chance = chance / 3;
+
+                    if (!roll_chance_f(chance))
+                        return false;
+
+                    switch (procSpell->Id)
+                    {
+                      case 403: triggered_spell_id = 45284; break;
+                      case 421:  triggered_spell_id = 45297; break;
+                      case 51505: triggered_spell_id = 77451; break;
+                      case 117014: triggered_spell_id = 120588, 118517, 118515; break;
+                      
+                        default: return false;
+                    }
+
+                    // Item - Shaman T13 Elemental 4P Bonus (Elemental Overload)
+                    if (HasAura(105816))
+                        CastSpell(this, 105821, true);
+                    break;
+              }
+
 				// Lava Surge
 				case 77756:
 				{
