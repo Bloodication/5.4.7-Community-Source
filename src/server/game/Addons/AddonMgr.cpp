@@ -28,6 +28,7 @@ namespace AddonMgr
 
 // Anonymous namespace ensures file scope of all the stuff inside it, even
 // if you add something more to this namespace somewhere else.
+// Cancer
 namespace
 {
     // List of saved addons (in DB).
