@@ -151,6 +151,38 @@ enum PriestSpells
     PRIEST_SPELL_4P_T16_HOLY_BUFF                   = 145336
 };
 
+// Item - Priest T16 Healer 4P Bonus - 145334
+// Circle of Healing - 34861 | Prayer of Mending - 33076
+class spell_item_priest_t16_holy_4p : public SpellScriptLoader
+{
+    public:
+        sspell_item_priest_t16_holy_4p() : SpellScriptLoader("spell_item_priest_t16_holy_4p") { }
+
+        class spell_item_priest_t16_holy_4p_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_priest_t16_holy_4p_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(145334))
+                        _player->CastSpell(_player, 145336, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_item_priest_t16_holy_4p_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_priest_t16_holy_4p_SpellScript();
+        }
+};
+
 // Power Word : Fortitude - 21562
 class spell_pri_power_word_fortitude : public SpellScriptLoader
 {
@@ -3359,6 +3391,7 @@ void AddSC_priest_spell_scripts()
     new spell_priest_divine_star_aoe();
     new spell_pri_holy_spark();
     new spell_pri_mastery_shadowy_recall();
+    new spell_item_priest_t16_holy_4p();
 
     new spell_area_priest_angelic_feather();
     new spell_area_priest_power_word_barrier();
