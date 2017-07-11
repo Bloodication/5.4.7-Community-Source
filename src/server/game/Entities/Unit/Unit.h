@@ -1396,7 +1396,6 @@ class Unit : public WorldObject
         bool isSummon() const   { return m_unitTypeMask & UNIT_MASK_SUMMON; }
         bool isGuardian() const { return m_unitTypeMask & UNIT_MASK_GUARDIAN; }
         bool isPet() const      { return m_unitTypeMask & UNIT_MASK_PET; }
-		bool isWaterMagePet() const { return GetEntry() == 510; }
         bool isHunterPet() const{ return m_unitTypeMask & UNIT_MASK_HUNTER_PET; }
         bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         bool IsVehicle() const  { return m_unitTypeMask & UNIT_MASK_VEHICLE; }

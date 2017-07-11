@@ -2128,7 +2128,6 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
      // Custom MoP Script - Hack fix for Vanish immunity, players with 3 sec immunity can't be broken from the stealth
      if (unitTarget && unitTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) && unitTarget->HasAura(131369) && !caster->IsFriendlyTo(unitTarget))
          return SPELL_FAILED_BAD_TARGETS;
-
      
      if (unitTarget && unitTarget->ToCreature())
      {
@@ -2184,16 +2183,6 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
                      else if ((unitTarget->GetCreatureTypeMask() & CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD) == 0)
                          return SPELL_FAILED_TARGET_NO_POCKETS;
                 }
-
-				if (Mechanic == MECHANIC_BANISH)
-				{
-					if (Creature const* targetCreature = unitTarget->ToCreature())
-					{
-
-						if (targetCreature->isWaterMagePet())
-							return SPELL_FAILED_BAD_TARGETS;
-					}
-				}
                 
                 // Summons can no longer be buffed
                 if (unitTarget->isSummon())

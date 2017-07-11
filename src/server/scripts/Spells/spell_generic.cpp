@@ -3613,7 +3613,7 @@ class spell_gen_synapse_springs : public SpellScriptLoader
         }
 };
 
-// Enchant Weapon - Dancing Steel - 120032 and 142530
+// Enchant Weapon - Dancing Steel - 120032
 class spell_gen_dancing_steel : public SpellScriptLoader
 {
     public:
@@ -3648,6 +3648,44 @@ class spell_gen_dancing_steel : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_gen_dancing_steel_AuraScript();
+        }
+};
+
+// Enchant Weapon - Bloody Dancing Steel - 142530
+class spell_gen_bloody_dancing_steel : public SpellScriptLoader
+{
+    public:
+        spell_gen_bloody_dancing_steel() : SpellScriptLoader("spell_gen_bloody_dancing_steel") { }
+
+        class spell_gen_bloody_dancing_steel_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_bloody_dancing_steel_AuraScript);
+
+            void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 agility = _player->GetTotalStatValue(STAT_AGILITY);
+                    int32 strength = _player->GetTotalStatValue(STAT_STRENGTH);
+                    if (Aura* dancingSteel = _player->GetAura(142530))
+                    {
+                        if (agility > strength)
+                            dancingSteel->GetEffect(1)->SetAmount(0);
+                        else
+                            dancingSteel->GetEffect(0)->SetAmount(0);
+                    }
+                }
+            }
+
+            void Register()
+            {
+               OnEffectApply += AuraEffectApplyFn(spell_gen_bloody_dancing_steel_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_STAT, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_bloody_dancing_steel_AuraScript();
         }
 };
 
@@ -4373,6 +4411,7 @@ void AddSC_generic_spell_scripts()
     new spell_gen_ds_flush_knockback();
     new spell_gen_synapse_springs();
     new spell_gen_dancing_steel();
+    new spell_gen_bloody_dancing_steel();
     new spell_gen_windsong();
     new spell_gen_alchemists_flask();
     new spell_gen_free_action_potion();

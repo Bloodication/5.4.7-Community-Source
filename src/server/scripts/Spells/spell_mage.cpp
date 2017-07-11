@@ -995,6 +995,9 @@ class spell_mage_blazing_speed : public SpellScriptLoader
 
             void HandleOnHit()
             {
+                if (GetCaster()->isInStun())
+                    return;
+                    
                 if (Player* _player = GetCaster()->ToPlayer())
                     _player->RemoveMovementImpairingAuras();
             }
@@ -2157,4 +2160,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_ring_of_frost_frozen();
     new spell_mage_ring_of_frost_boot();
     new spell_mage_polymorph();
+
 }

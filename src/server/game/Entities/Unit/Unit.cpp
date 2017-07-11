@@ -9263,8 +9263,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
             switch (dummySpell->Id)
             {
                 // Elemental Overload (Shaman Elemental Mastery)
-                case 77222:
-                {
+                  case 77222:
+                  {
                     if (!procSpell || !target || GetTypeId() != TYPEID_PLAYER || effIndex != 0)
                         return false;
 
@@ -9279,10 +9279,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
 
                     switch (procSpell->Id)
                     {
-                        case 403: triggered_spell_id = 45284; break;
-                        case 421:  triggered_spell_id = 45297; break;
-                        case 51505: triggered_spell_id = 77451; break;
-                        case 117014: triggered_spell_id = 120588; break;
+                      case 403: triggered_spell_id = 45284; break;
+                      case 421:  triggered_spell_id = 45297; break;
+                      case 51505: triggered_spell_id = 77451; break;
+                      case 117014: triggered_spell_id = 120588, 118517, 118515; break;
+                      
                         default: return false;
                     }
 
@@ -9290,7 +9291,19 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
                     if (HasAura(105816))
                         CastSpell(this, 105821, true);
                     break;
-                }
+              }
+
+				// Lava Surge
+				case 77756:
+				{
+					if (GetTypeId() != TYPEID_PLAYER)
+						return false;
+					ToPlayer()->RemoveSpellCooldown(51505,true);
+					
+					triggered_spell_id = 77762;
+					target = this;
+					break;
+				}
                 case 120676:// Stormlash Totem
                 {
                     // Can't proc off from itself

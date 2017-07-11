@@ -102,7 +102,13 @@ enum ShamanSpells
     SPELL_SHA_LAVA_SURGE                    = 77762,
     SHAMAN_ITEM_T16_ELEMENTAL_2P_BONUS      = 144998,
     SPELL_SHA_ELEMENTAL_DISCHARGE           = 144999,
-    GLYPH_SHA_FAR_SIGHT                     = 58059
+    GLYPH_SHA_FAR_SIGHT                     = 58059,
+    SPELL_SHA_GLYPH_OF_RAIN_OF_FROGS        = 147707,
+    SPELL_SHA_RAIN_OF_FROGS                 = 147709,
+    SPELL_SHA_GLYPH_OF_ELEMENTAL_FAMILIARS  = 147788,
+    SPELL_SHA_ELEMENTAL_FAMILIAR            = 148118,
+    SPELL_SHA_T15_ENCH_SET_2P_BONUS         = 138136,
+    SPELL_SHA_T15_ELEM_SET_4P_BONUS         = 138144,
 };
 
 // Totemic Projection - 108287
@@ -871,6 +877,41 @@ public:
         return new spell_sha_stone_bulwark_AuraScript();
     }
 };
+
+// 138136 - Item - Shaman T15 Enhancement 2P Bonus
+class spell_sha_stormstrike : public SpellScriptLoader
+{
+    public:
+        spell_sha_stormstrike() : SpellScriptLoader("spell_sha_stormstrike") { }
+
+        class spell_sha_stormstrike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_stormstrike_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_SHA_T15_ENCH_SET_2P_BONUS))
+                    {
+                        _player->CastSpell(_player, 53817, true);
+                        _player->CastSpell(_player, 53817, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_stormstrike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_stormstrike_SpellScript();
+        }
+};
+
 
 // Stone Bulwark - 114893
 class spell_sha_stone_bulwark : public SpellScriptLoader
@@ -2335,35 +2376,47 @@ class spell_sha_glyph_of_telluric_currents : public SpellScriptLoader
 // Lava Burst - 51505
 class spell_sha_lava_burst : public SpellScriptLoader
 {
-	class spell_sha_lava_burst_SpellScript : public SpellScript
-	{
-		PrepareSpellScript(spell_sha_lava_burst_SpellScript)
+    public:
+        spell_sha_lava_burst() : SpellScriptLoader("spell_sha_lava_burst") { }
 
-		void HandleOnHit()
-		{
-			if (Player* _player = GetCaster()->ToPlayer())
-			{
-				if (_player->HasAura(77756))
-				{
-					_player->RemoveAura(SPELL_SHA_LAVA_SURGE);
-				}
-			}
-		}
+        class spell_sha_lava_burst_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_lava_burst_SpellScript)
 
-		void Register()
-		{
-			OnHit += SpellHitFn(spell_sha_lava_burst_SpellScript::HandleOnHit);
-		}
-	};
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_SHA_T15_ELEM_SET_4P_BONUS))
+                    {
+                        _player->ReduceSpellCooldown(114049, 1000);
+                        _player->ReduceSpellCooldown(114050, 1000);
+                        _player->ReduceSpellCooldown(114051, 1000);
+                        _player->ReduceSpellCooldown(114052, 1000);
+                    }
+                }
+            }
 
-public:
-	spell_sha_lava_burst() : SpellScriptLoader("spell_sha_lava_burst")
-	{ }
+            void HandleOnHit(SpellEffIndex /*effIndex*/)
+            {
+                Unit* target = GetHitUnit();
+                if (!target || !target->HasAura(SPELL_SHA_FLAME_SHOCK, GetCaster()->GetGUID()))
+                    return;
 
-	SpellScript * GetSpellScript() const
-	{
-		return new spell_sha_lava_burst_SpellScript();
-	}
+                SetHitDamage(GetHitDamage() * 1.5f); // If Flame Shock is on the target, Lava Burst will deal 50% additional damage
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_sha_lava_burst_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+                AfterHit += SpellHitFn(spell_sha_lava_burst_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_lava_burst_SpellScript();
+        }
 };
 
 // Triggered by Flame Shock - 8050
@@ -2482,6 +2535,78 @@ class spell_sha_greater_healing_wave : public SpellScriptLoader
         }
 };
 
+// 147707 - Glyph of Rain of Frogs
+class spell_sha_glyph_of_rain_of_frogs : public SpellScriptLoader
+{
+    public:
+        spell_sha_glyph_of_rain_of_frogs() : SpellScriptLoader("spell_sha_glyph_of_rain_of_frogs") { }
+
+        class spell_sha_glyph_of_rain_of_frogs_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_glyph_of_rain_of_frogs_AuraScript);
+
+            void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->learnSpell(SPELL_SHA_RAIN_OF_FROGS, false);
+            }
+
+            void OnRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    if (_player->HasSpell(SPELL_SHA_GLYPH_OF_RAIN_OF_FROGS))
+                        _player->removeSpell(SPELL_SHA_RAIN_OF_FROGS, false, false);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_sha_glyph_of_rain_of_frogs_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_sha_glyph_of_rain_of_frogs_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_glyph_of_rain_of_frogs_AuraScript();
+        }
+};
+
+// 147788 - Glyph of Elemental Familiars
+class spell_sha_glyph_of_elemental_familiars : public SpellScriptLoader
+{
+    public:
+        spell_sha_glyph_of_elemental_familiars() : SpellScriptLoader("spell_sha_glyph_of_elemental_familiars") { }
+
+        class spell_sha_glyph_of_elemental_familiars_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_glyph_of_elemental_familiars_AuraScript);
+
+            void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->learnSpell(SPELL_SHA_ELEMENTAL_FAMILIAR, false);
+            }
+
+            void OnRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    if (_player->HasSpell(SPELL_SHA_GLYPH_OF_ELEMENTAL_FAMILIARS))
+                        _player->removeSpell(SPELL_SHA_ELEMENTAL_FAMILIAR, false, false);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_sha_glyph_of_elemental_familiars_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_sha_glyph_of_elemental_familiars_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_glyph_of_elemental_familiars_AuraScript();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_totemic_projection();
@@ -2527,4 +2652,7 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_greater_healing_wave();
     new spell_sha_healing_rain_heal();
 	new spell_sha_lava_burst();
+    new spell_sha_glyph_of_rain_of_frogs();
+    new spell_sha_glyph_of_elemental_familiars();
+    new spell_sha_stormstrike();
 }

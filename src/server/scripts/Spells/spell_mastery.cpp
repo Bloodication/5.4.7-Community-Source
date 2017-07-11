@@ -24,6 +24,7 @@
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
+#include "Player.h"
 
 enum MasterySpells
 {
@@ -625,4 +626,5 @@ void AddSC_mastery_spell_scripts()
     new spell_mastery_icicles_periodic();
     new spell_mastery_echo_of_light();
     new spell_mastery_divine_bulwark();
+    //new spell_mastery_elemental_overload();
 }

@@ -142,7 +142,45 @@ enum PriestSpells
     PRIEST_GLYPH_OF_PRAYER_OF_MENDING               = 55685,
     PRIEST_SPELL_PRAYER_OF_MENDING                  = 41635,
     PRIEST_SPELL_4P_T16_SHADOW                      = 145179,
-    PRIEST_SPELL_EMPOWERED_SHADOWS                  = 145180
+    PRIEST_SPELL_EMPOWERED_SHADOWS                  = 145180,
+    PRIEST_SPELL_2P_T16_AURA                        = 145306,
+    PRIEST_SPELL_2P_T16_DISC_BUFF                   = 145330,
+    PRIEST_SPELL_2P_T16_HOLY_BUFF                   = 145327,
+    PRIEST_SPELL_4P_T16_AURA                        = 145334,
+    PRIEST_SPELL_4P_T16_DISC_BUFF                   = 145374,
+    PRIEST_SPELL_4P_T16_HOLY_BUFF                   = 145336
+};
+
+// Item - Priest T16 Healer 4P Bonus - 145334
+// Circle of Healing - 34861 | Prayer of Mending - 33076
+class spell_item_priest_t16_holy_4p : public SpellScriptLoader
+{
+    public:
+        sspell_item_priest_t16_holy_4p() : SpellScriptLoader("spell_item_priest_t16_holy_4p") { }
+
+        class spell_item_priest_t16_holy_4p_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_priest_t16_holy_4p_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(145334))
+                        _player->CastSpell(_player, 145336, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_item_priest_t16_holy_4p_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_priest_t16_holy_4p_SpellScript();
+        }
 };
 
 // Power Word : Fortitude - 21562
@@ -1222,6 +1260,60 @@ class spell_pri_train_of_thought : public SpellScriptLoader
         }
 };
 
+// Called by Smite - 585, Holy Fire - 14914 and Penance - 47666
+// Atonement - 81749
+class spell_pri_atonement : public SpellScriptLoader
+{
+    public:
+        spell_pri_atonement() : SpellScriptLoader("spell_pri_atonement") { }
+
+        class spell_pri_atonement_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_atonement_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(PRIEST_ATONEMENT_AURA))
+                        {
+                            int32 bp = GetHitDamage();
+                            std::list<Unit*> groupList;
+
+                            _player->GetPartyMembers(groupList);
+
+                            if (groupList.size() > 1)
+                            {
+                                groupList.sort(JadeCore::HealthPctOrderPred());
+                                groupList.resize(1);
+                            }
+
+                            for (auto itr : groupList)
+                            {
+                                if (itr->GetGUID() == _player->GetGUID())
+                                    bp /= 2;
+
+                                _player->CastCustomSpell(itr, PRIEST_ATONEMENT_HEAL, &bp, NULL, NULL, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_atonement_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_atonement_SpellScript();
+        }
+};
+
 // Called by Power Word : Shield - 17
 // Rapture - 47536
 class spell_pri_rapture : public SpellScriptLoader
@@ -1275,7 +1367,7 @@ class spell_pri_spirit_shell : public SpellScriptLoader
             PrepareSpellScript(spell_pri_spirit_shell_SpellScript);
 
             void HandleOnHit()
-            {
+            {                  
                 if (!GetCaster())
                     return;
 
@@ -1307,7 +1399,10 @@ class spell_pri_spirit_shell : public SpellScriptLoader
                                 _player->CastCustomSpell(target, PRIEST_SPIRIT_SHELL_ABSORPTION, &bp, NULL, NULL, true);
                         }
                     }
+					if (_player->HasAura(PRIEST_SPELL_4P_T16_AURA))
+						_player->CastSpell(_player, PRIEST_SPELL_4P_T16_DISC_BUFF, true);
                 }
+                
             }
 
             void Register()
@@ -1578,6 +1673,9 @@ class spell_pri_archangel : public SpellScriptLoader
                         {
                             archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
                             _player->RemoveAura(PRIEST_EVANGELISM_STACK);
+                            
+                        if (_player->HasAura(PRIEST_SPELL_2P_T16_AURA))
+                             _player->CastSpell(_player, PRIEST_SPELL_2P_T16_DISC_BUFF, true);
                         }
                     }
                 }
@@ -3253,6 +3351,7 @@ void AddSC_priest_spell_scripts()
     new spell_pri_strength_of_soul();
     new spell_pri_grace();
     new spell_pri_train_of_thought();
+    new spell_pri_atonement();
     new spell_pri_rapture();
     new spell_pri_spirit_shell();
     new spell_pri_devouring_plague();
@@ -3292,6 +3391,7 @@ void AddSC_priest_spell_scripts()
     new spell_priest_divine_star_aoe();
     new spell_pri_holy_spark();
     new spell_pri_mastery_shadowy_recall();
+    new spell_item_priest_t16_holy_4p();
 
     new spell_area_priest_angelic_feather();
     new spell_area_priest_power_word_barrier();

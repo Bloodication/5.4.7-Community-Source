@@ -945,13 +945,14 @@ public:
 			TriggerTransdence->SetFlag(EUnitFields::UNIT_FIELD_FLAGS, UnitFlags::UNIT_FLAG_DISABLE_MOVE | UnitFlags::UNIT_FLAG_NOT_SELECTABLE | UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
 			TriggerTransdence->SetFlag(EUnitFields::UNIT_FIELD_FLAGS_2, UnitFlags2::UNIT_FLAG2_DISABLE_TURN);
 
-			
-
 			//Clone player's look
 			player->CastSpell(TriggerTransdence, 45204);
 
 			//Visual meditation effect
 			TriggerTransdence->CastSpell(TriggerTransdence, 119053);
+            
+            // Glyph of Fighting Pose
+			//TODO: Glyph of Fighting Pose
 
 		}
 

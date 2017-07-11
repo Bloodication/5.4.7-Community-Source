@@ -144,7 +144,6 @@ enum DruidSpells
     SPELL_DRUID_DREAM_OF_CENARIUS_RESTOR    = 145153,
     SPELL_TREANT_RESTORATION_SPELL          = 113828,
     SPELL_TREANT_BALANCE_SPELL              = 113769,
-    DRUID_T16_RESTORATION_2P_BONUS          = 144869,
     SPELL_DRUID_SAGE_MENDER                 = 144871,
     SPELL_DRUID_GLYPH_OF_GUIDED_STARS       = 146655
 };
@@ -4911,10 +4910,6 @@ class spell_dru_dream_of_cenarius : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        // Druid T16 Restoration 2P Bonus - 144869
-                        if (caster->HasAura(DRUID_T16_RESTORATION_2P_BONUS) && caster->HasAura(SPELL_DRUID_SAGE_MENDER))
-                            caster->RemoveAura(SPELL_DRUID_SAGE_MENDER);
-
                         if (caster->getLevel() >= 90 && caster->HasAura(SPELL_DRUID_DREAM_OF_CENARIUS))
                         {
                             // Increases healing from Healing Touch by 20% for all specs except Restoration.
