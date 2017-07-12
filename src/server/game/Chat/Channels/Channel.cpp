@@ -24,7 +24,6 @@
 #include "DatabaseEnv.h"
 #include "AccountMgr.h"
 #include "Player.h"
-#include "LexicalCast.h"
 
 Channel::Channel(const std::string& name, uint32 channel_id, uint32 Team)
  : m_announce(true), m_ownership(true), m_name(name), m_password(""), m_flags(0), m_channelId(channel_id), m_ownerGUID(0), m_Team(Team), _special(false)

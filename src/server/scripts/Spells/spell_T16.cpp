@@ -298,7 +298,7 @@ class spell_item_shaman_t16_restoration_4p : public SpellScriptLoader
 class spell_item_priest_t16_holy_4p : public SpellScriptLoader
 {
     public:
-        sspell_item_priest_t16_holy_4p() : SpellScriptLoader("spell_item_priest_t16_holy_4p") { }
+        spell_item_priest_t16_holy_4p() : SpellScriptLoader("spell_item_priest_t16_holy_4p") { }
 
         class spell_item_priest_t16_holy_4p_SpellScript : public SpellScript
         {
