@@ -680,11 +680,11 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
     else
     {
         uint32 messageLength = strlen(what) + 1;
-    }
 	
-	WorldPacket data;
-    player->BuildPlayerChat(&data, CHAT_MSG_CHANNEL, what, lang, NULL, m_name);
-    SendToAll(&data, !players[p].IsModerator() ? p : false);
+	    WorldPacket data;
+        player->BuildPlayerChat(&data, CHAT_MSG_CHANNEL, what, lang, NULL, m_name);
+        SendToAll(&data, !players[p].IsModerator() ? p : false);
+    }
 }
 
 void Channel::Invite(uint64 p, const char *newname)
