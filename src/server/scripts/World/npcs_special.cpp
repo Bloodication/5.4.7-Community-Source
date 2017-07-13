@@ -2255,7 +2255,13 @@ class npc_new_lightwell : public CreatureScript
                 me->CastSpell(me, 126150, true);
                 renewTimer = 1000;
                 stacks = false;
-
+				me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_OBS_MOD_HEALTH, true);
+				me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEAL_PCT, true);
+				me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEAL, true);
+				me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEALTH_LEECH, true);
+				
+				me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+				me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
 				me->SetFlag(UNIT_NPC_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             }
 
@@ -3883,7 +3889,7 @@ class npc_frozen_orb : public CreatureScript
                 if (!owner)
                     return;
 
-				float dist;
+				//float dist;
 
 				Position pos;
 				float angle = me->GetRelativeAngle(me);
@@ -5149,6 +5155,10 @@ class npc_psyfiend : public CreatureScript
             {
                 me->SetReactState(REACT_PASSIVE);
                 psychicHorrorTimer = 2500;
+				me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_OBS_MOD_HEALTH, true);
+				me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEAL_PCT, true);
+				me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEAL, true);
+				me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEALTH_LEECH, true);
             }
 
             void OwnerDamagedBy(Unit* attacker)

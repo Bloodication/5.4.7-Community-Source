@@ -293,6 +293,38 @@ class spell_item_shaman_t16_restoration_4p : public SpellScriptLoader
         }
 };
 
+// Item - Priest T16 Healer 4P Bonus - 145334
+// Circle of Healing - 34861 | Prayer of Mending - 33076
+class spell_item_priest_t16_holy_4p : public SpellScriptLoader
+{
+    public:
+        spell_item_priest_t16_holy_4p() : SpellScriptLoader("spell_item_priest_t16_holy_4p") { }
+
+        class spell_item_priest_t16_holy_4p_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_priest_t16_holy_4p_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(145334))
+                        _player->CastSpell(_player, 145336, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_item_priest_t16_holy_4p_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_priest_t16_holy_4p_SpellScript();
+        }
+};
+
 // Item - Rogue T16 4P Bonus - 145210
 // Backstab - 53
 class spell_item_rogue_t16_4p : public SpellScriptLoader
@@ -440,47 +472,6 @@ class spell_item_death_knight_t16_blood_2p : public SpellScriptLoader
         }
 };
 
-// Endurance of Niuzao - 146193
-class spell_endurance_of_niuzao : public SpellScriptLoader
-{
-    public:
-        spell_endurance_of_niuzao() : SpellScriptLoader("spell_endurance_of_niuzao") { }
-
-        class spell_endurance_of_niuzao_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_endurance_of_niuzao_AuraScript);
-
-            void CalculateAmount(const AuraEffect* aurEff, int32 & amount, bool & canBeRecalculated)
-            {
-                amount = -1;
-            }
-
-            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                Unit* victim = GetTarget();
-                int32 remainingHealth = victim->GetHealth() - dmgInfo.GetDamage();
-
-                // If damage kills us
-                if (remainingHealth <= 0 && !victim->HasAura(148010))
-                {
-                    absorbAmount = dmgInfo.GetDamage();
-                    victim->AddAura(148010, victim);
-                }
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_endurance_of_niuzao_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-                OnEffectAbsorb += AuraEffectAbsorbFn(spell_endurance_of_niuzao_AuraScript::Absorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_endurance_of_niuzao_AuraScript();
-        }
-};
-
 void AddSC_t16_spell_scripts()
 {
     new spell_item_paladin_t16_protection_2p();
@@ -495,5 +486,5 @@ void AddSC_t16_spell_scripts()
     new spell_item_rogue_t16_4p();
     new spell_item_hunter_t16_2p();
     new spell_item_hunter_t16_4p();
-    new spell_endurance_of_niuzao();
+    new spell_item_priest_t16_holy_4p();
 }

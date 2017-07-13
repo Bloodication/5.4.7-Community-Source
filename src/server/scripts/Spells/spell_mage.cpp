@@ -105,7 +105,10 @@ enum MageSpells
     SPELL_MAGE_GLYPH_OF_RAPID_DISPLACEMENT       = 146659,
     SPELL_MAGE_PYROBLAST_INSTANT_CAST            = 48108,
     SPELL_MAGE_PRESENCE_OF_MIND                  = 12043,
-    SPELL_MAGE_RING_OF_FROST_FROZEN              = 82691
+    //SPELL_MAGE_RING_OF_FROST_FROZEN              = 82691
+	SPELL_MAGE_RING_OF_FROST_DUMMY               = 91264,
+    SPELL_MAGE_RING_OF_FROST_FREEZE              = 82691,
+    SPELL_MAGE_RING_OF_FROST_SUMMON              = 113724
 };
 
 // Flamestrike - 2120
@@ -1913,7 +1916,148 @@ class spell_mage_pyroblast : public SpellScriptLoader
         }
 };
 
+// 136511 - Ring of Frost periodic
 class spell_mage_ring_of_frost : public SpellScriptLoader
+{
+public:
+    spell_mage_ring_of_frost() : SpellScriptLoader("spell_mage_ring_of_frost") { }
+
+    class spell_mage_ring_of_frost_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_ring_of_frost_AuraScript);
+
+        void HandleEffectPeriodic(AuraEffect const* aurEff)
+        {
+            std::list<Creature*> MinionList;
+            GetTarget()->GetAllMinionsByEntry(MinionList, 44199);
+            for (std::list<Creature*>::iterator itr = MinionList.begin(); itr != MinionList.end(); itr++)
+            {
+                TempSummon* ringOfFrost = (*itr)->ToTempSummon();
+                GetTarget()->CastSpell(ringOfFrost->GetPositionX(), ringOfFrost->GetPositionY(), ringOfFrost->GetPositionZ(), SPELL_MAGE_RING_OF_FROST_FREEZE, true);
+            }
+        }
+
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_ring_of_frost_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_ring_of_frost_AuraScript();
+    }
+};
+
+// 82691 - Ring of Frost (freeze effect)
+class spell_mage_ring_of_frost_freeze : public SpellScriptLoader
+{
+public:
+    spell_mage_ring_of_frost_freeze() : SpellScriptLoader("spell_mage_ring_of_frost_freeze") { }
+
+    class spell_mage_ring_of_frost_freeze_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_mage_ring_of_frost_freeze_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            SpellInfo const* triggeredBy = sSpellMgr->GetSpellInfo(SPELL_MAGE_RING_OF_FROST_SUMMON);
+            float inRadius = 4.0f;  // Radius 1 / 2
+            float outRadius = 7.25f; // Radius 1 + Radius 0 / 2
+
+            for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+            if (Unit* unit = (*itr)->ToUnit())
+            {
+                if (unit->HasAura(SPELL_MAGE_RING_OF_FROST_DUMMY) || unit->HasAura(SPELL_MAGE_RING_OF_FROST_FREEZE) || unit->GetExactDist(GetExplTargetDest()) > outRadius || unit->GetExactDist(GetExplTargetDest()) < inRadius)
+                {
+                    WorldObject* temp = (*itr);
+                    itr++;
+                    targets.remove(temp);
+                }
+                else
+                    itr++;
+            }
+            else
+                itr++;
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_ring_of_frost_freeze_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_mage_ring_of_frost_freeze_SpellScript();
+    }
+
+    class spell_mage_ring_of_frost_freeze_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_ring_of_frost_freeze_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            if (!sSpellMgr->GetSpellInfo(SPELL_MAGE_RING_OF_FROST_DUMMY))
+                return false;
+            return true;
+        }
+
+        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetCaster())
+                GetCaster()->CastSpell(GetTarget(), SPELL_MAGE_RING_OF_FROST_DUMMY, true);
+        }
+
+        void Register() override
+        {
+            AfterEffectRemove += AuraEffectRemoveFn(spell_mage_ring_of_frost_freeze_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_ring_of_frost_freeze_AuraScript();
+    }
+};
+
+class spell_mage_ring_of_frost_override : public SpellScriptLoader
+{
+public:
+    spell_mage_ring_of_frost_override() : SpellScriptLoader("spell_mage_ring_of_frost_override") { }
+
+    class spell_mage_ring_of_frost_override_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_mage_ring_of_frost_override_SpellScript);
+
+        void HandleDummy()
+        {
+            Unit* caster = GetCaster();
+            SpellInfo const* info = sSpellMgr->GetSpellInfo(140384);
+            SpellCastTargets targets;
+            targets.SetDst(GetExplTargetDest()->GetPositionX(), GetExplTargetDest()->GetPositionY(), GetExplTargetDest()->GetPositionZ(), GetExplTargetDest()->GetOrientation());
+            Spell* spell = new Spell(GetCaster(), info, TRIGGERED_FULL_MASK, caster->GetGUID());
+            spell->InitExplicitTargets(targets);
+            
+            spell->setState(SPELL_STATE_PREPARING);
+
+            SpellEvent* Event = new SpellEvent(spell);
+            caster->m_Events.AddEvent(Event, caster->m_Events.CalculateTime(2 * IN_MILLISECONDS));
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_mage_ring_of_frost_override_SpellScript::HandleDummy);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_mage_ring_of_frost_override_SpellScript();
+    }
+};
+
+/*class spell_mage_ring_of_frost : public SpellScriptLoader
 {
 public:
     spell_mage_ring_of_frost() : SpellScriptLoader("spell_mage_ring_of_frost") { }
@@ -2067,7 +2211,7 @@ public:
     {
         return new spell_mage_ring_of_frost_boot_SpellScript();
     }
-};
+};*/
 
 /// Polymorph - 118 - last update 5.4.2 17688
 class spell_mage_polymorph : public SpellScriptLoader
@@ -2156,9 +2300,9 @@ void AddSC_mage_spell_scripts()
     new spell_mage_glyph_of_icy_veins();
     new spell_area_mage_rune_of_power();
     new spell_mage_pyroblast();
+    new spell_mage_ring_of_frost_freeze();
     new spell_mage_ring_of_frost();
-    new spell_mage_ring_of_frost_frozen();
-    new spell_mage_ring_of_frost_boot();
+    new spell_mage_ring_of_frost_override();
     new spell_mage_polymorph();
 
 }

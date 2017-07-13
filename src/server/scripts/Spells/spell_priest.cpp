@@ -156,7 +156,7 @@ enum PriestSpells
 class spell_item_priest_t16_holy_4p : public SpellScriptLoader
 {
     public:
-        sspell_item_priest_t16_holy_4p() : SpellScriptLoader("spell_item_priest_t16_holy_4p") { }
+        spell_item_priest_t16_holy_4p() : SpellScriptLoader("spell_item_priest_t16_holy_4p") { }
 
         class spell_item_priest_t16_holy_4p_SpellScript : public SpellScript
         {
@@ -1273,8 +1273,10 @@ class spell_pri_atonement : public SpellScriptLoader
 
             void HandleOnHit()
             {
+                
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
+					_player->GetSession()->SendAreaTriggerMessage("test");
                     if (Unit* target = GetHitUnit())
                     {
                         if (_player->HasAura(PRIEST_ATONEMENT_AURA))
