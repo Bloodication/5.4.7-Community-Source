@@ -2965,6 +2965,13 @@ void Group::BroadcastGroupUpdate(void)
             pp->ForceValuesUpdateAtIndex(UNIT_FIELD_FACTIONTEMPLATE);
             sLog->outDebug(LOG_FILTER_GENERAL, "-- Forced group value update for '%s'", pp->GetName());
         }
+		else
+		{
+			// We also catch this, to send a broadcast update for members who are at loading screen
+			pp->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);
+			pp->ForceValuesUpdateAtIndex(UNIT_FIELD_FACTIONTEMPLATE); 
+			sLog->outDebug(LOG_FILTER_GENERAL, "-- tryed to invite but not in world, '%s'", pp->GetName());
+		}
     }
 }
 
