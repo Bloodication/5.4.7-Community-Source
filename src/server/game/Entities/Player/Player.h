@@ -1882,7 +1882,6 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
         /***                   LOAD SYSTEM                     ***/
         /*********************************************************/
-		void Player::BuildPlayerChat(WorldPacket* data, uint8 msgtype, const std::string& text, uint32 language, const char* addonPrefix /*= NULL*/, const std::string& channel /*= ""*/) const
 
         bool LoadFromDB(uint32 guid, SQLQueryHolder *holder, PreparedQueryResult accountResult);
         void LoadRates(uint32 guid);
