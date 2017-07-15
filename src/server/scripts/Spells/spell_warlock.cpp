@@ -2235,17 +2235,17 @@ class spell_warl_nightfall : public SpellScriptLoader
             }
             
             //HACK FIX (Xuen-Project) - Benefit from last applied Corruption
-             void OnProc(AuraEffect const* p_AurEff, ProcEventInfo& p_EventInfo)
-            {
-                PreventDefaultAction();
+             //void OnProc(AuraEffect const* p_AurEff, ProcEventInfo& p_EventInfo)
+            //{
+             //   PreventDefaultAction();
 
-                if (Unit* _Caster = GetCaster())
-                {                            
-                   // Can proc only from last applied Corruption
-                   if (_SpellInfo->Id == eSpells::Corruption || _Caster->GetLastCorruptionTarget() != _TargetGUID) ||
+              //  if (Unit* _Caster = GetCaster())
+              //  {                            
+              //     // Can proc only from last applied Corruption
+               //    if (_SpellInfo->Id == eSpells::Corruption || _Caster->GetLastCorruptionTarget() != _TargetGUID) ||
                         return;
-                }
-            }
+               // }
+           // }
 
             void Register()
             {
