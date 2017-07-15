@@ -812,7 +812,7 @@ void SpellMgr::SetSpellDifficultyId(uint32 spellId, uint32 id)
 
 uint32 SpellMgr::GetSpellIdForDifficulty(uint32 spellId, Unit const* caster) const
 {
-    // Dbc supprimée au passage a MoP
+    // Dbc supprimï¿½e au passage a MoP
     return spellId;
     /*if (!GetSpellInfo(spellId))
     return spellId;
@@ -5216,8 +5216,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->OverrideSpellList.push_back(724); // Add old Lightwell to override list
                     break;
                 case 81751: // Atonement
-                    spellInfo->MaxAffectedTargets = 1;
-                    spellInfo->TargetFlagCu |= SPELL_TARGET_FLAG_CU0_RESIZE_ONLY | SPELL_TARGET_FLAG_CU0_SORT_BY_RANGE | SPELL_TARGET_FLAG_CU0_SORT_BY_HEALTH;
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
+                    spellInfo->Effects[0].TargetB = 0;
                     break;
                 case 47515: // Divine Aegis
                     spellInfo->Effects[0].BasePoints = 100;
