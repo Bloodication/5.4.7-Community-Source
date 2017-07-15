@@ -2210,6 +2210,11 @@ class spell_warl_nightfall : public SpellScriptLoader
         class spell_warl_nightfall_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_warl_nightfall_AuraScript);
+            
+             enum eSpells
+            {
+                   Corruption = 172
+            };
 
             void OnTick(AuraEffect const* aurEff)
             {
@@ -2228,10 +2233,29 @@ class spell_warl_nightfall : public SpellScriptLoader
 						_player->HealBySpell(_player, sSpellMgr->GetSpellInfo(WARLOCK_GLYPH_OF_SIPHON_LIFE), int32(_player->GetMaxHealth() / 200), false);
 				}
             }
+            
+            //HACK FIX (Xuen-Project) - Benefit from last applied Corruption
+             void OnProc(AuraEffect const* p_AurEff, ProcEventInfo& p_EventInfo)
+            {
+                PreventDefaultAction();
+
+                if (Unit* l_Caster = GetCaster())
+                {    
+                   
+                   if (_SpellInfo->Id != eSpells::Corruption &&
+                       _SpellInfo->Id != eSpells::CorruptionOverrided)
+                        return;
+                        
+                   // Can proc only from last applied Corruption
+                   if (((_SpellInfo->Id == eSpells::Corruption || _SpellInfo->Id == eSpells::CorruptionOverrided) && _Caster->GetLastCorruptionTarget() != _TargetGUID) ||
+                        return;
+                }
+            }
 
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_nightfall_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                OnEffectProc += AuraEffectProcFn(spell_warl_nightfall_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
             }
         };
 
