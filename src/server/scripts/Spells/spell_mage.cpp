@@ -1814,11 +1814,16 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
 };
 
 // Glyph of Rapid Displacement - 146659
-// Called by Blink - 1953
+/// Blink - 1953
 class spell_mage_blink : public SpellScriptLoader
 {
     public:
         spell_mage_blink() : SpellScriptLoader("spell_mage_blink") { }
+
+        enum eSpells
+        {
+            GlyphOfRapidDisplacement = 146659
+        };
 
         class spell_mage_blink_SpellScript : public SpellScript
         {
@@ -1826,23 +1831,27 @@ class spell_mage_blink : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                if (!GetCaster())
-                    return SPELL_FAILED_DONT_REPORT;
+                Unit* _Caster = GetCaster();
 
-                if (GetCaster()->HasAura(SPELL_MAGE_GLYPH_OF_RAPID_DISPLACEMENT))
-                {
-                    if (GetCaster()->isInStun())
-                        return SPELL_FAILED_STUNNED;
-                    else if (GetCaster()->isInRoots())
-                        return SPELL_FAILED_ROOTED;
-                }
+                if (_Caster->HasAura(eSpells::GlyphOfRapidDisplacement) && _Caster->HasAuraType(SPELL_AURA_MOD_STUN))
+                    return SPELL_FAILED_STUNNED;
 
                 return SPELL_CAST_OK;
+            }
+
+            void HandleImmunity(SpellEffIndex /*p_EffIndex*/)
+            {
+                Unit* _Caster = GetCaster();
+
+                if (_Caster->HasAura(eSpells::GlyphOfRapidDisplacement))
+                    PreventHitAura();
             }
 
             void Register()
             {
                 OnCheckCast += SpellCheckCastFn(spell_mage_blink_SpellScript::CheckCast);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_blink_SpellScript::HandleImmunity, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_blink_SpellScript::HandleImmunity, EFFECT_2, SPELL_EFFECT_APPLY_AURA);
             }
         };
 
