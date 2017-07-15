@@ -650,7 +650,7 @@ class spell_pri_power_word_solace : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.007f), POWER_MANA);
-                        _Player->CastSpell(l_Player, PRIEST_ATONEMENT_AURA, true);
+                        _Player->CastSpell(_Player, PRIEST_ATONEMENT_AURA, true);
             }
 
             void Register()
@@ -1289,9 +1289,9 @@ class spell_pri_atonement: public SpellScriptLoader
                 std::list<Unit*> _GroupList;
                 _Player->GetRaidMembers(_GroupList);
 
-                _GroupList.remove_if([this, l_Player, _SpellInfoAtonement](Unit* p_Unit)
+                _GroupList.remove_if([this, _Player, _SpellInfoAtonement](Unit* p_Unit)
                 {
-                    if (p_Unit->isStatue() || p_Unit->isTotem())
+                    if (p_Unit->isTotem())
                         return true;
 
                     return _Player->GetDistance(p_Unit->GetPositionX(), p_Unit->GetPositionY(), p_Unit->GetPositionZ()) > _SpellInfoAtonement->Effects[EFFECT_1].BasePoints;
@@ -1356,9 +1356,9 @@ class spell_pri_atonement: public SpellScriptLoader
                     return;
 
                 std::list<Unit*> _GroupList;
-                _Player->GetRaidMembers(l_GroupList);
+                _Player->GetRaidMembers(_GroupList);
 
-                _GroupList.remove_if([this, l_Player, _SpellInfoAtonement](Unit* p_Unit)
+                _GroupList.remove_if([this, _Player, _SpellInfoAtonement](Unit* p_Unit)
                 {
                     return _Player->GetDistance(p_Unit->GetPositionX(), p_Unit->GetPositionY(), p_Unit->GetPositionZ()) > _SpellInfoAtonement->Effects[EFFECT_1].BasePoints;
                 });
@@ -1375,7 +1375,7 @@ class spell_pri_atonement: public SpellScriptLoader
                     if (itr->GetGUID() == _Player->GetGUID())
                         _Heal /= 2;
 
-                    _Player->CastCustomSpell(itr, PRIEST_ATONEMENT_HEAL, &l_Heal, NULL, NULL, true);
+                    _Player->CastCustomSpell(itr, PRIEST_ATONEMENT_HEAL, &_Heal, NULL, NULL, true);
                 }
             }
 
