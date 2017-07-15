@@ -2243,14 +2243,14 @@ class spell_warl_nightfall : public SpellScriptLoader
               //  {                            
               //     // Can proc only from last applied Corruption
                //    if (_SpellInfo->Id == eSpells::Corruption || _Caster->GetLastCorruptionTarget() != _TargetGUID) ||
-                        return;
+               //        return;
                // }
            // }
 
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_nightfall_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-                OnEffectProc += AuraEffectProcFn(spell_warl_nightfall_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+              // OnEffectProc += AuraEffectProcFn(spell_warl_nightfall_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
             }
         };
 
