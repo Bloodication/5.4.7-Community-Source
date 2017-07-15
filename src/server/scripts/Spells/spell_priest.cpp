@@ -650,7 +650,6 @@ class spell_pri_power_word_solace : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.007f), POWER_MANA);
-                        _Player->CastSpell(_Player, PRIEST_ATONEMENT_AURA, true);
             }
 
             void Register()
@@ -1287,7 +1286,7 @@ class spell_pri_atonement: public SpellScriptLoader
                     return;
 
                 std::list<Unit*> _GroupList;
-                _Player->GetRaidMembers(_GroupList);
+                _Player->GetPartyMembers(_GroupList);
 
                 _GroupList.remove_if([this, _Player, _SpellInfoAtonement](Unit* p_Unit)
                 {
@@ -1356,7 +1355,7 @@ class spell_pri_atonement: public SpellScriptLoader
                     return;
 
                 std::list<Unit*> _GroupList;
-                _Player->GetRaidMembers(_GroupList);
+                _Player->GetPartyMembers(_GroupList);
 
                 _GroupList.remove_if([this, _Player, _SpellInfoAtonement](Unit* p_Unit)
                 {
