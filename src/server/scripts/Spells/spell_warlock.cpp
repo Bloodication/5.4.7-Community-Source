@@ -2239,15 +2239,14 @@ class spell_warl_nightfall : public SpellScriptLoader
             {
                 PreventDefaultAction();
 
-                if (Unit* l_Caster = GetCaster())
+                if (Unit* _Caster = GetCaster())
                 {    
                    
-                   if (_SpellInfo->Id != eSpells::Corruption &&
-                       _SpellInfo->Id != eSpells::CorruptionOverrided)
+                   if (_SpellInfo->Id != eSpells::Corruption)
                         return;
                         
                    // Can proc only from last applied Corruption
-                   if (((_SpellInfo->Id == eSpells::Corruption || _SpellInfo->Id == eSpells::CorruptionOverrided) && _Caster->GetLastCorruptionTarget() != _TargetGUID) ||
+                   if (_SpellInfo->Id == eSpells::Corruption || _Caster->GetLastCorruptionTarget() != _TargetGUID) ||
                         return;
                 }
             }
