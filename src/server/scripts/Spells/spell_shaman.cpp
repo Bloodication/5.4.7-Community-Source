@@ -2396,10 +2396,10 @@ class spell_sha_lava_burst : public SpellScriptLoader
                     }
                     
                     /// Fix for Lava Surge if proc while player is casting - 77762
-                    if (_Caster->HasAura(SPELL_SHA_LAVA_SURGE))
+                    if (_player->HasAura(SPELL_SHA_LAVA_SURGE))
                     {
-                        if (_Caster->HasSpellCooldown(SPELL_SHA_LAVA_BURST))
-                            _Caster->RemoveSpellCooldown(SPELL_SHA_LAVA_BURST, true);
+                        if (_player->HasSpellCooldown(SPELL_SHA_LAVA_BURST))
+                            _player->RemoveSpellCooldown(SPELL_SHA_LAVA_BURST, true);
                     }
                 }
             }

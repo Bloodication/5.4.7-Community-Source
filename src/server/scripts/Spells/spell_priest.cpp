@@ -1286,7 +1286,7 @@ class spell_pri_atonement : public SpellScriptLoader
 
                             if (groupList.size() > 1)
                             {
-								groupList.sort(MoPCore::HealthPctOrderPred());
+								groupList.sort(JadeCore::HealthPctOrderPred());
                                 groupList.resize(1);
                             }
 
