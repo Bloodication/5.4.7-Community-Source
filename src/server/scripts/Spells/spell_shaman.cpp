@@ -2394,9 +2394,16 @@ class spell_sha_lava_burst : public SpellScriptLoader
                         _player->ReduceSpellCooldown(114051, 1000);
                         _player->ReduceSpellCooldown(114052, 1000);
                     }
+                    
+                    /// Fix for Lava Surge if proc while player is casting - 77762
+                    if (_Caster->HasAura(SPELL_SHA_LAVA_SURGE))
+                    {
+                        if (_Caster->HasSpellCooldown(SPELL_SHA_LAVA_BURST))
+                            _Caster->RemoveSpellCooldown(SPELL_SHA_LAVA_BURST, true);
+                    }
                 }
             }
-
+            
             void HandleOnHit(SpellEffIndex /*effIndex*/)
             {
                 Unit* target = GetHitUnit();
@@ -2406,23 +2413,8 @@ class spell_sha_lava_burst : public SpellScriptLoader
                 SetHitDamage(GetHitDamage() * 1.5f); // If Flame Shock is on the target, Lava Burst will deal 50% additional damage
             }
             
-            /// Fix for Lava Surge if proc while player is casting - 77762
-             void HandleAfterCast()
-            {
-                Player* _Caster = GetCaster()->ToPlayer();
-
-                if (_Caster == nullptr)
-                    return;
-
-                if (_Caster->HasAura(SPELL_SHA_LAVA_SURGE))
-                {
-                    if (_Caster->HasSpellCooldown(SPELL_SHA_LAVA_BURST))
-                        _Caster->RemoveSpellCooldown(SPELL_SHA_LAVA_BURST, true);
-            }
-
             void Register()
             {
-                AfterCast += SpellCastFn(spell_sha_lava_burst_SpellScript::HandleAfterCast);
                 OnEffectHitTarget += SpellEffectFn(spell_sha_lava_burst_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
                 AfterHit += SpellHitFn(spell_sha_lava_burst_SpellScript::HandleAfterHit);
             }
