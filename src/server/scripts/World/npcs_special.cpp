@@ -5780,7 +5780,7 @@ class npc_custom_caster_guard : public CreatureScript
 
 /*######
 ## npc_force_of_nature
-######*/
+######
 
 class npc_force_of_nature : public CreatureScript
 {
@@ -5914,6 +5914,183 @@ class npc_force_of_nature : public CreatureScript
         {
             return new npc_force_of_natureAI(pCreature);
         }
+};*/
+
+enum Druid_Spells
+{
+		    // Balance
+    SPELL_DRUID_TREANT_WRATH                   = 113769,
+    SPELL_DRUID_TREANT_ENTANGLING_ROOTS        = 113770,
+
+    // Restoration
+    SPELL_DRUID_TREANT_EFFLORESCENCE           = 142423,
+    SPELL_DRUID_TREANT_HEALING_TOUCH           = 113828,
+
+    // Feral
+    //SPELL_DRUID_TREANT_ENTANGLING_ROOTS        = 113770,
+	SPELL_DRUID_TREANT_RAKE					   = 1822,
+    // Guardian
+    SPELL_DRUID_TREANT_TAUNT                   = 113830,
+
+    NPC_DRUID_TREANT_BALANCE                   = 1964,
+    NPC_DRUID_TREANT_RESTORATION               = 54983,
+    NPC_DRUID_TREANT_FERAL                     = 54984,
+    NPC_DRUID_TREANT_GUARDIAN                  = 54985,
+};
+
+// Force of Nature
+class npc_force_of_nature : public CreatureScript
+{
+public:
+    npc_force_of_nature() : CreatureScript("npc_force_of_nature") { }
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new npc_force_of_natureAI(creature);
+    }
+
+    struct npc_force_of_natureAI : public ScriptedAI
+    {
+        npc_force_of_natureAI(Creature* creature) : ScriptedAI(creature) { }
+        
+        uint32 recurrentSpell;
+        uint32 recurrentSpellTimer;
+        uint32 timer;
+        uint32 attackCheckTimer;
+        bool mustCacAttack;
+
+        void Reset() override
+        {
+            recurrentSpell = 0;
+            recurrentSpellTimer = 0;
+            timer = 0;
+            attackCheckTimer = 1000;
+            mustCacAttack = false;
+
+            TempSummon* meTemp = me->ToTempSummon();
+
+            if (!meTemp)
+                return;
+
+            Unit* caster = meTemp->GetSummoner();
+
+            if (!caster)
+                return;
+
+            me->SetLevel(caster->getLevel());
+			me->SetHealth(caster->GetHealth());
+            Unit* target = caster->ToPlayer()->GetSelectedUnit();
+
+            switch (me->GetEntry())
+            {
+                case NPC_DRUID_TREANT_BALANCE:
+                {
+                    recurrentSpell = SPELL_DRUID_TREANT_WRATH;
+                    recurrentSpellTimer = 2000;
+                    timer = 100;
+                    if (target && target->IsValidAttackTarget(caster))
+                        me->CastSpell(target, SPELL_DRUID_TREANT_ENTANGLING_ROOTS, true);
+                    break;
+                }
+                case NPC_DRUID_TREANT_RESTORATION:
+                {
+                    recurrentSpell = SPELL_DRUID_TREANT_HEALING_TOUCH;
+                    recurrentSpellTimer = 2500;
+                    timer = 100;
+                    if (target && !target->IsValidAttackTarget(caster))
+                        me->CastSpell(target, SPELL_DRUID_TREANT_EFFLORESCENCE, true);
+                    break;
+                }
+                case NPC_DRUID_TREANT_FERAL:
+                {
+                    if (target && target->IsValidAttackTarget(caster))
+                    {
+                        me->AI()->AttackStart(target);
+                        me->CastSpell(target, SPELL_DRUID_TREANT_ENTANGLING_ROOTS, true);
+						me->CastSpell(target, SPELL_DRUID_TREANT_RAKE, true);
+                    }
+
+                    mustCacAttack = true;
+                    break;
+                }
+                case NPC_DRUID_TREANT_GUARDIAN:
+                {
+                    if (target && target->IsValidAttackTarget(caster))
+                    {
+                        me->AI()->AttackStart(target);
+                        me->CastSpell(target, SPELL_DRUID_TREANT_TAUNT, true);
+                    }
+
+                    mustCacAttack = true;
+                    break;
+                }
+            }
+        }
+
+        void UpdateAI(const uint32 diff) override
+        {
+            TempSummon* meTemp = me->ToTempSummon();
+
+            if (!meTemp)
+                return;
+            
+            Unit* caster = meTemp->GetSummoner();
+
+            if (!caster)
+            {
+                me->DespawnOrUnsummon();
+                return;
+            }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            if (timer)
+            {
+                if (timer <= diff)
+                {
+                    if (recurrentSpell == SPELL_DRUID_TREANT_HEALING_TOUCH)
+                        me->CastSpell(me, recurrentSpell, false);
+                    else
+                    {
+                        Unit* target = caster->ToPlayer()->GetSelectedUnit();
+                        if (!target)
+                            target = caster->ToPlayer()->GetSelectedUnit();
+
+                        if (target && target->IsValidAttackTarget(caster))
+                            me->CastSpell(target, recurrentSpell, false);
+                    }
+
+                    timer = recurrentSpellTimer;
+                }
+                else
+                    timer -= diff;
+            }
+
+            if (mustCacAttack)
+            {
+                if (attackCheckTimer)
+                {
+                    if (attackCheckTimer <= diff)
+                    {
+                        if (UpdateVictim())
+                            return;
+
+                        Unit* target = caster->ToPlayer()->GetSelectedUnit();
+                        if (!target)
+                            target = caster->ToPlayer()->GetSelectedUnit();
+
+                        if (target && target->IsValidAttackTarget(caster))
+                            me->AI()->AttackStart(target);
+
+                        attackCheckTimer = 2000;
+                    }
+                    else
+                        attackCheckTimer -= diff;
+                }
+            }
+        }
+    };
 };
 
 /*######
