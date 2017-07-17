@@ -3069,7 +3069,7 @@ class spell_pri_spectral_guise : public SpellScriptLoader
                 }
 
                 if (Aura* spectralGuiseAura = l_Caster->GetAura(eSpells::SpectralGuise))
-                    spectralGuiseAura->DropStack();
+                    spectralGuiseAura->DropCharge();
             }
 
             void Register()

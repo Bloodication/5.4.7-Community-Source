@@ -2427,17 +2427,19 @@ class spell_sha_lava_burst : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_lava_burst_SpellScript)
 
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (_player->HasAura(SPELL_SHA_T15_ELEM_SET_4P_BONUS))
-                    {
-                        _player->ReduceSpellCooldown(114049, 1000);
-                        _player->ReduceSpellCooldown(114050, 1000);
-                        _player->ReduceSpellCooldown(114051, 1000);
-                        _player->ReduceSpellCooldown(114052, 1000);
-                    }
+			void HandleAfterHit()
+			{
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+					if (_player->HasAura(SPELL_SHA_T15_ELEM_SET_4P_BONUS))
+					{
+						_player->ReduceSpellCooldown(114049, 1000);
+						_player->ReduceSpellCooldown(114050, 1000);
+						_player->ReduceSpellCooldown(114051, 1000);
+						_player->ReduceSpellCooldown(114052, 1000);
+					}
+				}
+			}
                     
             void HandleAfterCast()
             {
