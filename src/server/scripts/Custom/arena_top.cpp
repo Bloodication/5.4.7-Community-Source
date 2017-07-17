@@ -48,9 +48,10 @@ public:
 				{
 					fields = result->Fetch();
 					uint32 playerrating = fields[0].GetUInt32();
-					uint32 playerguid = fields[1].GetUInt32();
-					char msg[250];
-					snprintf(msg, 250, "[Name: %s, Rating: %u]", ObjectAccessor::FindPlayer(playerguid)->GetName(), playerrating);
+                    uint32 playerguid = fields[1].GetUInt32();
+					Player* player = ObjectAccessor::FindPlayer(playerguid);
+                    char msg[250];
+                    snprintf(msg, 250, "[Name: %s, Rating: %u]", player->GetSession()->GetPlayerName().c_str() , playerrating);
 					player->ADD_GOSSIP_ITEM(7, msg, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + playerguid);
 					player->SEND_GOSSIP_MENU(creature->GetEntry(), creature->GetGUID());
 					
