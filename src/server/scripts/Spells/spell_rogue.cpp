@@ -1830,7 +1830,7 @@ class spell_rog_find_weakness : public SpellScriptLoader
         }
 };
 
-// Glyph of Detection - 125044
+//Glyph of Detection - 125044
 class spell_rog_glyph_of_detection : public SpellScriptLoader
 {
     public:
@@ -1840,13 +1840,13 @@ class spell_rog_glyph_of_detection : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_glyph_of_detection_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const*, AuraEffectHandleModes)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     _player->learnSpell(ROGUE_SPELL_DETECTION, false);
             }
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const*, AuraEffectHandleModes)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     if (_player->HasSpell(ROGUE_SPELL_DETECTION))
@@ -1865,7 +1865,6 @@ class spell_rog_glyph_of_detection : public SpellScriptLoader
             return new spell_rog_glyph_of_detection_AuraScript();
         }
 };
-
 // Shuriken Toss - 114014
 class spell_rog_shuriken_toss : public SpellScriptLoader
 {

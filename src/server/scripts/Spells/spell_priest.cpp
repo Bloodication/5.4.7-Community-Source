@@ -128,6 +128,7 @@ enum PriestSpells
     PRIEST_NPC_VOID_TENDRILS                        = 65282,
     PRIEST_NPC_PSYFIEND                             = 59190,
     PRIEST_SPELL_SPECTRAL_GUISE_CHARGES             = 119030,
+	PRIEST_SPELL_SPECTRAL_GUISE                     = 119032,
     PRIEST_SPELL_POWER_WORD_SHIELD                  = 17,
     PRIEST_SPELL_POWER_WORD_SHIELD_DIVINE_INSIGHT   = 123258,
     PRIEST_SPELL_POWER_WORD_FORTITUDE               = 21562,
@@ -223,8 +224,65 @@ class spell_pri_power_word_fortitude : public SpellScriptLoader
         }
 };
 
+/// Spectral Guise Charges - 119032
+class spell_pri_spectral_guise_charges: public SpellScriptLoader
+{
+    public:
+        spell_pri_spectral_guise_charges() : SpellScriptLoader("spell_pri_spectral_guise_charges") { }
+
+        class spell_pri_spectral_guise_charges_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_spectral_guise_charges_AuraScript);
+
+            void OnProc(AuraEffect const* /*aurEff*/, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                Unit* spectralGuise = GetCaster();
+                if (!spectralGuise)
+                    return;
+
+                Unit* attacker = eventInfo.GetActor();
+                if (!attacker)
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != spectralGuise->GetGUID())
+                    return;
+
+                if (eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE || eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
+                    if (Aura* spectralGuiseCharges = spectralGuise->GetAura(PRIEST_SPELL_SPECTRAL_GUISE_CHARGES))
+						spectralGuiseCharges->DropCharge();
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+				{
+					if (caster->ToCreature())
+						caster->ToCreature()->DespawnOrUnsummon();
+					
+					if (Unit* owner = caster->ToTempSummon()->GetSummoner())
+						if (owner->HasAura(PRIEST_SPELL_SPECTRAL_GUISE))
+							owner->RemoveAura(PRIEST_SPELL_SPECTRAL_GUISE);
+				}
+				
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_pri_spectral_guise_charges_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+                OnEffectRemove += AuraEffectRemoveFn(spell_pri_spectral_guise_charges_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_spectral_guise_charges_AuraScript();
+        }
+};
+
 // Spectral Guise Charges - 119030
-class spell_pri_spectral_guise_charges : public SpellScriptLoader
+/*class spell_pri_spectral_guise_charges : public SpellScriptLoader
 {
     public:
         spell_pri_spectral_guise_charges() : SpellScriptLoader("spell_pri_spectral_guise_charges") { }
@@ -253,14 +311,14 @@ class spell_pri_spectral_guise_charges : public SpellScriptLoader
 						{
 							if (spectralGuiseCharges->GetCharges() >= 3)
 								spectralGuiseCharges->DropCharge();
-						}*/
+						}
 				if (Unit* spectralGuise = GetCaster())
                     if (eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE || eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
                         if (Aura* spectralGuiseCharges = spectralGuise->GetAura(PRIEST_SPELL_SPECTRAL_GUISE_CHARGES))
                             spectralGuiseCharges->DropCharge();
             }
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes)
             {
                 if (Unit* caster = GetCaster())
                     if (caster->ToCreature())
@@ -278,7 +336,7 @@ class spell_pri_spectral_guise_charges : public SpellScriptLoader
         {
             return new spell_pri_spectral_guise_charges_AuraScript();
         }
-};
+};*/
 
 // Psyfiend Hit Me Driver - 114164
 class spell_pri_psyfiend_hit_me_driver : public SpellScriptLoader
@@ -1273,10 +1331,8 @@ class spell_pri_atonement : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-					_player->GetSession()->SendAreaTriggerMessage("test");
                     if (Unit* target = GetHitUnit())
                     {
                         if (_player->HasAura(PRIEST_ATONEMENT_AURA))
@@ -1288,7 +1344,7 @@ class spell_pri_atonement : public SpellScriptLoader
 
                             if (groupList.size() > 1)
                             {
-                                groupList.sort(JadeCore::HealthPctOrderPred());
+								groupList.sort(JadeCore::HealthPctOrderPred());
                                 groupList.resize(1);
                             }
 
@@ -2984,7 +3040,7 @@ class spell_binding_heal : public SpellScriptLoader
 };
 
 // Called by Spectral Guise - 112833
-class spell_pri_spectral_guise : public SpellScriptLoader
+/*class spell_pri_spectral_guise : public SpellScriptLoader
 {
     public:
         spell_pri_spectral_guise() : SpellScriptLoader("spell_pri_spectral_guise") { }
@@ -3012,6 +3068,80 @@ class spell_pri_spectral_guise : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_spectral_guise_SpellScript();
+        }
+};*/
+
+/// Spectral Guise (stealth spell) - 119032
+class spell_pri_spectral_guise : public SpellScriptLoader
+{
+    public:
+        spell_pri_spectral_guise() : SpellScriptLoader("spell_pri_spectral_guise") { }
+
+        class spell_pri_spectral_guise_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_spectral_guise_AuraScript);
+
+            enum eSpells
+            {
+                SpectralGuise = 119032,
+				SpectralGuiseCharges = 119030,
+				SpectralGuiseClone = 119012
+				
+            };
+
+            void OnProc(AuraEffect const* /*aurEff*/, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                Unit* l_Caster = GetCaster();
+                if (!l_Caster)
+                    return;
+
+                if (!eventInfo.GetDamageInfo())
+                    return;
+
+                /// Direct damage spells shouldn't break Spectral Guise
+                if (eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE)
+                {
+                    if (eventInfo.GetDamageInfo()->GetSpellInfo())
+                    {
+                        /// Should remove aura from DOT/AOE damage, but shouldn't from direct spells
+                        bool isNeedToRemove = false;
+
+                        SpellInfo const* l_SpellInfo = sSpellMgr->GetSpellInfo(eventInfo.GetDamageInfo()->GetSpellInfo()->Id);
+
+                        if (l_SpellInfo && (l_SpellInfo->IsPeriodic() || l_SpellInfo->IsAffectingArea()))
+                            isNeedToRemove = false;
+
+                        /// Channeled spell shouldn't remove stealth too and it should be interrupted
+                        if (l_SpellInfo && l_SpellInfo->IsChanneled())
+                        {
+                            l_Caster->RemoveAura(l_SpellInfo->Id);
+                            isNeedToRemove = false;
+                        }
+
+                        /// Custom condition for Chaos Bolt and Haunt, they have periodic effects but they're still shouldn't remove stealth
+                        if (l_SpellInfo && (l_SpellInfo->Id == 116858 || l_SpellInfo->Id == 48181))
+                            isNeedToRemove = false;
+
+                        if (!isNeedToRemove)
+                            return;
+                    }
+                }
+
+                if (Aura* spectralGuiseAura = l_Caster->GetAura(eSpells::SpectralGuise))
+                    spectralGuiseAura->DropCharge();
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_pri_spectral_guise_AuraScript::OnProc, EFFECT_0, SPELL_AURA_MOD_STEALTH);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_spectral_guise_AuraScript();
         }
 };
 

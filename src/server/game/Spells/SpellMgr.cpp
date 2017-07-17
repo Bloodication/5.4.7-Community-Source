@@ -812,7 +812,7 @@ void SpellMgr::SetSpellDifficultyId(uint32 spellId, uint32 id)
 
 uint32 SpellMgr::GetSpellIdForDifficulty(uint32 spellId, Unit const* caster) const
 {
-    // Dbc supprimée au passage a MoP
+    // Dbc supprimï¿½e au passage a MoP
     return spellId;
     /*if (!GetSpellInfo(spellId))
     return spellId;
@@ -3701,6 +3701,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 137143: // Blood Horror
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
+				case 111340: // Ice Ward
+					spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
+					break;
+				case 111264: ///< Ice Ward 2
+					spellInfo->ProcFlags = 0;
+					break;
+				case 114635:///< Ember Tap
+					spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_PERIODIC_HEAL;
                 case 51128: // Killing Machine
                     spellInfo->ProcChance = 0;
                     break;
@@ -5216,8 +5224,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->OverrideSpellList.push_back(724); // Add old Lightwell to override list
                     break;
                 case 81751: // Atonement
-                    spellInfo->MaxAffectedTargets = 1;
-                    spellInfo->TargetFlagCu |= SPELL_TARGET_FLAG_CU0_RESIZE_ONLY | SPELL_TARGET_FLAG_CU0_SORT_BY_RANGE | SPELL_TARGET_FLAG_CU0_SORT_BY_HEALTH;
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
+                    spellInfo->Effects[0].TargetB = 0;
                     break;
                 case 47515: // Divine Aegis
                     spellInfo->Effects[0].BasePoints = 100;
@@ -9341,6 +9349,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
                     spellInfo->Effects[0].Effect = 0;
                     break;
+				case 119032:///< Spectral Guise
+					spellInfo->ProcCharges = 0;
+					break;
                 case 117865:// Wall of Light
                     spellInfo->Effects[0].Effect = 0;
                     break;
@@ -10052,6 +10063,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
                     break;
                 case 146962: // Glyph of Havoc
+					spellInfo->ProcCharges = 6;
                     spellInfo->Effects[0].MiscValue = SPELLMOD_CHARGES;
                     break;
                 case 114108:

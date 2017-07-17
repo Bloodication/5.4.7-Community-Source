@@ -1840,6 +1840,11 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
             victim->RemoveAura(115176);
             victim->RemoveAura(131523);
         }
+		if (victim->HasAura(111264))
+		{
+			victim->CastSpell(victim, 111340, true);
+			victim->RemoveAurasDueToSpell(111264);
+		}
     }
 
     // Frostflame Weapon
@@ -7513,6 +7518,15 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
                     triggered_spell_id = 37436;
                     break;
                 }
+				case 111264: //Ice Ward
+				{
+					if (!victim || !damage)
+						 return false;
+					
+					triggered_spell_id = 137143;
+					target = this;
+					break;
+				}
                 case 12846: // Mastery: Ignite
                 {
                     if (effIndex != 0)
@@ -9282,9 +9296,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
                       case 403: triggered_spell_id = 45284; break;
                       case 421:  triggered_spell_id = 45297; break;
                       case 51505: triggered_spell_id = 77451; break;
-                      case 117014: triggered_spell_id = 120588, 118517, 118515; break;
-                      
-                        default: return false;
+                      case 117014: triggered_spell_id = 120588; break;
+                        default: 
+                            return false;
                     }
 
                     // Item - Shaman T13 Elemental 4P Bonus (Elemental Overload)
@@ -13707,7 +13721,7 @@ void Unit::EnergizeBySpell(Unit* victim, uint32 spellID, int32 damage, Powers po
 uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, uint32 stack)
 {
 
-	if (victim && victim->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER && !victim->HasAura(134735))
+	if (victim && victim->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER && !victim->HasAura(134735) && !victim->HasAura(114635))
 		if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(134735))
 			Aura::TryRefreshStackOrCreate(spellInfo, MAX_EFFECT_MASK, victim, victim);
     if (!spellProto || !victim || damagetype == DIRECT_DAMAGE)

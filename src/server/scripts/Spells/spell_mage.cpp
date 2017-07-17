@@ -108,7 +108,9 @@ enum MageSpells
     //SPELL_MAGE_RING_OF_FROST_FROZEN              = 82691
 	SPELL_MAGE_RING_OF_FROST_DUMMY               = 91264,
     SPELL_MAGE_RING_OF_FROST_FREEZE              = 82691,
-    SPELL_MAGE_RING_OF_FROST_SUMMON              = 113724
+    SPELL_MAGE_RING_OF_FROST_SUMMON              = 113724,
+	SPELL_MAGE_ICE_WARD_FREEZE                   = 111340,
+	SPELL_MAGE_ICE_WARD                          = 111264
 };
 
 // Flamestrike - 2120
@@ -507,6 +509,52 @@ class spell_mage_incanters_ward : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_mage_incanters_ward_AuraScript();
+        }
+};
+
+// Ice Ward - 111397
+class spell_mage_ice_ward : public SpellScriptLoader
+{
+    public:
+        spell_mage_ice_ward() : SpellScriptLoader("spell_mage_ice_ward") { }
+
+        class spell_mage_ice_ward_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_ice_ward_AuraScript);
+
+            void OnProc(AuraEffect const* p_AurEff, ProcEventInfo& p_EventInfo)
+            {
+                PreventDefaultAction();
+
+                if (Unit* l_Caster = GetUnitOwner())
+                {
+                    if (Unit* l_Target = p_EventInfo.GetDamageInfo()->GetAttacker())
+                    {
+						if (l_Caster->HasAura(SPELL_MAGE_ICE_WARD))
+						{
+							//l_Caster->CastSpell(l_Caster, SPELL_MAGE_ICE_WARD_FREEZE, true);
+							//l_Caster->RemoveAura(SPELL_MAGE_ICE_WARD);
+							
+							// Ice Ward doesn't proc on pets/guardians and such
+							if (l_Target->IsPetGuardianStuff())
+								return;
+
+							l_Caster->CastSpell(l_Caster, SPELL_MAGE_ICE_WARD_FREEZE, true);
+							p_AurEff->GetBase()->DropCharge();
+						}
+                    }
+                }
+            }
+
+            void Register() override
+            {
+                OnEffectProc += AuraEffectProcFn(spell_mage_ice_ward_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const override
+        {
+            return new spell_mage_ice_ward_AuraScript();
         }
 };
 
@@ -995,18 +1043,26 @@ class spell_mage_blazing_speed : public SpellScriptLoader
         class spell_mage_blazing_speed_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_mage_blazing_speed_SpellScript);
+            
+              SpellCastResult CheckCast()
+              {
+                Unit* _Caster = GetCaster();
 
+                if (_Caster->HasAuraType(SPELL_AURA_MOD_STUN))
+                    return SPELL_FAILED_STUNNED;
+
+                return SPELL_CAST_OK;
+              }
+              
             void HandleOnHit()
-            {
-                if (GetCaster()->isInStun())
-                    return;
-                    
+            {   
                 if (Player* _player = GetCaster()->ToPlayer())
                     _player->RemoveMovementImpairingAuras();
             }
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_mage_blazing_speed_SpellScript::CheckCast);
                 OnHit += SpellHitFn(spell_mage_blazing_speed_SpellScript::HandleOnHit);
             }
         };
@@ -1814,11 +1870,16 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
 };
 
 // Glyph of Rapid Displacement - 146659
-// Called by Blink - 1953
+/// Blink - 1953
 class spell_mage_blink : public SpellScriptLoader
 {
     public:
         spell_mage_blink() : SpellScriptLoader("spell_mage_blink") { }
+
+        enum eSpells
+        {
+            GlyphOfRapidDisplacement = 146659
+        };
 
         class spell_mage_blink_SpellScript : public SpellScript
         {
@@ -1826,23 +1887,27 @@ class spell_mage_blink : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                if (!GetCaster())
-                    return SPELL_FAILED_DONT_REPORT;
+                Unit* _Caster = GetCaster();
 
-                if (GetCaster()->HasAura(SPELL_MAGE_GLYPH_OF_RAPID_DISPLACEMENT))
-                {
-                    if (GetCaster()->isInStun())
-                        return SPELL_FAILED_STUNNED;
-                    else if (GetCaster()->isInRoots())
-                        return SPELL_FAILED_ROOTED;
-                }
+                if (_Caster->HasAura(eSpells::GlyphOfRapidDisplacement) && _Caster->HasAuraType(SPELL_AURA_MOD_STUN))
+                    return SPELL_FAILED_STUNNED;
 
                 return SPELL_CAST_OK;
+            }
+
+            void HandleImmunity(SpellEffIndex /*p_EffIndex*/)
+            {
+                Unit* _Caster = GetCaster();
+
+                if (_Caster->HasAura(eSpells::GlyphOfRapidDisplacement))
+                    PreventHitAura();
             }
 
             void Register()
             {
                 OnCheckCast += SpellCheckCastFn(spell_mage_blink_SpellScript::CheckCast);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_blink_SpellScript::HandleImmunity, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_blink_SpellScript::HandleImmunity, EFFECT_2, SPELL_EFFECT_APPLY_AURA);
             }
         };
 
@@ -2294,6 +2359,7 @@ void AddSC_mage_spell_scripts()
     new spell_mage_incanters_absorbtion_absorb();
     new spell_mage_incanters_absorbtion_manashield();
     new spell_mage_living_bomb();
+	new spell_mage_ice_ward();
     new spell_mage_blizzard();
     new spell_mage_illusion();
     new spell_mage_blink();

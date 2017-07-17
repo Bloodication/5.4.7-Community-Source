@@ -38,10 +38,10 @@ enum ShamanSpells
     HUNTER_SPELL_INSANITY                   = 95809,
     MAGE_SPELL_TEMPORAL_DISPLACEMENT        = 80354,
     SPELL_SHA_LIGHTNING_SHIELD_AURA         = 324,
-    SPELL_SHA_ASCENDANCE_ELEMENTAL	         = 114050,
+    SPELL_SHA_ASCENDANCE_ELEMENTAL	        = 114050,
     SPELL_SHA_ASCENDANCE_RESTORATION        = 114052,
-    SPELL_SHA_ASCENDANCE_ENHANCED	         = 114051,
-    SPELL_SHA_ASCENDANCE			  = 114049,
+    SPELL_SHA_ASCENDANCE_ENHANCED	        = 114051,
+    SPELL_SHA_ASCENDANCE			        = 114049,
     SPELL_SHA_HEALING_RAIN                  = 142923,
     SPELL_SHA_HEALING_RAIN_TICK             = 73921,
     SPELL_SHA_HEALING_RAIN_AURA             = 73920,
@@ -109,7 +109,51 @@ enum ShamanSpells
     SPELL_SHA_ELEMENTAL_FAMILIAR            = 148118,
     SPELL_SHA_T15_ENCH_SET_2P_BONUS         = 138136,
     SPELL_SHA_T15_ELEM_SET_4P_BONUS         = 138144,
+    SPELL_SHA_ELE_BLAST_MASTERY             = 120588,
+    SHAMAN_SHA_ITEM_T16_4P                  = 144966,
+    SHAMAN_SHA_ITEM_T16_2P                  = 144962
 };
+
+/* Called by SHAMAN_SHA_ITEM_T16_4P
+class spell_sha_flame_shock : public SpellScriptLoader
+{
+    public:
+        spell_sha_flame_shock() : SpellScriptLoader("spell_sha_flame_shock") { }
+        
+        class spell_sha_flame_shock_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_flame_shock_SpellScript);
+            
+            void OnTick(AuraEffect const* aurEff)
+            {
+				if (!GetCaster())
+					return;
+
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+                    _player->HasAura(SHAMAN_SHA_ITEM_T16_4P)
+                    {
+					    if (roll_chance_i(5))
+					    {
+						_player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        _player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        _player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        _player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        _player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        
+						if (_player->HasSpellCooldown(SPELL_SHA_LAVA_LASH))
+                                _player->RemoveSpellCooldown(SPELL_SHA_LAVA_LASH, true);
+					    }
+                    }
+                }
+            }
+        
+            void Register()
+                {
+                    OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_flame_shock_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                }
+};
+*/
 
 // Totemic Projection - 108287
 class spell_sha_totemic_projection : public SpellScriptLoader
@@ -2383,16 +2427,31 @@ class spell_sha_lava_burst : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_lava_burst_SpellScript)
 
-            void HandleAfterHit()
+			void HandleAfterHit()
+			{
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+					if (_player->HasAura(SPELL_SHA_T15_ELEM_SET_4P_BONUS))
+					{
+						_player->ReduceSpellCooldown(114049, 1000);
+						_player->ReduceSpellCooldown(114050, 1000);
+						_player->ReduceSpellCooldown(114051, 1000);
+						_player->ReduceSpellCooldown(114052, 1000);
+					}
+				}
+			}
+                    
+            void HandleAfterCast()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (!GetCaster())
+                    return;
+
+                if (Player* _caster = GetCaster()->ToPlayer())
                 {
-                    if (_player->HasAura(SPELL_SHA_T15_ELEM_SET_4P_BONUS))
+                    if (_caster->HasAura(SPELL_SHA_LAVA_SURGE))
                     {
-                        _player->ReduceSpellCooldown(114049, 1000);
-                        _player->ReduceSpellCooldown(114050, 1000);
-                        _player->ReduceSpellCooldown(114051, 1000);
-                        _player->ReduceSpellCooldown(114052, 1000);
+                        if (_caster->HasSpellCooldown(SPELL_SHA_LAVA_BURST))
+                            _caster->RemoveSpellCooldown(SPELL_SHA_LAVA_BURST, true);
                     }
                 }
             }
@@ -2405,11 +2464,12 @@ class spell_sha_lava_burst : public SpellScriptLoader
 
                 SetHitDamage(GetHitDamage() * 1.5f); // If Flame Shock is on the target, Lava Burst will deal 50% additional damage
             }
-
+            
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_sha_lava_burst_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
                 AfterHit += SpellHitFn(spell_sha_lava_burst_SpellScript::HandleAfterHit);
+                AfterCast += SpellCastFn(spell_sha_lava_burst_SpellScript::HandleAfterCast);
             }
         };
 
@@ -2607,6 +2667,40 @@ class spell_sha_glyph_of_elemental_familiars : public SpellScriptLoader
         }
 };
 
+// Elemental Blast Mastery - 120588
+class spell_sha_elemental_blast_mastery : public SpellScriptLoader
+{
+    public:
+        spell_sha_elemental_blast_mastery() : SpellScriptLoader("spell_sha_elemental_blast_mastery") { }
+
+        class spell_sha_elemental_blast_mastery_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_elemental_blast_mastery_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_FROST_VISUAL, true);
+                        _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_NATURE_VISUAL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_sha_elemental_blast_mastery_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_elemental_blast_mastery_SpellScript();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_totemic_projection();
@@ -2655,4 +2749,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_glyph_of_rain_of_frogs();
     new spell_sha_glyph_of_elemental_familiars();
     new spell_sha_stormstrike();
+    new spell_sha_elemental_blast_mastery();
+    /*new spell_sha_flame_shock();*/
 }
