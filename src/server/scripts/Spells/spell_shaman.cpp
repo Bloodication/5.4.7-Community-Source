@@ -109,6 +109,7 @@ enum ShamanSpells
     SPELL_SHA_ELEMENTAL_FAMILIAR            = 148118,
     SPELL_SHA_T15_ENCH_SET_2P_BONUS         = 138136,
     SPELL_SHA_T15_ELEM_SET_4P_BONUS         = 138144,
+    SPELL_SHA_ELE_BLAST_MASTERY             = 120588
 };
 
 // Totemic Projection - 108287
@@ -2614,6 +2615,40 @@ class spell_sha_glyph_of_elemental_familiars : public SpellScriptLoader
         }
 };
 
+// Elemental Blast Mastery - 120588
+class spell_sha_elemental_blast_mastery : public SpellScriptLoader
+{
+    public:
+        spell_sha_elemental_blast_mastery() : SpellScriptLoader("spell_sha_elemental_blast_mastery") { }
+
+        class spell_sha_elemental_blast_mastery_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_elemental_blast_mastery_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_FROST_VISUAL, true);
+                        _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_NATURE_VISUAL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_sha_elemental_blast_masterySpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_elemental_blast_mastery();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_totemic_projection();
@@ -2662,4 +2697,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_glyph_of_rain_of_frogs();
     new spell_sha_glyph_of_elemental_familiars();
     new spell_sha_stormstrike();
+    new spell_sha_elemental_blast_mastery();
 }
