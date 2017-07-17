@@ -7388,6 +7388,108 @@ class npc_jade_serpent_statue : public CreatureScript
         }
 };
 
+/// Terrorguard - 59000
+class npc_warl_terrorguard: public CreatureScript
+{
+    public:
+        npc_warl_terrorguard() : CreatureScript("warl_terrorguard") { }
+
+        enum eSpells
+        {
+            DoomBolt = 85692
+        };
+
+        struct npc_warl_terrorguardAI : public ScriptedAI
+        {
+            npc_warl_terrorguardAI(Creature *creature) : ScriptedAI(creature) { }
+
+            void Reset()
+            {
+                me->SetPower(Powers::POWER_ENERGY, me->GetMaxPower(Powers::POWER_ENERGY));
+                me->SetReactState(REACT_HELPER);
+            }
+
+            void UpdateAI(const uint32 /*p_Diff*/)
+            {
+                if (Unit* _Owner = me->GetOwner())
+                {
+                    Unit* _OwnerTarget = _Owner->getVictim();
+
+                    if (_OwnerTarget == nullptr)
+                        if (Player* _Player = _Owner->ToPlayer())
+                            _OwnerTarget = _Player->GetSelectedUnit();
+
+                    if (_OwnerTarget && me->isTargetableForAttack(_OwnerTarget) && (!me->getVictim() || me->getVictim() != _OwnerTarget))
+                        AttackStart(_OwnerTarget);
+                }
+
+                if (!me->getVictim())
+                    return;
+
+                if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
+                    return;
+
+                me->CastSpell(me->getVictim(), eSpells::DoomBolt, false);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_warl_terrorguardAI(creature);
+        }
+};
+
+/// Doomguard - 11859
+class npc_warl_doomguard: public CreatureScript
+{
+    public:
+        npc_warl_doomguard() : CreatureScript("warl_doomguard") { }
+
+        enum eSpells
+        {
+            DoomBolt = 85692
+        };
+
+        struct npc_warl_doomguardAI : public ScriptedAI
+        {
+            npc_warl_doomguardAI(Creature *creature) : ScriptedAI(creature) { }
+
+            void Reset()
+            {
+                me->SetPower(Powers::POWER_ENERGY, me->GetMaxPower(Powers::POWER_ENERGY));
+                me->SetReactState(REACT_HELPER);
+            }
+
+            void UpdateAI(const uint32 /*p_Diff*/)
+            {
+                if (Unit* _Owner = me->GetOwner())
+                {
+                    Unit* _OwnerTarget = _Owner->getVictim();
+
+                    if (_OwnerTarget == nullptr)
+                        if (Player* _Player = _Owner->ToPlayer())
+                            _OwnerTarget = _Player->GetSelectedUnit();
+
+                    if (_OwnerTarget && me->isTargetableForAttack(_OwnerTarget) && (!me->getVictim() || me->getVictim() != _OwnerTarget))
+                        AttackStart(_OwnerTarget);
+                }
+
+                if (!me->getVictim())
+                    return;
+
+                if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
+                    return;
+
+                me->CastSpell(me->getVictim(), eSpells::DoomBolt, false);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_warl_doomguardAI(creature);
+        }
+};
+
 class npc_terracotta_warrior : public CreatureScript
 {
 public:
@@ -7571,6 +7673,8 @@ void AddSC_npcs_special()
     new npc_frozen_trail_packer();
     new npc_black_ox_statue();
     new npc_jade_serpent_statue();
+    new npc_warl_doomguard();
+    new npc_warl_terrorguard();
 
     new npc_childrens_week_human_orphan();
     new npc_childrens_week_orcish_orphan();
