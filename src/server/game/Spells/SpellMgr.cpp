@@ -9349,6 +9349,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
                     spellInfo->Effects[0].Effect = 0;
                     break;
+				case 119032:///< Spectral Guise
+					spellInfo->ProcCharges = 0;
+					break;
                 case 117865:// Wall of Light
                     spellInfo->Effects[0].Effect = 0;
                     break;
