@@ -5936,7 +5936,7 @@ class npc_force_of_nature : public CreatureScript
                     default:
                         break;
                 }
-				AttackStart(target);
+				//AttackStart(target);
                 DoMeleeAttackIfReady();
             }
         };
