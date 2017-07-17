@@ -3701,6 +3701,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 137143: // Blood Horror
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
+				case 114635:///< Ember Tap
+					spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_PERIODIC_HEAL;
                 case 51128: // Killing Machine
                     spellInfo->ProcChance = 0;
                     break;

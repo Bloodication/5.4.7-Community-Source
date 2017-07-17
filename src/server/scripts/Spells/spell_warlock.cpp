@@ -2522,6 +2522,149 @@ class spell_warl_ember_tap : public SpellScriptLoader
         }
 };
 
+/// Ember Tap - 114635
+/// With Glyph of Ember Tap - 63304
+class spell_warl_ember_tap_glyph : public SpellScriptLoader
+{
+public:
+    spell_warl_ember_tap_glyph() : SpellScriptLoader("spell_warl_ember_tap_glyph") { }
+
+    enum eSpells
+    {
+        MasteryEmberstorm = 77220,
+        GlyphOfEmberTap = 63304,
+        EmberTap = 114635,
+        SearingFlames = 174848
+    };
+
+    class spell_warl_ember_tap_glyph_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warl_ember_tap_glyph_AuraScript);
+
+        bool CalculateAmount(AuraEffect const*, int32& p_Amount, bool& /*canBeRecalculated*/)
+        {
+            Unit* l_Caster = GetCaster();
+            SpellInfo const* l_SpellInfo = sSpellMgr->GetSpellInfo(eSpells::GlyphOfEmberTap);
+
+            if (l_Caster == nullptr || l_SpellInfo == nullptr)
+                return NULL;
+
+            if (!l_Caster->HasAura(eSpells::GlyphOfEmberTap))
+            {
+                p_Amount = 0;
+                return NULL;
+            }
+        }
+
+        void Register()
+        {
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_ember_tap_glyph_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_PERIODIC_HEAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_warl_ember_tap_glyph_AuraScript();
+    }
+
+    class spell_warl_ember_tap_glyph_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warl_ember_tap_glyph_SpellScript);
+
+        uint32 m_PreviousTotalHeal = 0;
+
+        void HitTarget(SpellEffIndex)
+        {
+            Unit* l_Caster = GetCaster();
+
+            if (!l_Caster)
+                return;
+
+            if (!l_Caster->HasAura(eSpells::GlyphOfEmberTap))
+            {
+                PreventHitAura();
+                return;
+            }
+        }
+
+        void HandleBeforeHit()
+        {
+            Player* l_Caster = GetCaster()->ToPlayer();
+            SpellInfo const* l_SpellInfo = GetSpellInfo();
+            if (!l_Caster || !l_SpellInfo)
+                return;
+
+            if (!l_Caster->HasAura(eSpells::GlyphOfEmberTap))
+                return;
+
+            if (AuraEffect* l_PreviousEmberTap = l_Caster->GetAuraEffect(l_SpellInfo->Id, EFFECT_2, l_Caster->GetGUID()))
+            {
+                int32 l_Duration = 0;
+                int32 l_MaxDuration = 0;
+                int32 l_PeriodicDamage = l_PreviousEmberTap->GetAmount();
+                int32 l_Amplitude = l_PreviousEmberTap->GetAmplitude();
+
+                if (Aura* l_EmberTap = l_Caster->GetAura(GetSpellInfo()->Id))
+                {
+                    l_Duration = l_EmberTap->GetDuration();
+                    l_MaxDuration = l_EmberTap->GetMaxDuration();
+                }
+
+                if (l_Amplitude && l_Duration && l_MaxDuration)
+                {
+                    m_PreviousTotalHeal = l_PeriodicDamage * (l_Duration / l_Amplitude + 1);
+                    ///m_PreviousTotalHeal = m_PreviousTotalHeal / (l_MaxDuration / l_Amplitude);
+                }
+            }
+        }
+
+        void HandleAfterHit()
+        {
+            Player* l_Caster = GetCaster()->ToPlayer();
+            SpellInfo const* l_SpellInfo = GetSpellInfo();
+            SpellInfo const* l_GlyphSpellInfo = sSpellMgr->GetSpellInfo(eSpells::GlyphOfEmberTap);
+            if (!l_Caster || !l_SpellInfo)
+                return;
+
+            Aura* l_Aura = l_Caster->GetAura(l_SpellInfo->Id);
+            if (!l_Aura)
+                return;
+
+            if (!l_Caster->HasAura(eSpells::GlyphOfEmberTap) || l_GlyphSpellInfo == nullptr)
+                return;
+
+            uint8 l_AdditionalTick = 0;
+            float l_Pct = l_SpellInfo->Effects[EFFECT_0].BasePoints + l_GlyphSpellInfo->Effects[EFFECT_2].BasePoints;
+            if (AuraEffect* l_SearingFlames = l_Caster->GetAuraEffect(eSpells::SearingFlames, EFFECT_0))
+            {
+                l_Pct += CalculatePct(l_Pct, l_SearingFlames->GetAmount());
+            }
+
+            int32 l_TotalHeal = CalculatePct(l_Caster->GetMaxHealth(), l_Pct);
+
+            l_TotalHeal += m_PreviousTotalHeal;
+
+            if (AuraEffect* l_AuraEffect = l_Caster->GetAuraEffect(l_SpellInfo->Id, EFFECT_2))
+            {
+                l_TotalHeal = l_TotalHeal / (l_Aura->GetMaxDuration() / l_AuraEffect->GetAmplitude());
+                l_AuraEffect->SetAmount(l_TotalHeal);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_warl_ember_tap_glyph_SpellScript::HitTarget, EFFECT_2, SPELL_AURA_OBS_MOD_HEALTH);
+            BeforeHit += SpellHitFn(spell_warl_ember_tap_glyph_SpellScript::HandleBeforeHit);
+            AfterHit += SpellHitFn(spell_warl_ember_tap_glyph_SpellScript::HandleAfterHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_warl_ember_tap_glyph_SpellScript();
+    }
+};
+
 // Conflagrate - 17962 and Conflagrate (Fire and Brimstone) - 108685
 class spell_warl_conflagrate_aura : public SpellScriptLoader
 {
@@ -4276,6 +4419,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_soulburn_health_funnel();
     new spell_warl_command_demon();
     new spell_warl_grimoire_of_service();
+	new spell_warl_ember_tap_glyph();
     new spell_warl_siphon_life();
     new spell_warl_demonic_slash();
     new spell_warl_soul_fire();
