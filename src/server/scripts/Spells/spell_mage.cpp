@@ -1014,7 +1014,7 @@ class spell_mage_blazing_speed : public SpellScriptLoader
 
             void Register()
             {
-                OnCheckCast += SpellCheckCastFn(spell_mage_blink_SpellScript::CheckCast);
+                OnCheckCast += SpellCheckCastFn(spell_mage_blazing_speed_SpellScript::CheckCast);
                 OnHit += SpellHitFn(spell_mage_blazing_speed_SpellScript::HandleOnHit);
             }
         };
