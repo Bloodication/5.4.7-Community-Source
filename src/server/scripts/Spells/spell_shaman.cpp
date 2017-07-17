@@ -111,7 +111,51 @@ enum ShamanSpells
     SPELL_SHA_T15_ELEM_SET_4P_BONUS         = 138144,
     SPELL_SHA_ELE_BLAST_MASTERY             = 120588,
     SPELL_SHA_FLAME_SHOCK                   = 8050,
-    SHAMAN_SHA_ITEM_T16_4P                  = 144966
+    SHAMAN_SHA_ITEM_T16_4P                  = 144966,
+    SHAMAN_SHA_ITEM_T16_2P                  = 144962
+};
+
+// Called by SHAMAN_SHA_ITEM_T16_2P
+class spell_sha_flow_of_the_elements : public SpellScriptLoader
+{
+    public:
+        spell_sha_flow_of_the_elements() : SpellScriptLoader("spell_sha_flow_of_the_elements") { }
+        
+        class spell_sha_flow_of_the_elements_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_flow_of_the_elements_SpellScript);
+            
+            void OnProc(AuraEffect const* aurEff)
+            {
+				if (!GetCaster())
+					return;
+
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+                    _player->HasAura(144964)
+                    {
+					    if (roll_chance_i(30))
+					    {
+						_player->CastSpell(73681, _target);
+                        }
+                        
+                         if (roll_chance_i(30))
+					    {
+                        _player->CastSpell(73682, _target);
+                        }
+                        
+                         if (roll_chance_i(30))
+					    {
+                        _player->CastSpell(73683, _target);
+					    }
+                    }
+                }
+            }
+        
+            void Register()
+                {
+                    OnEffectProc += AuraEffectProcFn(spell_sha_flow_of_the_elements_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+                }
 };
 
 // Called by SHAMAN_SHA_ITEM_T16_4P
@@ -2741,4 +2785,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_stormstrike();
     new spell_sha_elemental_blast_mastery();
     new spell_flame_shock();
+    new spell_sha_flow_of_the_elements();
 }
