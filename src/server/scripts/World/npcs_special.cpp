@@ -5926,7 +5926,7 @@ class npc_force_of_nature : public CreatureScript
                                 if (me->IsWithinDistInMap(target, 5.0f, false))
                                 {
                                     m_canCastRake = false;
-                                    me->CastSpell(target, 150017, true);
+                                    me->CastSpell(target, 1822, true);
 									AttackStart(target);
                                 }
                             }
