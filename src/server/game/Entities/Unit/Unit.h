@@ -769,18 +769,14 @@ enum DiminishingLevels : uint32
 
 struct DiminishingReturn
 {
-    DiminishingReturn() :
-    stack(0), hitCount(0)
-    {
-    }
+	DiminishingReturn(DiminishingGroup group, uint32 t, uint32 count)
+		: DRGroup(group), stack(0), hitTime(t), hitCount(count)
+	{}
 
-    DiminishingReturn(uint32 t, uint32 count)
-        : stack(0), hitTime(t), hitCount(count)
-    {}
-
-    uint16 stack;
-    uint32 hitTime;
-    uint32 hitCount;
+	DiminishingGroup        DRGroup : 16;
+	uint16                  stack : 16;
+	uint32                  hitTime;
+	uint32                  hitCount;
 };
 
 enum MeleeHitOutcome
@@ -1289,6 +1285,7 @@ class Unit : public WorldObject
         typedef std::list<AuraEffect*> AuraEffectList;
         typedef std::list<Aura*> AuraList;
         typedef std::list<AuraApplication *> AuraApplicationList;
+		typedef std::list<DiminishingReturn> Diminishing;
         typedef std::set<uint32> ComboPointHolderSet;
         typedef std::vector<uint32> AuraIdList;
 
@@ -2651,6 +2648,7 @@ class Unit : public WorldObject
         uint32 m_CombatTimer;
         uint32 m_logTimer;
         TimeTrackerSmall m_movesplineTimer;
+		Diminishing m_Diminishing;
 
         uint64 simulacrumTargetGUID;
         uint64 iciclesTargetGUID;
@@ -2662,7 +2660,6 @@ class Unit : public WorldObject
 
         int32 SpentPowerCost;
 
-        DiminishingReturn m_Diminishing[DIMINISHING_MAX + 1];
         // Manage all Units that are threatened by us
         HostileRefManager m_HostileRefManager;
 

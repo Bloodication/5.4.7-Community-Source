@@ -17710,23 +17710,42 @@ void Unit::ModSpellCastTime(SpellInfo const* spellProto, int32 & castTime, Spell
 
 DiminishingLevels Unit::GetDiminishing(DiminishingGroup group)
 {
-    DiminishingReturn& dimReturn = m_Diminishing[group];
+	for (Diminishing::iterator i = m_Diminishing.begin(); i != m_Diminishing.end(); ++i)
+	{
+		if (i->DRGroup != group)
+			continue;
 
-    if (dimReturn.hitCount > DIMINISHING_LEVEL_1)
-    {
-        if (dimReturn.stack == 0 && getMSTimeDiff(dimReturn.hitTime, getMSTime()) > 18 * IN_MILLISECONDS)
-            dimReturn.hitCount = DIMINISHING_LEVEL_1;
-    }
-    return DiminishingLevels(dimReturn.hitCount);
+		if (!i->hitCount)
+			return DIMINISHING_LEVEL_1;
+
+		if (!i->hitTime)
+			return DIMINISHING_LEVEL_1;
+
+		// If last spell was casted more than 15 seconds ago - reset the count.
+		if (i->stack == 0 && getMSTimeDiff(i->hitTime, getMSTime()) > 15000)
+		{
+			i->hitCount = DIMINISHING_LEVEL_1;
+			return DIMINISHING_LEVEL_1;
+		}
+		// or else increase the count.
+		else
+			return DiminishingLevels(i->hitCount);
+	}
+	return DIMINISHING_LEVEL_1;
 }
 
 void Unit::IncrDiminishing(DiminishingGroup group)
 {
-    DiminishingReturn& dimReturn = m_Diminishing[group];
-
-    dimReturn.hitTime = getMSTime();
-    if (dimReturn.hitCount < GetDiminishingReturnsMaxLevel(group))
-        dimReturn.hitCount++;
+	// Checking for existing in the table
+	for (Diminishing::iterator i = m_Diminishing.begin(); i != m_Diminishing.end(); ++i)
+	{
+		if (i->DRGroup != group)
+			continue;
+		if (int32(i->hitCount) < GetDiminishingReturnsMaxLevel(group))
+			i->hitCount += 1;
+		return;
+	}
+	m_Diminishing.push_back(DiminishingReturn(group, getMSTime(), DIMINISHING_LEVEL_2));
 }
 
 float Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration, Unit* caster, DiminishingLevels Level, int32 limitduration)
@@ -17792,18 +17811,23 @@ float Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration, 
 
 void Unit::ApplyDiminishingAura(DiminishingGroup group, bool apply)
 {
-    DiminishingReturn& dimReturn = m_Diminishing[group];
+	// Checking for existing in the table
+	for (Diminishing::iterator i = m_Diminishing.begin(); i != m_Diminishing.end(); ++i)
+	{
+		if (i->DRGroup != group)
+			continue;
 
-    if (dimReturn.hitCount == DIMINISHING_LEVEL_1)
-        return;
-
-    if (apply)
-        dimReturn.stack++;
-    else
-    {
-        if (--dimReturn.stack == 0)
-            dimReturn.hitTime = getMSTime();
-    }
+		if (apply)
+			i->stack += 1;
+		else if (i->stack)
+		{
+			i->stack -= 1;
+			// Remember time after last aura from group removed
+			if (i->stack == 0)
+				i->hitTime = getMSTime();
+		}
+		break;
+	}
 }
 
 void Unit::ClearDiminishings()
