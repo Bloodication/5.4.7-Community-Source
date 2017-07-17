@@ -223,8 +223,58 @@ class spell_pri_power_word_fortitude : public SpellScriptLoader
         }
 };
 
+/// Spectral Guise Charges - 119032
+class spell_pri_spectral_guise_charges: public SpellScriptLoader
+{
+    public:
+        spell_pri_spectral_guise_charges() : SpellScriptLoader("spell_pri_spectral_guise_charges") { }
+
+        class spell_pri_spectral_guise_charges_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_spectral_guise_charges_AuraScript);
+
+            void OnProc(AuraEffect const* /*aurEff*/, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                Unit* spectralGuise = GetCaster();
+                if (!spectralGuise)
+                    return;
+
+                Unit* attacker = eventInfo.GetActor();
+                if (!attacker)
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != spectralGuise->GetGUID())
+                    return;
+
+                if (eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE || eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
+                    if (Aura* spectralGuiseCharges = spectralGuise->GetAura(PRIEST_SPELL_SPECTRAL_GUISE_CHARGES))
+                        spectralGuiseCharges->DropCharge();
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->ToCreature())
+                        caster->ToCreature()->DespawnOrUnsummon();
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_pri_spectral_guise_charges_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+                OnEffectRemove += AuraEffectRemoveFn(spell_pri_spectral_guise_charges_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_spectral_guise_charges_AuraScript();
+        }
+};
+
 // Spectral Guise Charges - 119030
-class spell_pri_spectral_guise_charges : public SpellScriptLoader
+/*class spell_pri_spectral_guise_charges : public SpellScriptLoader
 {
     public:
         spell_pri_spectral_guise_charges() : SpellScriptLoader("spell_pri_spectral_guise_charges") { }
@@ -253,14 +303,14 @@ class spell_pri_spectral_guise_charges : public SpellScriptLoader
 						{
 							if (spectralGuiseCharges->GetCharges() >= 3)
 								spectralGuiseCharges->DropCharge();
-						}*/
+						}
 				if (Unit* spectralGuise = GetCaster())
                     if (eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE || eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
                         if (Aura* spectralGuiseCharges = spectralGuise->GetAura(PRIEST_SPELL_SPECTRAL_GUISE_CHARGES))
                             spectralGuiseCharges->DropCharge();
             }
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes)
             {
                 if (Unit* caster = GetCaster())
                     if (caster->ToCreature())
@@ -278,7 +328,7 @@ class spell_pri_spectral_guise_charges : public SpellScriptLoader
         {
             return new spell_pri_spectral_guise_charges_AuraScript();
         }
-};
+};*/
 
 // Psyfiend Hit Me Driver - 114164
 class spell_pri_psyfiend_hit_me_driver : public SpellScriptLoader
@@ -3025,7 +3075,10 @@ class spell_pri_spectral_guise : public SpellScriptLoader
 
             enum eSpells
             {
-                SpectralGuise = 119032
+                SpectralGuise = 119032,
+				SpectralGuiseCharges = 119030,
+				SpectralGuiseClone = 119012
+				
             };
 
             void OnProc(AuraEffect const* /*aurEff*/, ProcEventInfo& eventInfo)
