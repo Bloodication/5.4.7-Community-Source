@@ -2530,6 +2530,7 @@ class spell_warl_ember_tap : public SpellScriptLoader
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_warl_ember_tap_SpellScript::CheckCast);
                 OnHit += SpellHitFn(spell_warl_ember_tap_SpellScript::HandleOnHit);
             }
         };

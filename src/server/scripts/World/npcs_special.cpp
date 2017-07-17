@@ -3737,6 +3737,166 @@ class npc_feral_spirit : public CreatureScript
 };
 
 /*######
+## npc_lightning_elemental
+#######*/
+
+class npc_lightning_elemental : public CreatureScript
+{
+    public:
+        npc_lightning_elemental() : CreatureScript("npc_lightning_elemental") { }
+
+        enum eSpells
+        {
+         SPELL_SHA_LIGHTNING_BOLT = 138018,
+		 SPELL_SHA_LIGHTNING_COS1 = 140753,
+		 SPELL_SHA_LIGHTNING_COS2 = 136731,
+        };
+
+        struct npc_lightning_elementalAI : CasterAI
+        {
+            npc_lightning_elementalAI(Creature* creature) :
+            CasterAI(creature)
+            {
+            }
+
+        void IsSummonedBy(Unit* p_Owner) override
+        {
+                if (!p_Owner || p_Owner->GetTypeId() != TypeID::TYPEID_PLAYER)
+                    return;
+
+                if (!me->HasUnitState(UnitState::UNIT_STATE_FOLLOW))
+                {
+                    me->GetMotionMaster()->Clear(false);
+                    me->GetMotionMaster()->MoveFollow(p_Owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+                }
+
+				me->CastSpell(me, SPELL_SHA_LIGHTNING_COS1, true);
+                me->AddAura(SPELL_SHA_LIGHTNING_COS2, me);
+                me->SetMaxPower(me->getPowerType(), p_Owner->GetMaxPower(me->getPowerType()));
+                me->SetPower(me->getPowerType(), p_Owner->GetPower(me->getPowerType()));
+                me->SetMaxHealth(p_Owner->GetMaxHealth());
+                me->SetHealth(p_Owner->GetHealth());
+                me->SetReactState(ReactStates::REACT_DEFENSIVE);
+
+                // Inherit Master's Threat List
+                me->CastSpell(p_Owner, 58838, true);
+
+                for (uint32 l_AttackType = 0; l_AttackType < MAX_ATTACK; l_AttackType++)
+                {
+                    WeaponAttackType l_AttackTypeEnum = static_cast<WeaponAttackType>(l_AttackType);
+                    me->SetBaseWeaponDamage(l_AttackTypeEnum, WeaponDamageRange::MAXDAMAGE, p_Owner->GetWeaponDamageRange(l_AttackTypeEnum, WeaponDamageRange::MAXDAMAGE));
+                    me->SetBaseWeaponDamage(l_AttackTypeEnum, WeaponDamageRange::MINDAMAGE, p_Owner->GetWeaponDamageRange(l_AttackTypeEnum, WeaponDamageRange::MINDAMAGE));
+                }
+
+                me->UpdateAttackPowerAndDamage();
+            }
+
+            void EnterCombat(Unit* p_Who) override
+            {
+                if (!me->GetOwner())
+                    return;
+
+                Player* l_Owner = me->GetOwner()->ToPlayer();
+                if (!l_Owner)
+                    return;
+
+                eSpells l_Spell = eSpells::SPELL_SHA_LIGHTNING_BOLT;
+                
+                events.ScheduleEvent(l_Spell, 0); ///< Schedule cast
+                me->GetMotionMaster()->Clear(false);
+            }
+
+            void EnterEvadeMode() override
+            {
+                if (me->IsInEvadeMode() || !me->isAlive())
+                    return;
+
+                Unit* l_Owner = me->GetOwner();
+
+                me->CombatStop(true);
+                if (l_Owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
+                {
+                    me->GetMotionMaster()->Clear(false);
+                    me->GetMotionMaster()->MoveFollow(l_Owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+                }
+            }
+
+            void Reset() override
+            {
+            }
+
+            bool CanAIAttack(Unit const* l_Target) const override
+            {
+                /// Am I supposed to attack this target? (ie. do not attack CC'ed target)
+                return l_Target && !l_Target->HasAuraType(SPELL_AURA_MOD_CONFUSE);
+            }
+
+            void UpdateAI(const uint32 p_Diff) override
+            {
+                events.Update(p_Diff);
+
+                Unit* l_Victim = me->getVictim();
+                Player* l_Owner = me->GetOwner()->ToPlayer();
+                if (!l_Owner)
+                    return;
+
+                if (l_Victim)
+                {
+                    if (CanAIAttack(l_Victim))
+                    {
+                        /// If not already casting, cast! ("I'm a cast machine")
+                        if (!me->HasUnitState(UNIT_STATE_CASTING))
+                        {
+                            if (uint32 l_SpellId = events.ExecuteEvent())
+                            {
+                                me->CastSpell(l_Victim, l_SpellId, false);
+                                uint32 l_CastTime = me->GetCurrentSpellCastTime(l_SpellId);
+                                events.ScheduleEvent(l_SpellId, 0);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        /// My victim has changed state, I shouldn't attack it anymore
+                        if (me->HasUnitState(UNIT_STATE_CASTING))
+                            me->CastStop();
+
+                        me->AI()->EnterEvadeMode();
+                    }
+                }
+                else
+                {
+                    /// Let's choose a new target
+                    Unit* l_Target = me->SelectVictim();
+                    if (!l_Target)
+                    {
+                        /// No target? Let's see if our owner has a better target for us
+                        if (Unit* l_Owner = me->GetOwner())
+                        {
+                            Unit* l_OwnerVictim = nullptr;
+                            if (Player* l_Player = l_Owner->ToPlayer())
+                                l_OwnerVictim = l_Player->GetSelectedUnit();
+                            else
+                                l_OwnerVictim = l_Owner->getVictim();
+
+                            if (l_OwnerVictim && me->canCreatureAttack(l_OwnerVictim))
+                                l_Target = l_OwnerVictim;
+                        }
+                    }
+
+                    if (l_Target)
+                        me->AI()->AttackStart(l_Target);
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const override
+        {
+            return new npc_lightning_elementalAI(creature);
+        }
+};
+
+/*######
 ## npc_spirit_link_totem
 ######*/
 
@@ -7675,6 +7835,7 @@ void AddSC_npcs_special()
     new npc_jade_serpent_statue();
     new npc_warl_doomguard();
     new npc_warl_terrorguard();
+    new npc_lightning_elemental();
 
     new npc_childrens_week_human_orphan();
     new npc_childrens_week_orcish_orphan();
