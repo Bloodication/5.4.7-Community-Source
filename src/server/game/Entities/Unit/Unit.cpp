@@ -7520,8 +7520,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
                 }
 				case 111264: //Ice Ward
 				{
-					if (!victim || victim->IsPet() || victim->IsGuardian() || !damage)
-						return false
+					if (!victim || !damage)
+						 return false;
 					
 					triggered_spell_id = 137143;
 					target = this;
