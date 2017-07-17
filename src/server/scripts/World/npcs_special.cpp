@@ -5780,7 +5780,7 @@ class npc_custom_caster_guard : public CreatureScript
 
 /*######
 ## npc_force_of_nature
-######
+######*/
 
 class npc_force_of_nature : public CreatureScript
 {
@@ -5823,6 +5823,15 @@ class npc_force_of_nature : public CreatureScript
                         break;
 
                     case ENTRY_TREANT_FERAL:
+						m_canCastRake = true;
+						me->CastSpell(p_Target, 113770, true); // Root
+                        // on creatures 30seconds
+                        if (!p_Target->IsPlayer())
+                        {
+                            if (Aura* root = p_Target->GetAura(113770, me->GetGUID()))
+                                root->SetDuration(30000);
+                        }
+                        break;
                     case ENTRY_TREANT_BALANCE:
                         me->CastSpell(p_Target, 113770, true); // Root
                         // on creatures 30seconds
@@ -5840,19 +5849,29 @@ class npc_force_of_nature : public CreatureScript
 
             bool UpdateTarget()
             {
-                if (me->getVictim())
+				TempSummon* meTemp = me->ToTempSummon();
+
+				if (!meTemp)
+					return NULL;
+				
+				Unit* caster = meTemp->GetSummoner();
+				
+				if (!caster)
+					return NULL;
+				
+                if (caster->ToPlayer()->GetSelectedUnit())
                     return true;
 
                 if (me->GetEntry() != ENTRY_TREANT_RESTO)
                 {
                     /// Let's choose a new target
-                    Unit* l_Target = me->SelectVictim();
+                    Unit* l_Target = caster->ToPlayer()->GetSelectedUnit();
                     if (!l_Target)
                     {
                         /// No target? Let's see if our owner has a better target for us
                         if (Unit* l_Owner = me->GetOwner())
                         {
-                            Unit* l_OwnerVictim = l_Owner->getAttackerForHelper();
+                            Unit* l_OwnerVictim = caster->ToPlayer()->GetSelectedUnit();
                             if (l_OwnerVictim && me->canCreatureAttack(l_OwnerVictim))
                                 l_Target = l_OwnerVictim;
                         }
@@ -5870,6 +5889,17 @@ class npc_force_of_nature : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
+				TempSummon* meTemp = me->ToTempSummon();
+
+				if (!meTemp)
+					return;
+				
+				
+				Unit* caster = meTemp->GetSummoner();
+				
+				if (!caster)
+					return;
+				
                 if (me->IsNonMeleeSpellCasted(false))
                     return;
 
@@ -5891,12 +5921,13 @@ class npc_force_of_nature : public CreatureScript
                         // Special case
                         if (m_canCastRake)
                         {
-                            if (Unit* target = me->getVictim())
+                            if (Unit* target = caster->ToPlayer()->GetSelectedUnit())
                             {
                                 if (me->IsWithinDistInMap(target, 5.0f, false))
                                 {
                                     m_canCastRake = false;
                                     me->CastSpell(target, 150017, true);
+									AttackStart(target);
                                 }
                             }
                         }
@@ -5905,7 +5936,7 @@ class npc_force_of_nature : public CreatureScript
                     default:
                         break;
                 }
-
+				AttackStart(target);
                 DoMeleeAttackIfReady();
             }
         };
@@ -5914,9 +5945,9 @@ class npc_force_of_nature : public CreatureScript
         {
             return new npc_force_of_natureAI(pCreature);
         }
-};*/
+};
 
-enum Druid_Spells
+/*enum Druid_Spells
 {
 		    // Balance
     SPELL_DRUID_TREANT_WRATH                   = 113769,
@@ -5954,6 +5985,7 @@ public:
         npc_force_of_natureAI(Creature* creature) : ScriptedAI(creature) { }
         
         uint32 recurrentSpell;
+		uint32 recurrentSpell2;
         uint32 recurrentSpellTimer;
         uint32 timer;
         uint32 attackCheckTimer;
@@ -5962,6 +5994,7 @@ public:
         void Reset() override
         {
             recurrentSpell = 0;
+			recurrentSpell2 = 0;
             recurrentSpellTimer = 0;
             timer = 0;
             attackCheckTimer = 1000;
@@ -6006,11 +6039,8 @@ public:
                     if (target && target->IsValidAttackTarget(caster))
                     {
                         me->AI()->AttackStart(target);
-						if (!target->HasAura(SPELL_DRUID_TREANT_ENTANGLING_ROOTS) || !target->HasAura(SPELL_DRUID_TREANT_RAKE))
-						{
-							me->CastSpell(target, SPELL_DRUID_TREANT_ENTANGLING_ROOTS, true);
-							me->CastSpell(target, SPELL_DRUID_TREANT_RAKE, true);
-						}	
+						me->CastSpell(target, SPELL_DRUID_TREANT_ENTANGLING_ROOTS, true);
+						me->CastSpell(target, SPELL_DRUID_TREANT_RAKE, true);	
                     }
 
                     mustCacAttack = true;
@@ -6062,6 +6092,7 @@ public:
 
                         if (target && target->IsValidAttackTarget(caster))
                             me->CastSpell(target, recurrentSpell, false);
+							me->CastSpell(target, recurrentSpell2, false);
                     }
 
                     timer = recurrentSpellTimer;
@@ -6086,7 +6117,7 @@ public:
                         if (target && target->IsValidAttackTarget(caster))
                             me->AI()->AttackStart(target);
 
-                        attackCheckTimer = 2000;
+                        attackCheckTimer = 15000;
                     }
                     else
                         attackCheckTimer -= diff;
@@ -6094,7 +6125,7 @@ public:
             }
         }
     };
-};
+};*/
 
 /*######
 ## npc_luo_meng
