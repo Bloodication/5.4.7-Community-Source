@@ -2639,13 +2639,13 @@ class spell_sha_elemental_blast_mastery : public SpellScriptLoader
 
             void Register()
             {
-                AfterCast += SpellCastFn(spell_sha_elemental_blast_masterySpellScript::HandleAfterCast);
+                AfterCast += SpellCastFn(spell_sha_elemental_blast_mastery_SpellScript::HandleAfterCast);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
-            return new spell_sha_elemental_blast_mastery();
+            return new spell_sha_elemental_blast_mastery_SpellScript();
         }
 };
 
