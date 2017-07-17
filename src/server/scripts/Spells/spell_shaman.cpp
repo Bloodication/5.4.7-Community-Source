@@ -38,10 +38,10 @@ enum ShamanSpells
     HUNTER_SPELL_INSANITY                   = 95809,
     MAGE_SPELL_TEMPORAL_DISPLACEMENT        = 80354,
     SPELL_SHA_LIGHTNING_SHIELD_AURA         = 324,
-    SPELL_SHA_ASCENDANCE_ELEMENTAL	         = 114050,
+    SPELL_SHA_ASCENDANCE_ELEMENTAL	        = 114050,
     SPELL_SHA_ASCENDANCE_RESTORATION        = 114052,
-    SPELL_SHA_ASCENDANCE_ENHANCED	         = 114051,
-    SPELL_SHA_ASCENDANCE			  = 114049,
+    SPELL_SHA_ASCENDANCE_ENHANCED	        = 114051,
+    SPELL_SHA_ASCENDANCE			        = 114049,
     SPELL_SHA_HEALING_RAIN                  = 142923,
     SPELL_SHA_HEALING_RAIN_TICK             = 73921,
     SPELL_SHA_HEALING_RAIN_AURA             = 73920,
@@ -110,7 +110,6 @@ enum ShamanSpells
     SPELL_SHA_T15_ENCH_SET_2P_BONUS         = 138136,
     SPELL_SHA_T15_ELEM_SET_4P_BONUS         = 138144,
     SPELL_SHA_ELE_BLAST_MASTERY             = 120588,
-    SPELL_SHA_FLAME_SHOCK                   = 8050,
     SHAMAN_SHA_ITEM_T16_4P                  = 144966,
     SHAMAN_SHA_ITEM_T16_2P                  = 144962
 };
@@ -175,7 +174,7 @@ class spell_sha_flame_shock : public SpellScriptLoader
 
 				if (Player* _player = GetCaster()->ToPlayer())
 				{
-                    _player->HasAura(SPELL_SHA_ITEM_T16_4P)
+                    _player->HasAura(SHAMAN_SHA_ITEM_T16_4P)
                     {
 					    if (roll_chance_i(5))
 					    {
