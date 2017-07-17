@@ -108,7 +108,9 @@ enum MageSpells
     //SPELL_MAGE_RING_OF_FROST_FROZEN              = 82691
 	SPELL_MAGE_RING_OF_FROST_DUMMY               = 91264,
     SPELL_MAGE_RING_OF_FROST_FREEZE              = 82691,
-    SPELL_MAGE_RING_OF_FROST_SUMMON              = 113724
+    SPELL_MAGE_RING_OF_FROST_SUMMON              = 113724,
+	SPELL_MAGE_ICE_WARD_FREEZE                   = 111340,
+	SPELL_MAGE_ICE_WARD                          = 111264
 };
 
 // Flamestrike - 2120
@@ -507,6 +509,43 @@ class spell_mage_incanters_ward : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_mage_incanters_ward_AuraScript();
+        }
+};
+
+// Ice Ward - 111397
+class spell_mage_ice_ward : public SpellScriptLoader
+{
+    public:
+        spell_mage_ice_ward() : SpellScriptLoader("spell_mage_ice_ward") { }
+
+        class spell_mage_ice_ward_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_ice_ward_AuraScript);
+
+            void OnProc(AuraEffect const* p_AurEff, ProcEventInfo& p_EventInfo)
+            {
+                PreventDefaultAction();
+
+                if (Unit* l_Caster = GetUnitOwner())
+                {
+                    if (Unit* l_Target = p_EventInfo.GetDamageInfo()->GetAttacker())
+                    {
+
+                        l_Caster->CastSpell(l_Caster, SPELL_MAGE_ICE_WARD_FREEZE, true);
+                        l_Caster->RemoveAura(SPELL_MAGE_ICE_WARD);
+                    }
+                }
+            }
+
+            void Register() override
+            {
+                OnEffectProc += AuraEffectProcFn(spell_mage_ice_ward_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const override
+        {
+            return new spell_mage_ice_ward_AuraScript();
         }
 };
 
@@ -2311,6 +2350,7 @@ void AddSC_mage_spell_scripts()
     new spell_mage_incanters_absorbtion_absorb();
     new spell_mage_incanters_absorbtion_manashield();
     new spell_mage_living_bomb();
+	new spell_mage_ice_ward();
     new spell_mage_blizzard();
     new spell_mage_illusion();
     new spell_mage_blink();
