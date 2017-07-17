@@ -9282,13 +9282,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
                       case 403: triggered_spell_id = 45284; break;
                       case 421:  triggered_spell_id = 45297; break;
                       case 51505: triggered_spell_id = 77451; break;
-                      case 117014:
-                      {
-                          triggered_spell_id = 120588;
-                          CastSpell(this, 118517, true);
-                          CastSpell(this, 118515, true);
-                      }
-                      break;
+                      case 117014: triggered_spell_id = 120588; break;
                         default: 
                             return false;
                     }
