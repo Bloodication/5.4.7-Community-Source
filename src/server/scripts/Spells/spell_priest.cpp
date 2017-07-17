@@ -128,6 +128,7 @@ enum PriestSpells
     PRIEST_NPC_VOID_TENDRILS                        = 65282,
     PRIEST_NPC_PSYFIEND                             = 59190,
     PRIEST_SPELL_SPECTRAL_GUISE_CHARGES             = 119030,
+	PRIEST_SPELL_SPECTRAL_GUISE                     = 119032,
     PRIEST_SPELL_POWER_WORD_SHIELD                  = 17,
     PRIEST_SPELL_POWER_WORD_SHIELD_DIVINE_INSIGHT   = 123258,
     PRIEST_SPELL_POWER_WORD_FORTITUDE               = 21562,
@@ -250,14 +251,21 @@ class spell_pri_spectral_guise_charges: public SpellScriptLoader
 
                 if (eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE || eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
                     if (Aura* spectralGuiseCharges = spectralGuise->GetAura(PRIEST_SPELL_SPECTRAL_GUISE_CHARGES))
-                        spectralGuiseCharges->DropCharge();
+						spectralGuiseCharges->DropCharge();
             }
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
-                    if (caster->ToCreature())
-                        caster->ToCreature()->DespawnOrUnsummon();
+				{
+					if (caster->ToCreature())
+						caster->ToCreature()->DespawnOrUnsummon();
+					
+					if (Unit* owner = caster->ToTempSummon()->GetSummoner())
+						if (owner->HasAura(PRIEST_SPELL_SPECTRAL_GUISE))
+							owner->RemoveAura(PRIEST_SPELL_SPECTRAL_GUISE);
+				}
+				
             }
 
             void Register()
