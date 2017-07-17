@@ -10054,6 +10054,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
                     break;
                 case 146962: // Glyph of Havoc
+					spellInfo->ProcCharges = 6;
                     spellInfo->Effects[0].MiscValue = SPELLMOD_CHARGES;
                     break;
                 case 114108:
