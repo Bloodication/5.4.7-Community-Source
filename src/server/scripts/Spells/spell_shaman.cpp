@@ -2439,15 +2439,21 @@ class spell_sha_lava_burst : public SpellScriptLoader
                         _player->ReduceSpellCooldown(114052, 1000);
                     }
                     
-                    /// Fix for Lava Surge if proc while player is casting - 77762
-                    if (_player->HasAura(SPELL_SHA_LAVA_SURGE))
+            void HandleAfterCast()
+            {
+                if (!GetCaster())
+                    return;
+
+                if (Player* _caster = GetCaster()->ToPlayer())
+                {
+                    if (_caster->HasAura(SHAMAN_SPELL_LAVA_SURGE))
                     {
-                        if (_player->HasSpellCooldown(SPELL_SHA_LAVA_BURST))
-                            _player->RemoveSpellCooldown(SPELL_SHA_LAVA_BURST, true);
+                        if (_caster->HasSpellCooldown(SHAMAN_SPELL_LAVA_BURST))
+                            _caster->RemoveSpellCooldown(SHAMAN_SPELL_LAVA_BURST, true);
                     }
                 }
             }
-            
+
             void HandleOnHit(SpellEffIndex /*effIndex*/)
             {
                 Unit* target = GetHitUnit();
@@ -2461,6 +2467,7 @@ class spell_sha_lava_burst : public SpellScriptLoader
             {
                 OnEffectHitTarget += SpellEffectFn(spell_sha_lava_burst_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
                 AfterHit += SpellHitFn(spell_sha_lava_burst_SpellScript::HandleAfterHit);
+                AfterCast += SpellCastFn(spell_sha_lava_burst_SpellScript::HandleAfterCast);
             }
         };
 
