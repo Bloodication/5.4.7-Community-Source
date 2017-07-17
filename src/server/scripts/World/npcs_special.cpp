@@ -3747,15 +3747,14 @@ class npc_lightning_elemental : public CreatureScript
 
         enum eSpells
         {
-         SPELL_SHA_LIGHTNING_BOLT = 138018,
-		 SPELL_SHA_LIGHTNING_COS1 = 140753,
-		 SPELL_SHA_LIGHTNING_COS2 = 136731,
+             SPELL_SHA_LIGHTNING_BOLT = 138018,
+		     SPELL_SHA_LIGHTNING_COS1 = 140753,
+		     SPELL_SHA_LIGHTNING_COS2 = 136731,
         };
 
         struct npc_lightning_elementalAI : CasterAI
         {
-            npc_lightning_elementalAI(Creature* creature) :
-            CasterAI(creature)
+            npc_lightning_elementalAI(Creature* creature) : CasterAI(creature)
             {
             }
 
@@ -3802,7 +3801,7 @@ class npc_lightning_elemental : public CreatureScript
 
                 eSpells l_Spell = eSpells::SPELL_SHA_LIGHTNING_BOLT;
                 
-                events.ScheduleEvent(l_Spell, 0); ///< Schedule cast
+                events.ScheduleEvent(l_Spell, 1000); ///< Schedule cast
                 me->GetMotionMaster()->Clear(false);
             }
 
