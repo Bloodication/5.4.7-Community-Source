@@ -3670,6 +3670,77 @@ class spell_item_multistrike_heal : public SpellScriptLoader
         }
 };
 
+enum LegendaryGemStackSpells
+{
+    SPELL_LIGHTNING_STRIKE_AURA              = 137595,  // Lightning Strike Charges Trigger
+    SPELL_LIGHTNING_STRIKE_STACK             = 137596,
+    SPELL_LIGHTNING_STRIKE_TRIGGER           = 137597,
+};
+
+class spell_item_legendary_gem_stack : public SpellScriptLoader
+{
+public:
+    spell_item_legendary_gem_stack(char const* scriptName, uint32 stackSpell, uint32 triggerSpell) : SpellScriptLoader(scriptName),
+        _stackSpell(stackSpell), _triggerSpell(triggerSpell)
+    {
+    }
+
+    class spell_item_legendary_gem_stack_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_item_legendary_gem_stack_AuraScript);
+
+    public:
+        spell_item_legendary_gem_stack_AuraScript(uint32 stackSpell, uint32 triggerSpell) : _stackSpell(stackSpell), _triggerSpell(triggerSpell)
+        {
+        }
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            if (!sSpellMgr->GetSpellInfo(_stackSpell) || !sSpellMgr->GetSpellInfo(_triggerSpell))
+                return false;
+            return true;
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+
+            Unit* caster = eventInfo.GetActor();
+
+            caster->CastSpell(caster, _stackSpell, true, nullptr, aurEff); // cast the stack
+
+            Aura* dummy = caster->GetAura(_stackSpell); // retrieve aura
+
+            //dont do anything if it's not the right amount of stacks;
+            if (!dummy || dummy->GetStackAmount() < aurEff->GetAmount())
+                return;
+
+            // if right amount, remove the aura and cast real trigger
+            caster->RemoveAurasDueToSpell(_stackSpell);
+            if (Unit* target = eventInfo.GetActionTarget())
+                caster->CastSpell(target, _triggerSpell, true, nullptr, aurEff);
+        }
+
+        void Register() override
+        {
+            OnEffectProc += AuraEffectProcFn(spell_item_legendary_gem_stack_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+        }
+
+    private:
+        uint32 _stackSpell;
+        uint32 _triggerSpell;
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_item_legendary_gem_stack_AuraScript(_stackSpell, _triggerSpell);
+    }
+
+private:
+    uint32 _stackSpell;
+    uint32 _triggerSpell;
+};
+
 void AddSC_item_spell_scripts()
 {
     new spell_item_eye_of_the_black_prince();
@@ -3751,4 +3822,5 @@ void AddSC_item_spell_scripts()
     new spell_item_juggernault_focusing_crystal();
     new spell_item_multistrike();
     new spell_item_multistrike_heal();
+    new spell_item_legendary_gem_stack("spell_item_capacitive_primal_diamond", SPELL_LIGHTNING_STRIKE_STACK, SPELL_LIGHTNING_STRIKE_TRIGGER);
 }
