@@ -6006,8 +6006,11 @@ public:
                     if (target && target->IsValidAttackTarget(caster))
                     {
                         me->AI()->AttackStart(target);
-                        me->CastSpell(target, SPELL_DRUID_TREANT_ENTANGLING_ROOTS, true);
-						me->CastSpell(target, SPELL_DRUID_TREANT_RAKE, true);
+						if (!target->HasAura(SPELL_DRUID_TREANT_ENTANGLING_ROOTS) || !target->HasAura(SPELL_DRUID_TREANT_RAKE))
+						{
+							me->CastSpell(target, SPELL_DRUID_TREANT_ENTANGLING_ROOTS, true);
+							me->CastSpell(target, SPELL_DRUID_TREANT_RAKE, true);
+						}	
                     }
 
                     mustCacAttack = true;
