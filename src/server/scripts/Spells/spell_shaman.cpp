@@ -109,7 +109,49 @@ enum ShamanSpells
     SPELL_SHA_ELEMENTAL_FAMILIAR            = 148118,
     SPELL_SHA_T15_ENCH_SET_2P_BONUS         = 138136,
     SPELL_SHA_T15_ELEM_SET_4P_BONUS         = 138144,
-    SPELL_SHA_ELE_BLAST_MASTERY             = 120588
+    SPELL_SHA_ELE_BLAST_MASTERY             = 120588,
+    SPELL_SHA_FLAME_SHOCK                   = 8050,
+    SHAMAN_SHA_ITEM_T16_4P                  = 144966
+};
+
+// Called by SHAMAN_SHA_ITEM_T16_4P
+class spell_sha_flame_shock : public SpellScriptLoader
+{
+    public:
+        spell_sha_flame_shock() : SpellScriptLoader("spell_sha_flame_shock") { }
+        
+        class spell_sha_flame_shock_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_flame_shock_SpellScript);
+            
+            void OnTick(AuraEffect const* aurEff)
+            {
+				if (!GetCaster())
+					return;
+
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+                    _player->HasAura(SPELL_SHA_ITEM_T16_4P)
+                    {
+					    if (roll_chance_i(5))
+					    {
+						_player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        _player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        _player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        _player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        _player->AddAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE, _player);
+                        
+						if (_player->HasSpellCooldown(SPELL_SHA_LAVA_LASH))
+                                _player->RemoveSpellCooldown(SPELL_SHA_LAVA_LASH, true);
+					    }
+                    }
+                }
+            }
+        
+            void Register()
+                {
+                    OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_flame_shock_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                }
 };
 
 // Totemic Projection - 108287
@@ -2698,4 +2740,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_glyph_of_elemental_familiars();
     new spell_sha_stormstrike();
     new spell_sha_elemental_blast_mastery();
+    new spell_flame_shock();
 }
