@@ -5913,7 +5913,7 @@ class npc_force_of_nature : public CreatureScript
                         return;
 
                     case ENTRY_TREANT_BALANCE:
-                        if (Unit* target = me->getVictim())
+                        if (Unit* target = caster->ToPlayer()->GetSelectedUnit())
                             me->CastSpell(target, 113769, false);
                         break;
 
