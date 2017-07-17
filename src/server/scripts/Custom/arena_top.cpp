@@ -50,7 +50,7 @@ public:
 					uint32 playerrating = fields[0].GetUInt32();
 					uint32 playerguid = fields[1].GetUInt32();
 					char msg[250];
-					snprintf(msg, 250, "[Name: POTATO, Rating: %u]", playerrating);
+					snprintf(msg, 250, "[Name: %s, Rating: %u]", ObjectAccessor::FindPlayer(playerguid)->GetName().c_str(), playerrating);
 					player->ADD_GOSSIP_ITEM(7, msg, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + playerguid);
 					player->SEND_GOSSIP_MENU(creature->GetEntry(), creature->GetGUID());
 					
