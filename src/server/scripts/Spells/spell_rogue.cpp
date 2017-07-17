@@ -1830,7 +1830,7 @@ class spell_rog_find_weakness : public SpellScriptLoader
         }
 };
 
-/* Glyph of Detection - 125044
+//Glyph of Detection - 125044
 class spell_rog_glyph_of_detection : public SpellScriptLoader
 {
     public:
