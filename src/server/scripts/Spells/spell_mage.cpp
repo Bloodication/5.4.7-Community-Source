@@ -530,9 +530,18 @@ class spell_mage_ice_ward : public SpellScriptLoader
                 {
                     if (Unit* l_Target = p_EventInfo.GetDamageInfo()->GetAttacker())
                     {
+						if (l_Caster->HasAura(SPELL_MAGE_ICE_WARD))
+						{
+							//l_Caster->CastSpell(l_Caster, SPELL_MAGE_ICE_WARD_FREEZE, true);
+							//l_Caster->RemoveAura(SPELL_MAGE_ICE_WARD);
+							
+							// Ice Ward doesn't proc on pets/guardians and such
+							if (l_Target->IsPetGuardianStuff())
+								return;
 
-                        l_Caster->CastSpell(l_Caster, SPELL_MAGE_ICE_WARD_FREEZE, true);
-                        l_Caster->RemoveAura(SPELL_MAGE_ICE_WARD);
+							l_Caster->CastSpell(l_Caster, SPELL_MAGE_ICE_WARD_FREEZE, true);
+							p_AurEff->GetBase()->DropCharge();
+						}
                     }
                 }
             }
