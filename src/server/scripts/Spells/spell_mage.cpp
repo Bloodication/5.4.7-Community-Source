@@ -995,18 +995,26 @@ class spell_mage_blazing_speed : public SpellScriptLoader
         class spell_mage_blazing_speed_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_mage_blazing_speed_SpellScript);
+            
+              SpellCastResult CheckCast()
+              {
+                Unit* _Caster = GetCaster();
 
+                if (_Caster->HasAuraType(SPELL_AURA_MOD_STUN))
+                    return SPELL_FAILED_STUNNED;
+
+                return SPELL_CAST_OK;
+              }
+              
             void HandleOnHit()
-            {
-                if (GetCaster()->isInStun())
-                    return;
-                    
+            {   
                 if (Player* _player = GetCaster()->ToPlayer())
                     _player->RemoveMovementImpairingAuras();
             }
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_mage_blink_SpellScript::CheckCast);
                 OnHit += SpellHitFn(spell_mage_blazing_speed_SpellScript::HandleOnHit);
             }
         };
