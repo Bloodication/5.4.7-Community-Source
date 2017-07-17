@@ -2448,10 +2448,10 @@ class spell_sha_lava_burst : public SpellScriptLoader
 
                 if (Player* _caster = GetCaster()->ToPlayer())
                 {
-                    if (_caster->HasAura(SHAMAN_SPELL_LAVA_SURGE))
+                    if (_caster->HasAura(SPELL_SHA_LAVA_SURGE))
                     {
-                        if (_caster->HasSpellCooldown(SHAMAN_SPELL_LAVA_BURST))
-                            _caster->RemoveSpellCooldown(SHAMAN_SPELL_LAVA_BURST, true);
+                        if (_caster->HasSpellCooldown(SPELL_SHA_LAVA_BURST))
+                            _caster->RemoveSpellCooldown(SPELL_SHA_LAVA_BURST, true);
                     }
                 }
             }
