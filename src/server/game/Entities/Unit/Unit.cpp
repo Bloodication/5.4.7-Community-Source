@@ -7525,6 +7525,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
 					
 					triggered_spell_id = 137143;
 					target = this;
+					break;
 				}
                 case 12846: // Mastery: Ignite
                 {
