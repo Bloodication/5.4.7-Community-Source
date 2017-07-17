@@ -2480,7 +2480,25 @@ class spell_warl_ember_tap : public SpellScriptLoader
         class spell_warl_ember_tap_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_warl_ember_tap_SpellScript);
-
+            
+            enum eSpells
+             {
+                Hex               = 51514
+             };
+             
+             SpellCastResult CheckCast()
+            {
+                if (Unit* l_Caster = GetCaster())
+                {
+                    if (l_Caster->HasAura(Hex))
+                        return SPELL_FAILED_SILENCED;
+                    else
+                        return SPELL_CAST_OK;
+                }
+                else
+                    return SPELL_FAILED_SUCCESS;
+            }
+            
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
