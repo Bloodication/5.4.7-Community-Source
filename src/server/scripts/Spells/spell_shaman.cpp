@@ -114,7 +114,7 @@ enum ShamanSpells
     SHAMAN_SHA_ITEM_T16_2P                  = 144962
 };
 
-// Called by SHAMAN_SHA_ITEM_T16_4P
+/* Called by SHAMAN_SHA_ITEM_T16_4P
 class spell_sha_flame_shock : public SpellScriptLoader
 {
     public:
@@ -153,6 +153,7 @@ class spell_sha_flame_shock : public SpellScriptLoader
                     OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_flame_shock_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
                 }
 };
+*/
 
 // Totemic Projection - 108287
 class spell_sha_totemic_projection : public SpellScriptLoader
@@ -2740,5 +2741,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_glyph_of_elemental_familiars();
     new spell_sha_stormstrike();
     new spell_sha_elemental_blast_mastery();
-    new spell_sha_flame_shock();
+    /*new spell_sha_flame_shock();*/
 }
