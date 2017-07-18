@@ -47,13 +47,20 @@ public:
 				do
 				{
 					fields = result->Fetch();
-					uint32 playerrating = fields[0].GetUInt32();
+                    uint32 playerrating = fields[0].GetUInt32();
                     uint32 playerguid = fields[1].GetUInt32();
-					Player* player = ObjectAccessor::FindPlayer(playerguid);
+                    QueryResult result1 = CharacterDatabase.PQuery("SELECT name FROM characters WHERE guid = %u", playerguid);
+
+                    if (!result1)
+                        return false;
+
+                    Field * playerFeild = result1->Fetch();
+                    std::string playerName = playerFeild[2].GetString();
+
                     char msg[250];
-                    snprintf(msg, 250, "[Name: %s, Rating: %u]", player->GetSession()->GetPlayerName().c_str() , playerrating);
-					player->ADD_GOSSIP_ITEM(7, msg, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + playerguid);
-					player->SEND_GOSSIP_MENU(creature->GetEntry(), creature->GetGUID());
+                    snprintf(msg, 250, "[Name: %s, Rating: %u]", playerName, playerrating);
+                    player->ADD_GOSSIP_ITEM(7, msg, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + playerguid);
+                    player->SEND_GOSSIP_MENU(creature->GetEntry(), creature->GetGUID());
 					
 				} while (result->NextRow());
 
