@@ -5441,6 +5441,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ProcFlags = 0;
                     spellInfo->ProcCharges = 1;
                     break;
+				case 119403: ///< Glyph of Explosive Trap
+					spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+					break;
+				case 149575: ///< Explosive Trap (knock back)
+					spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
+					spellInfo->Effects[1].TargetA = TARGET_DEST_DEST;
+					break;
+				case 13813:  ///< Explosive Trap
+					spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8); ///< 5 yards
+					break;
                 case 53301: // Explosive Shot
                     spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_DUMMY;

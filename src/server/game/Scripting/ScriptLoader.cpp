@@ -36,6 +36,7 @@ void AddSC_Title_gossip_codebox();
 void AddSC_proff_npc();
 void AddSC_SpellRegulator();
 void AddSC_Skirmish_npc();
+void AddSC_Rating_Vendor();
 
 // BG
 void AddSC_BattlegroundDGScripts();
@@ -1852,6 +1853,7 @@ void AddCustomScripts()
 #ifdef SCRIPTS
     AddSC_event_april();
     AddSC_teleguy();
+	AddSC_Rating_Vendor();
     AddSC_petguy();
     AddSC_arena_spectator_script();
     AddSC_transmogrify_script();

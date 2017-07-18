@@ -30,6 +30,7 @@ set(scripts_STAT_SRCS
 	Custom/transmog_vendor.cpp
 	Custom/Skirmish_npc.cpp
 	Custom/arena_top.cpp
+	Custom/rating_requirement_vendor.cpp
 )
 
 message("  -> Prepared: Custom")
