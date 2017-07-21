@@ -2252,7 +2252,7 @@ class npc_new_lightwell : public CreatureScript
         {
             npc_new_lightwellAI(Creature* creature) : PassiveAI(creature)
             {
-                me->CastSpell(me, 126150, true);
+                me->CastSpell(me, 59907, true);
                 renewTimer = 1000;
                 stacks = false;
 				me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_OBS_MOD_HEALTH, true);
@@ -2282,7 +2282,7 @@ class npc_new_lightwell : public CreatureScript
             {
                 if (!stacks)
                 {
-                    if (Aura* charges = me->GetAura(126150))
+                    if (Aura* charges = me->GetAura(59907))
                     {
                         if (me->ToTempSummon())
                         {
