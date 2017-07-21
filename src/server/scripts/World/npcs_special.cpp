@@ -2289,10 +2289,10 @@ class npc_new_lightwell : public CreatureScript
                             if (Unit* owner = me->ToTempSummon()->GetSummoner())
                             {
                                 stacks = true;
-                                charges->ModStackAmount(15);
+                                charges->SetCharges(15);
                                 // Glyph of Deep Well
                                 if (owner->HasAura(55673))
-                                    charges->ModStackAmount(17);
+                                    charges->SetCharges(17);
                            }
                         }
                     }
