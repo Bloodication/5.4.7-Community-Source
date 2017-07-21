@@ -5219,10 +5219,22 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 59907: // Lightwell Charges
                     spellInfo->Effects[0].BasePoints = 15;
                     spellInfo->ProcCharges = 15;
+					spellInfo->AttributesEx2 |= SpellAttr2::SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+					spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     break;
                 case 126135:// Lightwell
                     spellInfo->OverrideSpellList.push_back(724); // Add old Lightwell to override list
+					spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+					spellInfo->AttributesEx2 |= SpellAttr2::SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     break;
+				case 126154:// Lightwell Renew
+					spellInfo->AttributesEx2 |= SpellAttr2::SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+					spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+					break;
+				case 60123:// Lightwell 2
+					spellInfo->AttributesEx2 &= SpellAttr2::SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+					spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+					break;
                 case 81751: // Atonement
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
                     spellInfo->Effects[0].TargetB = 0;
@@ -5517,6 +5529,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 44544: // Fingers of Frost
                     spellInfo->StackAmount = 2;
                     break;
+				case 113506:
+					spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
+					break;
                 case 85222:  // Light of Dawn
                 case 117640: // Spinning Crane Kick (Heal)
                     spellInfo->MaxAffectedTargets = 6;

@@ -2267,12 +2267,6 @@ class npc_new_lightwell : public CreatureScript
 
             uint32 renewTimer;
             bool stacks;
-
-			void Reset()
-            {
-                //me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-                me->setFaction(35);
-            }
 			
             void EnterEvadeMode()
             {
