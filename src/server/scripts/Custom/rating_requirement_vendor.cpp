@@ -49,7 +49,7 @@ public:
 				{
 					ChatHandler(player->GetSession()).PSendSysMessage("You have used the vendor and can now not use it on any other character.");
 					player->PlayerTalkClass->ClearMenus();
-					SendVendor(player, creature->GetGUID());
+					//SendVendor(player, creature->GetGUID());
 					
 				}
 				else
