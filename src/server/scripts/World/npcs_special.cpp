@@ -5813,7 +5813,7 @@ class npc_force_of_nature : public CreatureScript
                 switch (me->GetEntry())
                 {
                     case ENTRY_TREANT_GUARDIAN:
-                        me->CastSpell(p_Target, 113830, true); // Taunt
+						me->CastSpell(p_Target, 113830, true); // Taunt
                         break;
 
                     case ENTRY_TREANT_FERAL:
@@ -5904,6 +5904,8 @@ class npc_force_of_nature : public CreatureScript
                 {         
                     case ENTRY_TREANT_RESTO:
                         me->CastSpell(me, 113828);
+						if (Unit* target = caster->ToPlayer()->GetSelectedUnit())
+							AttackStart(target);
                         return;
 
                     case ENTRY_TREANT_BALANCE:
