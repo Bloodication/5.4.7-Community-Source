@@ -2562,8 +2562,12 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 
         // Chakra : Serenity - 81208
         if (caster && addhealth && m_spellInfo->Effects[0].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY && m_spellInfo->Effects[0].TargetB.GetTarget() == 0 && caster->HasAura(81208)) // Single heal target
-            if (Aura* renew = unitTarget->GetAura(139, caster->GetGUID()))
-                renew->RefreshDuration();
+            if (caster->HasAura(42411))
+				(Aura* renew = unitTarget->GetAura(139, caster->GetGUID()))
+					renew->SetDuration(12000);
+			
+			else (Aura* renew = unitTarget->GetAura(139, caster->GetGUID()))
+					renew->RefreshDuration();
 
         // Mogu'Shan Vault
         if (caster && (caster->HasAura(116161) || unitTarget->HasAura(116161))) // SPELL_CROSSED_OVER
