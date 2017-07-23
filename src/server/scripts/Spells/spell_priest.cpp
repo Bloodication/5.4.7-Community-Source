@@ -1462,8 +1462,11 @@ class spell_pri_spirit_shell : public SpellScriptLoader
             
             void HandleOnCast()
             {
-                if (_player->HasAura(PRIEST_SPELL_4P_T16_AURA))
-					_player->CastSpell(_player, PRIEST_SPELL_4P_T16_DISC_BUFF, true);
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+					if (_player->HasAura(PRIEST_SPELL_4P_T16_AURA))
+						_player->CastSpell(_player, PRIEST_SPELL_4P_T16_DISC_BUFF, true);
+				}
             }
             
             void Register()

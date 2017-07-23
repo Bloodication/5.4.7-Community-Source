@@ -392,6 +392,21 @@ class Map : public GridRefManager<NGridType>
 
         void SetZoneMusic(uint32 zoneId, uint32 musicId);
 
+		GridMap* GetGrid(float x, float y)
+		{
+			// Half opt method
+			int gx = (int)(CENTER_GRID_ID - x / SIZE_OF_GRIDS);                       // Grid x
+			int gy = (int)(CENTER_GRID_ID - y / SIZE_OF_GRIDS);                       // Grid y
+
+			if (gx >= MAX_NUMBER_OF_GRIDS || gy >= MAX_NUMBER_OF_GRIDS || gx < 0 || gy < 0)
+				return NULL;
+
+			// Ensure GridMap is loaded
+			EnsureGridCreated(GridCoord((MAX_NUMBER_OF_GRIDS - 1) - gx, (MAX_NUMBER_OF_GRIDS - 1) - gy));
+
+			return GridMaps[gx][gy];
+		}
+
         void AddObjectToRemoveList(WorldObject* obj);
         void AddObjectToSwitchList(WorldObject* obj, bool on);
         virtual void DelayedUpdate(const uint32 diff);
@@ -551,7 +566,7 @@ class Map : public GridRefManager<NGridType>
         void LoadMapAndVMap(int gx, int gy);
         void LoadVMap(int gx, int gy);
         void LoadMap(int gx, int gy, bool reload = false);
-        GridMap* GetGrid(float x, float y);
+		void LoadMMap(int gx, int gy);
 
         void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
 
