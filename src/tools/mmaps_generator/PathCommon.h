@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
+ * Free Software Foundation; either version 3 of the License, or (at your
  * option) any later version.
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
@@ -26,21 +25,21 @@
 #include "Define.h"
 
 #ifndef _WIN32
-#include <stddef.h>
-#include <dirent.h>
+    #include <stddef.h>
+    #include <dirent.h>
 #endif
 
 #ifdef __linux__
-#include <errno.h>
+    #include <errno.h>
 #endif
 
 enum NavTerrain
 {
-    NAV_EMPTY = 0x00,
-    NAV_GROUND = 0x01,
-    NAV_MAGMA = 0x02,
-    NAV_SLIME = 0x04,
-    NAV_WATER = 0x08,
+    NAV_EMPTY   = 0x00,
+    NAV_GROUND  = 0x01,
+    NAV_MAGMA   = 0x02,
+    NAV_SLIME   = 0x04,
+    NAV_WATER   = 0x08,
     NAV_UNUSED1 = 0x10,
     NAV_UNUSED2 = 0x20,
     NAV_UNUSED3 = 0x40,
@@ -50,39 +49,6 @@ enum NavTerrain
 
 namespace MMAP
 {
-    struct OffMeshConnection
-    {
-        OffMeshConnection() {}
-
-        OffMeshConnection(uint32 mapID, uint32 tileX, uint32 tileY, float startX, float startY, float startZ,
-                          float endX, float endY, float endZ, uint32 agentSize)
-        {
-            m_mapID = mapID;
-            m_tileX = tileX;
-            m_tileY = tileY;
-            m_start[0] = startX;
-            m_start[1] = startY;
-            m_start[2] = startZ;
-            m_end[0] = endX;
-            m_end[1] = endY;
-            m_end[2] = endZ;
-            m_agentSize = agentSize;
-        }
-
-        uint32 m_mapID;
-        uint32 m_tileX;
-        uint32 m_tileY;
-        float m_start[3];
-        float m_end[3];
-        uint32 m_agentSize;
-    };
-
-    static const std::vector<OffMeshConnection> DefaultOffMeshConnections =
-    {
-        { 562, 31, 20, 6230.59f, 251.90f, 11.19f, 6234.70f, 257.03f, 11.07f, 1 },
-        { 562, 31, 20, 6246.68f, 271.90f, 11.23f, 6242.68f, 267.07f, 11.09f, 1 }
-    };
-
     inline bool matchWildcardFilter(const char* filter, const char* str)
     {
         if (!filter || !str)
@@ -123,7 +89,7 @@ namespace MMAP
 
     inline ListFilesResult getDirContents(std::vector<std::string> &fileList, std::string dirpath = ".", std::string filter = "*")
     {
-#ifdef WIN32
+    #ifdef WIN32
         HANDLE hFind;
         WIN32_FIND_DATA findFileInfo;
         std::string directory;
@@ -138,14 +104,16 @@ namespace MMAP
         {
             if ((findFileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
                 fileList.push_back(std::string(findFileInfo.cFileName));
-        } while (FindNextFile(hFind, &findFileInfo));
+        }
+        while (FindNextFile(hFind, &findFileInfo));
 
         FindClose(hFind);
 
-#else
+    #else
         const char *p = dirpath.c_str();
         DIR * dirp = opendir(p);
         struct dirent * dp;
+        dirp = opendir(p);
 
         while (dirp)
         {
@@ -163,7 +131,7 @@ namespace MMAP
             closedir(dirp);
         else
             return LISTFILE_DIRECTORY_NOT_FOUND;
-#endif
+    #endif
 
         return LISTFILE_OK;
     }
