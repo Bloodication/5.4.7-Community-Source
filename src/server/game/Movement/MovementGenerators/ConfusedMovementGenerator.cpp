@@ -22,6 +22,7 @@
 #include "VMapFactory.h"
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
+#include "PathGenerator.h"
 #include "Player.h"
 
 #ifdef MAP_BASED_RAND_GEN
@@ -125,32 +126,36 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
             i_nextMoveTime.Reset(urand(500, 1200)); // Guessed
         }
     }
-    else
-    {
-        // waiting for next move
-        i_nextMoveTime.Update(diff);
-        if (i_nextMoveTime.Passed())
-        {
-            // start moving
-            unit.AddUnitState(UNIT_STATE_CONFUSED_MOVE);
+	else
+	{
+		// Waiting for next move
+		i_nextMoveTime.Update(diff);
+		if (i_nextMoveTime.Passed())
+		{
+			// Start moving
+			unit.AddUnitState(UNIT_STATE_CONFUSED_MOVE);
 
-            if (unit.HasUnitState(UNIT_STATE_RECAL_CONFUSE))
-            {
-                Initialize(unit);
-                unit.ClearUnitState(UNIT_STATE_RECAL_CONFUSE);
-            }
+			float dest = 2.0f * (float)rand_norm() - 2.0f;
 
-            ASSERT(i_nextMove <= MAX_CONF_WAYPOINTS);
-            float x = i_waypoints[i_nextMove][0];
-            float y = i_waypoints[i_nextMove][1];
-            float z = i_waypoints[i_nextMove][2];
+			Position pos;
+			pos.Relocate(i_x, i_y, i_z);
+			unit.MovePositionToFirstCollision(pos, dest, 0.0f);
 
-            Movement::MoveSplineInit init(unit);
-            init.MoveTo(x, y, z);
-            init.SetWalk(true);
-            init.Launch();
-        }
-    }
+			PathGenerator path(&unit);
+			path.SetPathLengthLimit(30.0f);
+			bool result = path.CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+			if (!result || (path.GetPathType() & PATHFIND_NOPATH))
+			{
+				i_nextMoveTime.Reset(100);
+				return true;
+			}
+
+			Movement::MoveSplineInit init(unit);
+			init.MovebyPath(path.GetPath());
+			init.SetWalk(true);
+			init.Launch();
+		}
+	}
 
     return true;
 }
@@ -160,6 +165,7 @@ void ConfusedMovementGenerator<Player>::Finalize(Player &unit)
 {
     unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.ClearUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
+	unit.StopMoving();
 }
 
 template<>
