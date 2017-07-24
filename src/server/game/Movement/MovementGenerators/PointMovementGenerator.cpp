@@ -21,6 +21,8 @@
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "World.h"
+#include "MMapFactory.h"
+#include "Pathgenerator.h"
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 #include "Player.h"
@@ -30,52 +32,71 @@
 template<class T>
 void PointMovementGenerator<T>::Initialize(T &unit)
 {
-    if (!unit.IsStopped())
-        unit.StopMoving();
+	if (!&unit)
+		return;
 
-    unit.AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
-    i_recalculateSpeed = false;
-    Movement::MoveSplineInit init(unit);
-    init.MoveTo(i_x, i_y, i_z);
-    if (speed > 0.0f)
-        init.SetVelocity(speed);
-    init.Launch();
+	if (!unit.isAlive())
+		return;
+
+	if (!unit.IsStopped())
+		unit.StopMoving();
+
+	unit.AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
+
+	if (id == EVENT_CHARGE_PREPATH)
+		return;
+
+	Movement::MoveSplineInit init(unit);
+	init.MoveTo(i_x, i_y, i_z, m_generatePath);
+	if (speed > 0.0f)
+		init.SetVelocity(speed);
+	init.Launch();
 }
 
 template<class T>
 bool PointMovementGenerator<T>::Update(T &unit, const uint32 & /*diff*/)
 {
-    if (!&unit)
-        return false;
+	if (!&unit)
+		return false;
 
-    if (unit.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
-    {
-        unit.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
-        return true;
-    }
+	if (!unit.isAlive())
+		return false;
 
-    unit.AddUnitState(UNIT_STATE_ROAMING_MOVE);
+	if (unit.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
+	{
+		unit.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
+		return true;
+	}
 
-    if (i_recalculateSpeed && !unit.movespline->Finalized())
-    {
-        i_recalculateSpeed = false;
-        Movement::MoveSplineInit init(unit);
-        init.MoveTo(i_x, i_y, i_z);
-        if (speed > 0.0f) // Default value for point motion type is 0.0, if 0.0 spline will use GetSpeed on unit
-            init.SetVelocity(speed);
-        init.Launch();
-    }
+	unit.AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
-    return !unit.movespline->Finalized();
+	if (id != EVENT_CHARGE_PREPATH && i_recalculateSpeed && !unit.movespline->Finalized())
+	{
+		i_recalculateSpeed = false;
+
+		Movement::MoveSplineInit init(unit);
+		init.MoveTo(i_x, i_y, i_z, m_generatePath);
+		if (speed > 0.0f) // Default value for point motion type is 0.0, if 0.0 spline will use GetSpeed on unit
+			init.SetVelocity(speed);
+		init.Launch();
+	}
+
+	return !unit.movespline->Finalized();
 }
 
 template<class T>
 void PointMovementGenerator<T>::Finalize(T &unit)
 {
-    unit.ClearUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
+	if (!&unit)
+		return;
 
-    if (unit.movespline->Finalized())
-        MovementInform(unit);
+	if (unit.HasUnitState(UNIT_STATE_CHARGING))
+		unit.ClearUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
+
+	if (unit.movespline->Finalized())
+		MovementInform(unit);
+
+	unit.SetIsCharging(false);
 }
 
 template<class T>
@@ -102,29 +123,23 @@ void PointMovementGenerator<T>::MovementInform(T & /*unit*/)
 
 template <> void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
-    if (unit.AI())
-        unit.AddMovementInform(POINT_MOTION_TYPE, id);
+	if (!&unit)
+		return;
 
-    switch (id)
-    {
-        case BABY_ELEPHANT_TAKES_A_BATH:
-            unit.CastSpell(&unit, BABY_ELEPHANT_TAKES_A_BATH_2, true);
-            break;
-        default:
-            break;
-    }
+	if (!unit.isAlive())
+		return;
 
-    if (afterMovement)
-    {
-        switch (afterMovement->m_action)
-        {
-        case TRIGGER_AFTER_MOVEMENT_CAST:
-            if (Unit* target = sObjectAccessor->GetUnit(unit, afterMovement->m_target))
-                unit.CastSpell(target, afterMovement->m_data, true);
-            break;
-        }
-        afterMovement = nullptr;
-    }
+	if (unit.AI())
+		unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
+
+	switch (id)
+	{
+	case BABY_ELEPHANT_TAKES_A_BATH:
+		unit.CastSpell(unit, BABY_ELEPHANT_TAKES_A_BATH_2, true);
+		break;
+	default:
+		break;
+	}
 }
 
 template <> void PointMovementGenerator<Player>::MovementInform(Player& unit)
@@ -136,23 +151,6 @@ template <> void PointMovementGenerator<Player>::MovementInform(Player& unit)
             break;
         default:
             break;
-    }
-
-    if (afterMovement)
-    {
-        if (unit.IsInWorld())
-        {
-            switch (afterMovement->m_action)
-            {
-            case TRIGGER_AFTER_MOVEMENT_CAST:
-                if (Unit* target = sObjectAccessor->GetUnit(unit, afterMovement->m_target))
-                    if (target->IsInWorld())
-                        unit.CastSpell(target, afterMovement->m_data, true);
-                break;
-            }
-        }
-
-        afterMovement = nullptr;
     }
 }
 
@@ -167,6 +165,12 @@ template bool PointMovementGenerator<Creature>::Update(Creature&, const uint32 &
 
 void AssistanceMovementGenerator::Finalize(Unit &unit)
 {
+	if (!&unit)
+		return;
+
+	if (!unit.isAlive())
+		return;
+
     unit.ToCreature()->SetNoCallAssistance(false);
     unit.ToCreature()->CallAssistance();
     if (unit.isAlive())
@@ -175,41 +179,38 @@ void AssistanceMovementGenerator::Finalize(Unit &unit)
 
 bool EffectMovementGenerator::Update(Unit &unit, const uint32&)
 {
+	if (!&unit)
+		return false;
+
+	if (!unit.isAlive())
+		return false;
+
     return !unit.movespline->Finalized();
 }
 
 void EffectMovementGenerator::Finalize(Unit &unit)
 {
+	if (!&unit)
+		return;
+
     MovementInform(unit);
 }
 
 void EffectMovementGenerator::MovementInform(Unit &unit)
 {
-    if (unit.GetTypeId() == TYPEID_UNIT)
-    {
-        Creature* creature = unit.ToCreature();
+	if (unit.GetTypeId() == TYPEID_UNIT)
+	{
+		// We need to restore previous movement since we have no proper states system.
+		if (unit.isAlive() && !unit.HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_FLEEING))
+		{
+			if (Unit* victim = unit.getVictim())
+				unit.GetMotionMaster()->MoveChase(victim);
+			else
+				unit.GetMotionMaster()->Initialize();
+		}
 
-        if (creature->AI())
-            creature->AddMovementInform(EFFECT_MOTION_TYPE, m_Id);
-    }
-    else if (unit.GetTypeId() == TYPEID_PLAYER)
-    {
-    }
-
-    if (m_afterMovement)
-    {
-        if (unit.IsInWorld())
-        {
-            switch (m_afterMovement->m_action)
-            {
-                case TRIGGER_AFTER_MOVEMENT_CAST:
-                    if (Unit* target = sObjectAccessor->GetUnit(unit, m_afterMovement->m_target))
-                        if (target->IsInWorld())
-                            unit.CastSpell(target, m_afterMovement->m_data, true);
-                    break;
-            }
-        }
-
-        m_afterMovement = nullptr;
-    }
+		if (Creature* creature = unit.ToCreature())
+			if (creature->AI())
+				creature->AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
+	}
 }
