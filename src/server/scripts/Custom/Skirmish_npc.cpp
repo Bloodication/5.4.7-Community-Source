@@ -51,6 +51,13 @@ public:
         if (!bracketEntry)
             return false;
 
+		if (pPlayer->GetBattlegroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
+			//player is already in this queue
+			return false;
+		// check if has free queue slots
+		if (!pPlayer->HasFreeBattlegroundQueueId())
+			return false;
+		
         GroupJoinBattlegroundResult err = ERR_BATTLEGROUND_NONE;
 
         BattlegroundQueue &bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
