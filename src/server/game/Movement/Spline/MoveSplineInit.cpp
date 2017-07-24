@@ -113,10 +113,10 @@ namespace Movement
         //data.append<Vector3>(&spline.getPoint(1), count);
     }
 
-    void MoveSplineInit::Launch()
+    int32 MoveSplineInit::Launch()
     {
-        if (&unit == nullptr)
-            return;
+		if (&unit == nullptr)
+			return false;
 
         MoveSpline& move_spline = *unit.movespline;
 
@@ -138,8 +138,8 @@ namespace Movement
             real_position = move_spline.ComputePosition();
 
         // should i do the things that user should do? - no.
-        if (args.path.empty())
-            return;
+		if (args.path.empty())
+			return false;
 
         // correct first vertex
         args.path[0] = real_position;
