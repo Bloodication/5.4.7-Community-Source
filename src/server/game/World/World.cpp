@@ -30,6 +30,7 @@
 #include "WorldSession.h"
 #include "WorldPacket.h"
 #include "Player.h"
+#include "MMapFactory.h"
 #include "Vehicle.h"
 #include "SkillExtraItems.h"
 #include "SkillDiscovery.h"
@@ -158,6 +159,7 @@ World::~World()
         delete command;
 
     VMAP::VMapFactory::clear();
+	MMAP::MMapFactory::clear();
 
     //TODO free addSessQueue
 }
@@ -1221,6 +1223,10 @@ void World::LoadConfigSettings(bool reload)
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Using DataDir %s", m_dataPath.c_str());
     }
 
+	m_bool_configs[CONFIG_ENABLE_MMAPS] = ConfigMgr::GetBoolDefault("mmap.enablePathFinding", false);
+	sLog->outInfo(LOG_FILTER_SERVER_LOADING, "WORLD: MMap data directory is: %smmaps", m_dataPath.c_str());
+	m_bool_configs[CONFIG_MMAPS_SPLINE_LOCKING] = ConfigMgr::GetBoolDefault("mmap.enableSplineLocking", false);
+
     m_bool_configs[CONFIG_VMAP_INDOOR_CHECK] = ConfigMgr::GetBoolDefault("vmap.enableIndoorCheck", 0);
     bool enableIndoor = ConfigMgr::GetBoolDefault("vmap.enableIndoorCheck", true);
     bool enableLOS = ConfigMgr::GetBoolDefault("vmap.enableLOS", true);
@@ -1233,7 +1239,6 @@ void World::LoadConfigSettings(bool reload)
 
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableHeightCalc(enableHeight);
-    //VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "VMap support included. LineOfSight:%i, getHeight:%i, indoorCheck:%i PetLOS:%i", enableLOS, enableHeight, enableIndoor, enablePetLOS);
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "VMap data directory is: %svmaps", m_dataPath.c_str());
 

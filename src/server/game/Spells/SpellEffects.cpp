@@ -2568,7 +2568,12 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 			{
 				renew->SetDuration(12000);
 			}
-		}else if (Aura* renew = unitTarget->GetAura(139, caster->GetGUID()))
+
+			/*if (Aura* renew = unitTarget->GetAura(139, caster->GetGUID()))
+			{
+				renew->SetDuration(9000);
+			}*/
+		} else if (Aura* renew = unitTarget->GetAura(139, caster->GetGUID()))
 					renew->RefreshDuration();
 
         // Mogu'Shan Vault

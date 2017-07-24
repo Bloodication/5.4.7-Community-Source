@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
+ * Free Software Foundation; either version 3 of the License, or (at your
  * option) any later version.
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
@@ -235,14 +234,14 @@ bool handleArgs(int argc, char** argv,
 int finish(const char* message, int returnValue)
 {
     printf("%s", message);
-    getchar(); // Wait for user input
+    getchar();
     return returnValue;
 }
 
 int main(int argc, char** argv)
 {
     int threads = 3, mapnum = -1;
-    float maxAngle = 70.0f;
+    float maxAngle = 60.0f;
     int tileX = -1, tileY = -1;
     bool skipLiquid = false,
          skipContinents = false,
