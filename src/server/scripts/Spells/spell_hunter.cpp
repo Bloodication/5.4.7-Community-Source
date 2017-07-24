@@ -2332,20 +2332,14 @@ public:
 
                     if (Unit* owner = trap->GetOwner())
                     {
-                        // Glyph of Exlosive Trap
+                        // Glyph of Explosive Trap
                         // For knockback effect, if we don't have a glyph we don't need to apply it
                         if (GetSpellInfo()->Id == 149575 && !owner->HasAura(119403))
                         {
                             targets.clear();
                             return;
                         }
-                        // For damage on launch effect, if have a glyph we don't need to damage
-                        else if (GetSpellInfo()->Id == 13812 && owner->HasAura(119403))
-                        {
-                            targets.clear();
-                            return;
-                        }
-
+                        
                         std::list<Unit*> targetsNew;
 
                         CellCoord p(JadeCore::ComputeCellCoord(trap->GetPositionX(), trap->GetPositionY()));
@@ -2382,11 +2376,22 @@ public:
                 }
             }
         }
+        
+        //Glyph of Explosive Trap - Remove damage if we have glyph
+        void HandlePeriodicDamage(SpellEffIndex /*p_EffIndex*/)
+        {
+             if (Unit* owner = trap->GetOwner())
+             {
+                if (Owner()->HasAura(119403))
+                    PreventHitAura();
+             }
+        }
 
         void Register()
         {
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_explotion_trap_targets_spell_script::CorrectTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_explotion_trap_targets_spell_script::CorrectTargets, EFFECT_2, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnEffectHitTarget += SpellEffectFn(spell_explotion_trap_targets_SpellScript::HandlePeriodicDamage, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
         }
     };
 
