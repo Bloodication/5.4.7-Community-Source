@@ -69,7 +69,6 @@ class PreparedResultSet
         bool NextRow();
         uint64 GetRowCount() const { return m_rowCount; }
         uint32 GetFieldCount() const { return m_fieldCount; }
-
         Field* Fetch() const
         {
             ASSERT(m_rowPosition < m_rowCount);
@@ -79,7 +78,7 @@ class PreparedResultSet
         Field const& operator[](uint32 index) const
         {
             ASSERT(m_rowPosition < m_rowCount);
-            ASSERT(index < m_fieldCount);
+            //ASSERT(index < m_fieldCount);
             return m_rows[uint32(m_rowPosition) * m_fieldCount + index];
         }
 

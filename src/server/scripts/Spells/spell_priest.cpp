@@ -2608,6 +2608,21 @@ class spell_priest_renew : public SpellScriptLoader
         class spell_priest_renew_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_priest_renew_AuraScript);
+            
+            // Glyph of Renew first application fix
+            void HandleAfterCast()
+            {
+                if (Unit* target = GetTarget())
+                {    
+                    if (_Player->HasAura(119872)) // Glyph of Renew
+                    {
+                        if (!target->HasAura(139, _player->GetGUID())) // Renew
+                        {
+                           renew->SetDuration(9000);
+			            }
+                    }
+                }
+            }
 
             void HandleApplyEffect(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
@@ -2628,6 +2643,7 @@ class spell_priest_renew : public SpellScriptLoader
             void Register()
             {
                 OnEffectApply += AuraEffectApplyFn(spell_priest_renew_AuraScript::HandleApplyEffect, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+                AfterCast += SpellCastFn(spell_priest_renew_SpellScript::HandleAfterCast);
             }
         };
 
