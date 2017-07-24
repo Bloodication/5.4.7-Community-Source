@@ -2340,6 +2340,14 @@ public:
                             return;
                         }
                         
+                        // For damage on launch effect, if have a glyph we don't need to damage
+                        else if (GetSpellInfo()->Id == 13812 && owner->HasAura(119403))
+                        {
+                            targets.clear();
+                            return;
+                        }
+
+                        
                         std::list<Unit*> targetsNew;
 
                         CellCoord p(JadeCore::ComputeCellCoord(trap->GetPositionX(), trap->GetPositionY()));
