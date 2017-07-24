@@ -2391,7 +2391,7 @@ public:
         {
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_explotion_trap_targets_spell_script::CorrectTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_explotion_trap_targets_spell_script::CorrectTargets, EFFECT_2, TARGET_UNIT_SRC_AREA_ENEMY);
-            OnEffectHitTarget += SpellEffectFn(spell_hun_explosive_trap_SpellScript::HandlePeriodicDamage, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
+            OnEffectHitTarget += SpellEffectFn(spell_explotion_trap_targets_SpellScript::HandlePeriodicDamage, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
         }
     };
 
