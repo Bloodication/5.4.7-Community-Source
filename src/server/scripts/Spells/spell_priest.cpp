@@ -142,12 +142,12 @@ enum PriestSpells
     PRIEST_GLYPH_OF_INNER_SANCTUM                   = 14771,
     PRIEST_GLYPH_OF_PRAYER_OF_MENDING               = 55685,
     PRIEST_SPELL_PRAYER_OF_MENDING                  = 41635,
-    PRIEST_SPELL_4P_T16_SHADOW                      = 145179,
+    PRIEST_SPELL_4P_T16_SHADOW                      = 145179, // Handled on Devouring Plague
     PRIEST_SPELL_EMPOWERED_SHADOWS                  = 145180, // Handled on Devouring Plague
-    PRIEST_SPELL_2P_T16_AURA                        = 145306, // Handled on Devouring Plague
+    PRIEST_SPELL_2P_T16_AURA                        = 145306, 
     PRIEST_SPELL_2P_T16_DISC_BUFF                   = 145330, // Handled on Archangel
-    PRIEST_SPELL_2P_T16_HOLY_BUFF                   = 145327, 
-    PRIEST_SPELL_4P_T16_AURA                        = 145334, // Handled on spell_T16
+    PRIEST_SPELL_2P_T16_HOLY_BUFF                   = 145327, // Handled on spell_T16
+    PRIEST_SPELL_4P_T16_AURA                        = 145334, 
     PRIEST_SPELL_4P_T16_DISC_BUFF                   = 145374, // Handled on spell_T16
     PRIEST_SPELL_4P_T16_HOLY_BUFF                   = 145336  // Handled on spell_T16
 };
