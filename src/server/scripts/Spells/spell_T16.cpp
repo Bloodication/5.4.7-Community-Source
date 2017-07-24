@@ -510,6 +510,44 @@ class spell_item_priest_t16_disc_4p : public SpellScriptLoader
         }
 };
 
+// Item - Priest T16 Discipline 2P Bonus - 145306
+// Serendipity - 63735
+class spell_item_priest_t16_holy_2p : public SpellScriptLoader
+{
+    public:
+        spell_item_priest_t16_holy_2p() : SpellScriptLoader("spell_item_priest_t16_holy_2p") { }
+
+        class spell_item_priest_t16_holy_2p_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_priest_t16_holy_2p_SpellScript);
+
+            void HandleAfterCast()
+            {    
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                   if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_PRIEST_HOLY)
+                   {
+                       if (_player->HasAura(145334))
+                       {
+                            if (_player->HasAura(63735))
+                                _player->CastSpell(_player, 145327, true);
+                       }
+                   }
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_item_priest_t16_holy_2p_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_priest_t16_holy_2p_SpellScript();
+        }
+};
+
 void AddSC_t16_spell_scripts()
 {
     new spell_item_paladin_t16_protection_2p();
@@ -524,6 +562,7 @@ void AddSC_t16_spell_scripts()
     new spell_item_rogue_t16_4p();
     new spell_item_hunter_t16_2p();
     new spell_item_hunter_t16_4p();
+    new spell_item_priest_t16_holy_2p();
     new spell_item_priest_t16_holy_4p();
     new spell_item_priest_t16_disc_4p();
 }
