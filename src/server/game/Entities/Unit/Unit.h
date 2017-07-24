@@ -2454,6 +2454,9 @@ class Unit : public WorldObject
 
     public:
         bool m_IsInKillingProcess;
+		void DisableSpline();
+		void UpdateSplineMovement(uint32 t_diff);
+		void UpdateSplinePosition();
 
     protected:
         explicit Unit (bool isWorldObject);
@@ -2585,8 +2588,6 @@ class Unit : public WorldObject
         bool IsAlwaysVisibleFor(WorldObject const* seer) const;
         bool IsAlwaysDetectableFor(WorldObject const* seer) const;
 
-        void DisableSpline();
-
         uint32 m_SendTransportMoveTimer;
 
         uint32 m_lastRegenTime[MAX_POWERS];
@@ -2607,9 +2608,6 @@ class Unit : public WorldObject
         bool HandleOverrideClassScriptAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell);
         bool HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura);
         bool HandleAuraRaidProcFromCharge(AuraEffect* triggeredByAura);
-
-        void UpdateSplineMovement(uint32 t_diff);
-        void UpdateSplinePosition();
 
         // player or player's pet
         float GetCombatRatingReduction(CombatRating cr) const;

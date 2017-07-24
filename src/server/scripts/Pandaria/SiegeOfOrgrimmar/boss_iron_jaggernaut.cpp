@@ -866,7 +866,8 @@ class npc_iron_juggernaut_cutter_laser : public CreatureScript
                 {
                     if (Unit* target = me->GetUnit(*me, targetGuid))
                     {
-                        me->GetMotionMaster()->MoveFollowExact(target, 0.0f, 0.0f);
+						// Needs to be fixed later...Quadral
+						;//  me->GetMotionMaster()->MoveFollowExact(target, 0.0f, 0.0f);
                     }
 
                     isMoved = true;

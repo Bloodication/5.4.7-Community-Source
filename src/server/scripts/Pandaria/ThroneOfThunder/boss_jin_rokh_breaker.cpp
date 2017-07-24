@@ -829,7 +829,8 @@ class npc_jinrokh_the_breaker_focused_lightning : public CreatureScript
                             me->ClearUnitState(UNIT_STATE_CASTING);
                             if (Player* player = me->GetPlayer(*me, playerGuid))
                             {
-                                me->GetMotionMaster()->MoveFollowExact(player, 0, 0.0f);
+								// Needs to be fixed later...Quadral
+								;//me->GetMotionMaster()->MoveFollowExact(player, 0, 0.0f);
                             }
                             events.ScheduleEvent(EVENT_CHECK_TARGETS, 100);
                             events.ScheduleEvent(EVENT_FOCUSED_LIGHTNING_DMG, TIMER_FOCUSED_LIGHTNING_DMG);

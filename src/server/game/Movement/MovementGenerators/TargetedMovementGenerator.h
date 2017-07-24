@@ -23,6 +23,7 @@
 #include "FollowerReference.h"
 #include "Timer.h"
 #include "Unit.h"
+#include "PathGenerator.h"
 
 class TargetedMovementGeneratorBase
 {
@@ -37,30 +38,30 @@ template<class T, typename D>
 class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, public TargetedMovementGeneratorBase
 {
     protected:
-        TargetedMovementGeneratorMedium(Unit &target, float offset, float angle, bool useExactTargetLocation = false) :
-            TargetedMovementGeneratorBase(target), i_recheckDistance(0),
-            i_offset(offset), i_angle(angle),
-            i_recalculateTravel(false), i_targetReached(false), m_UseExactTargetLocation(useExactTargetLocation)
+        TargetedMovementGeneratorMedium(Unit &target, float offset, float angle) :
+			TargetedMovementGeneratorBase(target), i_path(NULL),
+			i_recheckDistance(0), i_offset(offset), i_angle(angle),
+			i_recalculateTravel(false), i_targetReached(false)
         {
         }
-        ~TargetedMovementGeneratorMedium() {}
+		~TargetedMovementGeneratorMedium() { delete i_path; }
 
     public:
         bool Update(T &, const uint32 &);
         Unit* GetTarget() const { return i_target.getTarget(); }
 
-        void unitSpeedChanged() { i_recalculateTravel=true; }
-        void UpdateFinalDistance(float fDistance);
+        void unitSpeedChanged() { i_recalculateTravel = true; }
+		bool IsReachable() const { return (i_path) ? (i_path->GetPathType() & PATHFIND_NORMAL) : true; }
 
     protected:
-        void _setTargetLocation(T &);
+		void _setTargetLocation(T &, bool updateDestination);
 
-        TimeTrackerSmall i_recheckDistance;
-        float i_offset;
-        float i_angle;
-        bool i_recalculateTravel : 1;
-        bool i_targetReached : 1;
-        bool m_UseExactTargetLocation : 1;
+		PathGenerator* i_path;
+		TimeTrackerSmall i_recheckDistance;
+		float i_offset;
+		float i_angle;
+		bool i_recalculateTravel : 1;
+		bool i_targetReached : 1;
 };
 
 template<class T>
@@ -85,6 +86,7 @@ class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMo
         bool EnableWalking() const { return false;}
         bool _lostTarget(T &u) const { return u.getVictim() != this->GetTarget(); }
         void _reachTarget(T &);
+		void _updateSpeed(T &) { }
 };
 
 template<class T>
@@ -95,8 +97,6 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
             : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target){}
         FollowMovementGenerator(Unit &target, float offset, float angle)
             : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle) {}
-        FollowMovementGenerator(Unit &target, float offset, float angle, bool useExactTargetLocation)
-            : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle, useExactTargetLocation) {}
         ~FollowMovementGenerator() {}
 
         MovementGeneratorType GetMovementGeneratorType() { return FOLLOW_MOTION_TYPE; }
@@ -108,11 +108,10 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
 
         static void _clearUnitStateMove(T &u) { u.ClearUnitState(UNIT_STATE_FOLLOW_MOVE); }
         static void _addUnitStateMove(T &u)  { u.AddUnitState(UNIT_STATE_FOLLOW_MOVE); }
-        bool EnableWalking() const;
+        bool EnableWalking(T &) const;
         bool _lostTarget(T &) const { return false; }
         void _reachTarget(T &) {}
-    private:
-        void _updateSpeed(T &u);
+        void _updateSpeed(T &);
 };
 
 #endif
