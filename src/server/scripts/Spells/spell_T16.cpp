@@ -455,7 +455,7 @@ class spell_item_priest_t16_holy_4p : public SpellScriptLoader
             {    
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                   if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_PRIEST_HOLY)
+                   if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_HOLY)
                    {
                        if (_player->HasAura(145334))
                             _player->CastSpell(_player, 145336, true);
@@ -490,7 +490,7 @@ class spell_item_priest_t16_disc_4p : public SpellScriptLoader
             {    
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                   if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_PRIEST_DISCIPLINE)
+                   if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_DISCIPLINE)
                    {
                        if (_player->HasAura(145334))
                             _player->CastSpell(_player, 145374, true);
@@ -525,7 +525,7 @@ class spell_item_priest_t16_holy_2p : public SpellScriptLoader
             {    
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                   if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_PRIEST_HOLY)
+                   if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_HOLY)
                    {
                        if (_player->HasAura(145334))
                        {
