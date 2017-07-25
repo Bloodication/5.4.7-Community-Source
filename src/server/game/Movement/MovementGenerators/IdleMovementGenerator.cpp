@@ -87,6 +87,13 @@ void DistractMovementGenerator::Initialize(Unit& owner)
 void DistractMovementGenerator::Finalize(Unit& owner)
 {
     owner.ClearUnitState(UNIT_STATE_DISTRACTED);
+
+	// If this is a creature, then return orientation to original position (for idle movement creatures)
+	if (owner.GetTypeId() == TYPEID_UNIT && owner.ToCreature())
+	{
+		float angle = owner.ToCreature()->GetHomePosition().GetOrientation();
+		owner.SetFacingTo(angle);
+	}
 }
 
 bool DistractMovementGenerator::Update(Unit& /*owner*/, const uint32& time_diff)

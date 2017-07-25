@@ -25,7 +25,7 @@ template<class T>
 class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
 {
     public:
-        FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright), i_nextCheckTime(0) {}
+		FleeingMovementGenerator(uint64 fright, bool inPlace) : i_frightGUID(fright), i_inPlace(inPlace), i_nextCheckTime(0) {}
 
         void Initialize(T &);
         void Finalize(T &);
@@ -36,9 +36,10 @@ class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovem
 
     private:
         void _setTargetLocation(T &owner);
-        bool _getPoint(T &owner, float &x, float &y, float &z);
+        void _getPoint(T &owner, float &x, float &y, float &z);
         bool _setMoveData(T &owner);
         void _Init(T &);
+		bool i_inPlace;
 
         bool is_water_ok   :1;
         bool is_land_ok    :1;
@@ -57,8 +58,8 @@ class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovem
 class TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
 {
     public:
-        TimedFleeingMovementGenerator(uint64 fright, uint32 time) :
-            FleeingMovementGenerator<Creature>(fright),
+		TimedFleeingMovementGenerator(uint64 fright, bool inPlace, uint32 time) :
+			FleeingMovementGenerator<Creature>(fright, inPlace),
             i_totalFleeTime(time) {}
 
         MovementGeneratorType GetMovementGeneratorType() { return TIMED_FLEEING_MOTION_TYPE; }

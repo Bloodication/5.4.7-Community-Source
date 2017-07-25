@@ -34,19 +34,22 @@
 
 void WaypointMovementGenerator<Creature>::LoadPath(Creature &creature)
 {
-    if (!path_id)
-        path_id = creature.GetWaypointPath();
+	if (!path_id)
+		path_id = creature.GetWaypointPath();
 
-    i_path = sWaypointMgr->GetPath(path_id);
+	i_path = sWaypointMgr->GetPath(path_id);
 
-    if (!i_path)
-    {
-        // No movement found for entry
-        sLog->outError(LOG_FILTER_SQL, "WaypointMovementGenerator::LoadPath: creature %s (Entry: %u GUID: %u) doesn't have waypoint path id: %u", creature.GetName(), creature.GetEntry(), creature.GetGUIDLow(), path_id);
-        return;
-    }
+	if (const CreatureData* cd = creature.GetCreatureData())
+		i_currentNode = cd->currentwaypoint;
 
-    StartMoveNow(creature);
+	if (!i_path)
+	{
+		// No path id found for entry
+		sLog->outError(LOG_FILTER_SQL, "WaypointMovementGenerator::LoadPath: creature %s (Entry: %u GUID: %u) doesn't have waypoint path id: %u", creature.GetName(), creature.GetEntry(), creature.GetGUIDLow(), path_id);
+		return;
+	}
+
+	StartMoveNow(creature);
 }
 
 void WaypointMovementGenerator<Creature>::Initialize(Creature &creature)
@@ -79,11 +82,11 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
 
     WaypointData const* wp = i_path->at(i_currentNode);
 
-    if (wp->event_id && urand(0, 99) < wp->event_chance)
-    {
-        sLog->outDebug(LOG_FILTER_MAPSCRIPTS, "Creature movement start script %u at point %u for " UI64FMTD ".", wp->event_id, i_currentNode, creature.GetGUID());
-        creature.GetMap()->ScriptsStart(sWaypointScripts, wp->event_id, &creature, NULL);
-    }
+	if (i_path->at(i_currentNode)->event_id && urand(0, 99) < i_path->at(i_currentNode)->event_chance)
+	{
+		sLog->outDebug(LOG_FILTER_MAPSCRIPTS, "Creature movement start script %u at point %u for " UI64FMTD ".", wp->event_id, i_currentNode, creature.GetGUID());
+		creature.GetMap()->ScriptsStart(sWaypointScripts, i_path->at(i_currentNode)->event_id, &creature, NULL);
+	}
 
     // Inform script
     MovementInform(creature);
