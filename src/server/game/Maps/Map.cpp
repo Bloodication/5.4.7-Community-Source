@@ -127,9 +127,9 @@ void Map::LoadMMap(int gx, int gy)
 	bool mmapLoadResult = MMAP::MMapFactory::createOrGetMMapManager()->loadMap((sWorld->GetDataPath() + "mmaps").c_str(), GetId(), gx, gy);
 
 	if (mmapLoadResult)
-		sLog->outDebug(LOG_FILTER_MAPS, "MMAP loaded name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
+		sLog->outInfo(LOG_FILTER_MAPS, "MMAP quadral loaded name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
 	else
-		sLog->outDebug(LOG_FILTER_MAPS , "Could not load MMAP name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
+		sLog->outInfo(LOG_FILTER_MAPS, "Could not load MMAP name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
 }
 
 void Map::LoadVMap(int gx, int gy)
@@ -196,8 +196,11 @@ void Map::LoadMap(int gx, int gy, bool reload)
 void Map::LoadMapAndVMap(int gx, int gy)
 {
     LoadMap(gx, gy);
-    if (i_InstanceId == 0)
-        LoadVMap(gx, gy);                                   // Only load the data for the base map
+	if (i_InstanceId == 0)
+	{
+		LoadVMap(gx, gy);                                   // Only load the data for the base map
+		LoadMMap(gx, gy);
+	}
 }
 
 void Map::InitStateMachine()

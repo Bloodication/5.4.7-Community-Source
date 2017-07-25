@@ -7164,7 +7164,6 @@ void Spell::EffectCharge(SpellEffIndex effIndex)
 		if (!m_spellInfo->IsPositive())
 			m_caster->Attack(unitTarget, true);
 	}
-        m_caster->ToPlayer()->SetFallInformation(0, unitTarget->GetPositionZ());
 }
 
 void Spell::EffectChargeDest(SpellEffIndex effIndex)

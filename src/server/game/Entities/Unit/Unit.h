@@ -2369,6 +2369,7 @@ class Unit : public WorldObject
         TempSummon* ToTempSummon() { if (isSummon()) return reinterpret_cast<TempSummon*>(this); else return NULL; }
         TempSummon const* ToTempSummon() const { if (isSummon()) return reinterpret_cast<TempSummon const*>(this); else return NULL; }
 
+		uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
         void SetTarget(uint64 guid)
         {
             if (!_focusSpell)

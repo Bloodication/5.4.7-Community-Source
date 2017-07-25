@@ -792,7 +792,7 @@ void SceneHelper::SceneActionMove::DoAction()
 
     if (m_IsManyPoints)
     {
-        Movement::MoveSplineInit init(*pActor);
+        Movement::MoveSplineInit init(pActor);
 
         for (std::vector<Position>::const_iterator itr = m_MovePositions.begin(); itr != m_MovePositions.end(); ++itr)
         {
@@ -808,7 +808,7 @@ void SceneHelper::SceneActionMove::DoAction()
     }
     else
     {
-        Movement::MoveSplineInit init(*pActor);
+        Movement::MoveSplineInit init(pActor);
         init.MoveTo(m_MovePosition.GetPositionX(), m_MovePosition.GetPositionY(), m_MovePosition.GetPositionZ());
         init.SetWalk(m_IsWalk);
         init.Launch();
