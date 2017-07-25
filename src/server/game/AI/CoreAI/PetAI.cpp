@@ -560,14 +560,21 @@ bool PetAI::CanAttack(Unit* target)
     if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED) && !me->HasUnitState(UNIT_STATE_STUNNED))
         return false;
 
-    if (!target->isAlive())
-    {
-        // Clear target to prevent getting stuck on dead targets
-        me->AttackStop();
-        me->InterruptNonMeleeSpells(false);
-        me->SendMeleeAttackStop();
-        return false;
-    }
+	if ((me->canSeeOrDetect(target) && target->HasStealthAura()) && me->IsWithinMeleeRange(target))
+		return (me->GetCharmInfo()->IsCommandAttack());
+	else
+		if (!target->isAlive() || target->HasStealthAura())
+		{
+			// Clear target to prevent getting stuck on dead targets
+			me->AttackStop();
+			me->InterruptNonMeleeSpells(false);
+			me->SendMeleeAttackStop();
+			return false;
+		}
+
+	// Check for CC flag
+	if (me->HasAuraWithMechanic(IMMUNE_TO_LOSS_CONTROL_MASK))
+		return false;
 
     // Passive - passive pets can attack if told to
     if (me->HasReactState(REACT_PASSIVE))
@@ -646,4 +653,22 @@ void PetAI::ReceiveEmote(Player* player, uint32 emote)
                     me->HandleEmoteCommand(EMOTE_ONESHOT_OMNICAST_GHOUL);
                 break;
         }
+}
+
+void PetAI::AttackedBy(Unit* attacker)
+{
+	// Called when pet takes damage. This function helps keep pets from running off simply due to gaining aggro.
+	if (!attacker)
+		return;
+
+	// Passive pets don't do anything
+	if (me->HasReactState(REACT_PASSIVE))
+		return;
+
+	// Prevent pet from disengaging from current target
+	if (me->GetVictim() && me->GetVictim()->IsAlive())
+		return;
+
+	// Continue to evaluate and attack if necessary
+	AttackStart(attacker);
 }

@@ -43,6 +43,7 @@ class PetAI : public CreatureAI
         void OwnerDamagedBy(Unit* attacker);
         void OwnerAttacked(Unit* target);
         void ReceiveEmote(Player* player, uint32 textEmote);
+		void AttackedBy(Unit* attacker);
 
     private:
         bool _isVisible(Unit*) const;
