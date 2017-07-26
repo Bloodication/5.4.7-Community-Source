@@ -395,21 +395,24 @@ void MotionMaster::MoveTargetedHome()
 {
 	Clear(false);
 
-	if (_owner->GetTypeId() == TYPEID_UNIT && !((Creature*)_owner)->GetCharmerOrOwnerGUID())
+	if (_owner->GetTypeId() == TYPEID_UNIT)
 	{
-		sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u GUID: %u) targeted home", _owner->GetEntry(), _owner->GetGUIDLow());
-		Mutate(new HomeMovementGenerator<Creature>(), MOTION_SLOT_ACTIVE);
-	}
-	else if (_owner->GetTypeId() == TYPEID_UNIT && ((Creature*)_owner)->GetCharmerOrOwnerGUID())
-	{
-		sLog->outDebug(LOG_FILTER_GENERAL, "Pet or controlled creature (Entry: %u GUID: %u) targeting home", _owner->GetEntry(), _owner->GetGUIDLow());
-		Unit *target = ((Creature*)_owner)->GetCharmerOrOwner();
-		if (target)
+		if (!_owner->ToCreature()->GetCharmerOrOwnerGUID())
 		{
-			sLog->outDebug(LOG_FILTER_GENERAL, "Following %s (GUID: %u)", target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature", target->GetTypeId() == TYPEID_PLAYER ? target->GetGUIDLow() : ((Creature*)target)->GetSpawnId());
-			Mutate(new FollowMovementGenerator<Creature>(target, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE), MOTION_SLOT_ACTIVE);
+			sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u GUID: %u) targeted home", _owner->GetEntry(), _owner->GetGUIDLow());
+			Mutate(new HomeMovementGenerator<Creature>(), MOTION_SLOT_ACTIVE);
+		}
+		else
+		{
+			sLog->outDebug(LOG_FILTER_GENERAL, "Pet or controlled creature (Entry: %u GUID: %u) targeting home", _owner->GetEntry(), _owner->GetGUIDLow());
+			if (Unit* target = _owner->ToCreature()->GetCharmerOrOwner())
+			{
+				sLog->outDebug(LOG_FILTER_GENERAL, "Following %s (GUID: %u)", target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature", target->GetTypeId() == TYPEID_PLAYER ? target->GetGUIDLow() : ((Creature*)target)->GetSpawnId());
+				Mutate(new FollowMovementGenerator<Creature>(target, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE), MOTION_SLOT_ACTIVE);
+			}
 		}
 	}
+
 	else
 	{
 		sLog->outError(LOG_FILTER_GENERAL, "Player (GUID: %u) attempt targeted home", _owner->GetGUIDLow());
@@ -461,6 +464,11 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlo
 	// ignore movement request if target not exist
 	if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
 		return;
+
+	// Ignore if the owner is a hostile creature, following a player, and it's evading / moving home.
+	if (_owner->GetTypeId() != TYPEID_PLAYER && target->GetTypeId() == TYPEID_PLAYER && _owner->IsHostileTo(target))
+		if (_owner->HasUnitState(UNIT_STATE_EVADE) || Impl[MOTION_SLOT_ACTIVE] && Impl[MOTION_SLOT_ACTIVE]->GetMovementGeneratorType() == HOME_MOTION_TYPE)
+			return;
 
 	//_owner->AddUnitState(UNIT_STATE_FOLLOW);
 	if (_owner->GetTypeId() == TYPEID_PLAYER)
