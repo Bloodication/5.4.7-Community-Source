@@ -311,7 +311,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
 	}
 
 	// probably not the best place to pu this but im not really sure where else to put it.
-	//_owner->UpdateUnderwaterState(_owner->GetMap(), _owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ());
+	_owner->UpdateUnderwaterState(_owner->GetMap(), _owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ());
 }
 
 void MotionMaster::DirectClean(bool reset)
@@ -440,6 +440,11 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
 	if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
 		return;
 
+	// Ignore if the owner is a hostile creature, chasing a player, and it's evading / moving home.
+	if (_owner->GetTypeId() != TYPEID_PLAYER && target->GetTypeId() == TYPEID_PLAYER && _owner->IsHostileTo(target))
+		if (_owner->HasUnitState(UNIT_STATE_EVADE) || Impl[MOTION_SLOT_ACTIVE] && Impl[MOTION_SLOT_ACTIVE]->GetMovementGeneratorType() == HOME_MOTION_TYPE)
+			return;
+
 	//_owner->ClearUnitState(UNIT_STATE_FOLLOW);
 	if (_owner->GetTypeId() == TYPEID_PLAYER)
 	{
@@ -500,6 +505,27 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generate
 		sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f)",
 			_owner->GetEntry(), _owner->GetGUIDLow(), id, x, y, z);
 		Mutate(new PointMovementGenerator<Creature>(id, x, y, z, generatePath), MOTION_SLOT_ACTIVE);
+	}
+}
+
+void MotionMaster::MoveCloserAndStop(uint32 id, Unit* target, float distance)
+{
+	float distanceToTravel = _owner->GetExactDist2d(target) - distance;
+	if (distanceToTravel > 0.0f)
+	{
+		float angle = _owner->GetAngle(target);
+		float destx = _owner->GetPositionX() + distanceToTravel * std::cos(angle);
+		float desty = _owner->GetPositionY() + distanceToTravel * std::sin(angle);
+		MovePoint(id, destx, desty, target->GetPositionZ());
+	}
+	else
+	{
+		// We are already close enough. We just need to turn toward the target without changing position.
+		Movement::MoveSplineInit init(_owner);
+		init.MoveTo(_owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZMinusOffset());
+		init.SetFacing(target);
+		init.Launch();
+		Mutate(new EffectMovementGenerator(id), MOTION_SLOT_ACTIVE);
 	}
 }
 
