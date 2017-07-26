@@ -1032,31 +1032,6 @@ class mob_gale_winds_stalker : public CreatureScript
                 // Check force
                 if (!pInstance || !isActive)
                     return;
-
-                if (Creature* tayak = pInstance->instance->GetCreature(pInstance->GetData64(NPC_TAYAK)))
-                {
-                    Position pos = {tayak->GetPositionX(), tayak->GetPositionY(), tayak->GetPositionZ(), 0.0f};
-
-                    std::list<Player*> playerList;
-                    GetPlayerListInGrid(playerList, me, 20.0f);
-
-                    for (auto player : playerList)
-                    {
-                        // if player is in wind gale
-                        if (player->GetPositionX() > -2109.51f || player->GetPositionX() < -2129.05f)
-                        {
-                            // Player doesn't have forcedMovement
-                            if (player->isAlive() && !player->GetForcedMovement().IsActive())
-                                player->GetForcedMovement().StartPushingFrom(pos, 7.0f);
-                            // Dead player has forcedMovement
-                            else if (!player->isAlive() && player->GetForcedMovement().IsActive())
-                                player->GetForcedMovement().Stop();
-                        }
-                        // player not in wind gale
-                        else if (player->GetForcedMovement().IsActive())
-                            player->GetForcedMovement().Stop();
-                    }
-                }
             }
         };
 

@@ -78,69 +78,6 @@ enum RotateDirection
     ROTATE_DIRECTION_RIGHT,
 };
 
-enum TriggerAfterMovementAction
-{
-    TRIGGER_AFTER_MOVEMENT_NONE = 0,
-    TRIGGER_AFTER_MOVEMENT_CAST = 1,
-};
-
-struct TriggerAfterMovement
-{
-    TriggerAfterMovement() :
-        m_target(0LL), m_action(TRIGGER_AFTER_MOVEMENT_NONE), m_data(0) {}
-
-    TriggerAfterMovement(uint64 target, uint8 action, uint32 data) :
-        m_target(target), m_action(action), m_data(data) {}
-
-    uint64 m_target;
-    uint32 m_action;
-    uint32 m_data;
-};
-
-enum ForcedMovementTypes
-{
-    FORCED_NONE,
-    FORCED_PULL,
-    FORCED_PUSH,
-};
-
-class ForcedMovement
-{
-    public:
-
-        ForcedMovement(Player* player);
-        
-        bool IsActive() const;
-        bool IsPulling() const;
-        bool IsPushing() const;
-
-        bool StartPullingTo(Position positionTo, float speed);
-
-        bool StartPushingFrom(Position positionFrom, float speed);
-        bool StartPushingFrom(Position positionFrom, float speed, float awayDistance);
-
-        void Stop();
-
-        void Update(const uint32 diff);
-
-    private:
-
-        void BuildStartPacket(WorldPacket& packet, Position const& position, float m_Speed);
-        void BuildStopPacket(WorldPacket& packet);
-
-    private:
-
-        Player* m_PlayerOwner;
-        bool m_IsActive;
-        bool m_IsFarAway;
-        ForcedMovementTypes m_Type;
-        Position m_ForcedPosition;
-        uint32 m_MapId;
-        float m_Speed;
-        float m_AwayDistance;
-        uint32 m_UpdateTimer;
-};
-
 // assume it is 25 yard per 0.6 second
 #define SPEED_CHARGE    42.0f
 
@@ -235,11 +172,8 @@ class MotionMaster //: private std::stack<MovementGenerator *>
 		void MoveCharge(PathGenerator path, float speed = SPEED_CHARGE, float z = 0.0f);
         void MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ);
         void MoveJumpTo(float angle, float speedXY, float speedZ);
-        void MoveJump(float x, float y, float z, float speedXY, float speedZ, float o = 10.0f, uint32 id = EVENT_JUMP, std::shared_ptr<TriggerAfterMovement const> afterMovement = nullptr);
-        void MoveJump(Position const p_Pos, float p_SpeedXY, float p_SpeedZ, float p_O = 10.0f, uint32 p_ID = EVENT_JUMP, std::shared_ptr<TriggerAfterMovement const> p_AfterMove = nullptr)
-        {
-            MoveJump(p_Pos.m_positionX, p_Pos.m_positionY, p_Pos.m_positionZ, p_SpeedXY, p_SpeedZ, p_O, p_ID, p_AfterMove);
-        }
+		void MoveJump(Position const& pos, float speedXY, float speedZ, uint32 id = EVENT_JUMP) { MoveJump(pos.m_positionX, pos.m_positionY, pos.m_positionZ, speedXY, speedZ, id); };
+		void MoveJump(float x, float y, float z, float speedXY, float speedZ, float o = 10.0f, uint32 id = EVENT_JUMP);
         void CustomJump(float x, float y, float z, float speedXY, float speedZ, uint32 id = EVENT_JUMP);
         void MoveFall(uint32 id = 0);
 		void MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount);

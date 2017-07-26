@@ -1857,35 +1857,21 @@ void Spell::EffectTriggerRitualOfSummoning(SpellEffIndex effIndex)
 
 void Spell::EffectJump(SpellEffIndex effIndex)
 {
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
-        return;
+	if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
+		return;
 
-    if (m_caster->isInFlight())
-        return;
+	if (m_caster->isInFlight())
+		return;
 
-    if (!unitTarget)
-        return;
+	if (!unitTarget)
+		return;
 
-    float x, y, z;
-    unitTarget->GetContactPoint(m_caster, x, y, z, CONTACT_DISTANCE);
+	float x, y, z;
+	unitTarget->GetContactPoint(m_caster, x, y, z, CONTACT_DISTANCE);
 
-    float speedXY, speedZ;
-    CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
-    
-    switch (m_spellInfo->Id)
-    {
-        case 136548: // Ball Lightning, Lei Shen, Throne of Thunder
-        case 144640: // Leap, Xuen, Celestial Challenge
-        case 143500: // Heroic Shockwave, General Nazgrim, Siege of Orgrimmar
-            if (uint32 triggerSpell = m_spellInfo->Effects[effIndex].TriggerSpell)
-            {
-                m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, 10.0f, EVENT_JUMP, std::make_shared<TriggerAfterMovement>(unitTarget->GetGUID(), TRIGGER_AFTER_MOVEMENT_CAST, triggerSpell));
-            }
-            break;
-        default:
-            m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
-            break;
-    }
+	float speedXY, speedZ;
+	CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
+	m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
 }
 
 void Spell::EffectJumpDest(SpellEffIndex effIndex)
@@ -1919,12 +1905,6 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
         case 49376:
             m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, destTarget->GetOrientation());
             break;
-        case 144776: // Ground Pound, Iron Juggernaut
-            if (uint32 triggerSpell = m_spellInfo->Effects[effIndex].TriggerSpell)
-            {
-                m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, 10.0f, EVENT_JUMP, std::make_shared<TriggerAfterMovement>(m_caster->GetGUID(), TRIGGER_AFTER_MOVEMENT_CAST, triggerSpell));
-                break;
-            }
         default:
             m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
             break;

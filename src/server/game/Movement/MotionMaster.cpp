@@ -32,201 +32,6 @@
 #include "MoveSplineInit.h"
 #include <cassert>
 
-#define FORCED_MOVEMENT_UPDATE_TIMER 1000;
-#define FORCED_MOVEMENT_MAX_DISTANCE 100.0f
-
-ForcedMovement::ForcedMovement(Player* player) :
-m_PlayerOwner(player), m_IsActive(false), m_Type(FORCED_NONE), m_Speed(0.0f), m_IsFarAway(false)
-{
-	m_UpdateTimer = FORCED_MOVEMENT_UPDATE_TIMER;
-}
-
-bool ForcedMovement::IsActive() const
-{
-	return m_IsActive;
-}
-
-bool ForcedMovement::IsPulling() const
-{
-	return IsActive() && m_Type == FORCED_PULL;
-}
-
-bool ForcedMovement::IsPushing() const
-{
-	return IsActive() && m_Type == FORCED_PUSH;
-}
-
-bool ForcedMovement::StartPullingTo(Position positionTo, float speed)
-{
-	if (IsActive())
-		return false;
-
-	m_ForcedPosition = positionTo;
-	m_MapId = m_PlayerOwner->GetMapId();
-	m_Type = ForcedMovementTypes::FORCED_PULL;
-	m_Speed = abs(speed);
-
-	WorldPacket packet;
-	BuildStartPacket(packet, m_ForcedPosition, m_Speed);
-	m_PlayerOwner->SendDirectMessage(&packet);
-
-	m_IsActive = true;
-
-	return true;
-}
-
-bool ForcedMovement::StartPushingFrom(Position positionFrom, float speed, float awayDistance)
-{
-	if (IsActive())
-		return false;
-
-	m_AwayDistance = awayDistance;
-	if (m_AwayDistance <= 0.0f || m_AwayDistance > FORCED_MOVEMENT_MAX_DISTANCE)
-	{
-		m_AwayDistance = FORCED_MOVEMENT_MAX_DISTANCE;
-	}
-
-	m_ForcedPosition = positionFrom;
-	m_MapId = m_PlayerOwner->GetMapId();
-	m_Type = ForcedMovementTypes::FORCED_PUSH;
-	m_Speed = -abs(speed);
-
-	WorldPacket packet;
-	BuildStartPacket(packet, m_ForcedPosition, m_Speed);
-	m_PlayerOwner->SendDirectMessage(&packet);
-
-	m_IsActive = true;
-
-	return true;
-}
-
-bool ForcedMovement::StartPushingFrom(Position positionFrom, float speed)
-{
-	if (IsActive())
-		return false;
-
-	return StartPushingFrom(positionFrom, speed, FORCED_MOVEMENT_MAX_DISTANCE);
-}
-
-void ForcedMovement::Stop()
-{
-	if (!IsActive())
-		return;
-
-	m_Type = ForcedMovementTypes::FORCED_NONE;
-	m_Speed = 0.0f;
-
-	WorldPacket packet;
-	BuildStopPacket(packet);
-	m_PlayerOwner->SendDirectMessage(&packet);
-
-	m_IsActive = false;
-}
-
-void ForcedMovement::BuildStartPacket(WorldPacket& packet, Position const& position, float m_Speed)
-{
-	packet.Initialize(SMSG_APPLY_MOVEMENT_FORCE, 1 + 8 + 7 * 4);
-
-	ObjectGuid playerGuid = m_PlayerOwner->GetGUID();
-
-	packet.WriteBit(playerGuid[5]);
-	packet.WriteBit(playerGuid[4]);
-	packet.WriteBits(1, 2);
-	packet.WriteBit(playerGuid[6]);
-	packet.WriteBit(playerGuid[1]);
-	packet.WriteBit(playerGuid[2]);
-	packet.WriteBit(playerGuid[3]);
-	packet.WriteBit(playerGuid[0]);
-	packet.WriteBit(playerGuid[7]);
-
-	packet << float(position.GetPositionZ());
-	packet << float(m_Speed);
-	packet.WriteByteSeq(playerGuid[4]);
-	packet << uint32(342);               // Unk, sniffed value, not always the same
-	packet.WriteByteSeq(playerGuid[5]);
-	packet.WriteByteSeq(playerGuid[7]);
-	packet << float(position.GetPositionX());
-	packet.WriteByteSeq(playerGuid[6]);
-	packet.WriteByteSeq(playerGuid[3]);
-	packet << uint32(268441055);          // Unk, sniffed value, not always the same
-	packet << float(position.GetPositionY());
-	packet.WriteByteSeq(playerGuid[2]);
-	packet << uint32(0);                  // Unk, sniffed value, not always the same
-	packet.WriteByteSeq(playerGuid[1]);
-	packet.WriteByteSeq(playerGuid[0]);
-}
-
-void ForcedMovement::BuildStopPacket(WorldPacket& packet)
-{
-	packet.Initialize(SMSG_UNAPPLY_MOVEMENT_FORCE, 2 * 4 + 1 + 8);
-
-	ObjectGuid playerGuid = m_PlayerOwner->GetGUID();
-
-	uint8 bits[8] = { 5, 0, 3, 4, 6, 1, 7, 2 };
-	packet.WriteBitInOrder(playerGuid, bits);
-
-	packet << uint32(1024);               // Unk, sniffed value, not always the same
-
-	packet.WriteByteSeq(playerGuid[1]);
-	packet.WriteByteSeq(playerGuid[7]);
-	packet.WriteByteSeq(playerGuid[0]);
-
-	packet << uint32(268441055);          // Unk, sniffed value, not always the same
-
-	packet.WriteByteSeq(playerGuid[6]);
-	packet.WriteByteSeq(playerGuid[5]);
-	packet.WriteByteSeq(playerGuid[4]);
-	packet.WriteByteSeq(playerGuid[3]);
-	packet.WriteByteSeq(playerGuid[2]);
-}
-
-void ForcedMovement::Update(const uint32 diff)
-{
-	if (!IsActive())
-		return;
-
-	if (m_UpdateTimer <= diff)
-	{
-		m_UpdateTimer = FORCED_MOVEMENT_UPDATE_TIMER;
-
-		if (m_PlayerOwner->GetMapId() != m_MapId)
-		{
-			Stop();
-			return;
-		}
-
-		if (IsPushing())
-		{
-			if (m_IsFarAway)
-			{
-				if (m_PlayerOwner->GetDistance(m_ForcedPosition) < m_AwayDistance)
-				{
-					WorldPacket packet;
-					BuildStartPacket(packet, m_ForcedPosition, m_Speed);
-					m_PlayerOwner->SendDirectMessage(&packet);
-
-					m_IsFarAway = false;
-				}
-			}
-			else
-			{
-				if (m_PlayerOwner->GetDistance(m_ForcedPosition) > m_AwayDistance)
-				{
-					WorldPacket packet;
-					BuildStopPacket(packet);
-					m_PlayerOwner->SendDirectMessage(&packet);
-
-					m_IsFarAway = true;
-				}
-			}
-		}
-	}
-	else
-	{
-		m_UpdateTimer -= diff;
-	}
-}
-
 inline bool isStatic(MovementGenerator *mv)
 {
 	return (mv == &si_idleMovement);
@@ -599,32 +404,23 @@ void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
 	MoveJump(x, y, z, speedXY, speedZ);
 }
 
-void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float speedZ, float o, uint32 id, std::shared_ptr<TriggerAfterMovement const> afterMovement)
+void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float speedZ, float o, uint32 id)
 {
 	sLog->outDebug(LOG_FILTER_GENERAL, "Unit (GUID: %u) jump to point (X: %f Y: %f Z: %f)", _owner->GetGUIDLow(), x, y, z);
+
+	if (speedXY <= 0.1f)
+		return;
 
 	float moveTimeHalf = speedZ / Movement::gravity;
 	float max_height = -Movement::computeFallElevation(moveTimeHalf, false, -speedZ);
 
-	// hack fix for Heroic Leap
-	if (id == 6544)
-		max_height += 1.0f;
-
-	// hack fix for Leap of Faith
-	if (id == 110726)
-	{
-		speedZ *= 2.3f;
-		speedXY *= 2.3f;
-	}
-
 	Movement::MoveSplineInit init(_owner);
-	init.MoveTo(x, y, z);
+	init.MoveTo(x, y, z, false);
 	init.SetParabolic(max_height, 0);
 	init.SetVelocity(speedXY);
-	if (o != 10.0f)
-		init.SetFacing(o);
 	init.Launch();
 	Mutate(new EffectMovementGenerator(id), MOTION_SLOT_CONTROLLED);
+
 }
 
 void MotionMaster::CustomJump(float x, float y, float z, float speedXY, float speedZ, uint32 id)
