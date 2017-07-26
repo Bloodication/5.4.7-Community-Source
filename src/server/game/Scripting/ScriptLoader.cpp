@@ -924,8 +924,8 @@ void AddScripts()
    // AddOutlandScripts();
    // AddNorthrendScripts();
    // AddPandarieScripts();
-    AddBattlegroundScripts();
-    AddOutdoorPvPScripts();
+    //AddBattlegroundScripts();
+    //AddOutdoorPvPScripts();
     AddCustomScripts();
     AddSC_fast_arena_start();
    // AddScenarioScripts();

@@ -666,7 +666,7 @@ void PetAI::AttackedBy(Unit* attacker)
 		return;
 
 	// Prevent pet from disengaging from current target
-	if (me->GetVictim() && me->GetVictim()->IsAlive())
+	if (me->getVictim() && me->getVictim()->isAlive())
 		return;
 
 	// Continue to evaluate and attack if necessary
