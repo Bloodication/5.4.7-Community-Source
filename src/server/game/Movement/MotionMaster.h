@@ -242,6 +242,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         }
         void CustomJump(float x, float y, float z, float speedXY, float speedZ, uint32 id = EVENT_JUMP);
         void MoveFall(uint32 id = 0);
+		void MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount);
         void MoveBackward(uint32 id, float x, float y, float z, float speed = 0.0f);
 
         void MoveSeekAssistance(float x, float y, float z);
