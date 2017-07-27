@@ -1,17 +1,26 @@
 #include "ScriptPCH.h"
 #include "Chat.h"
 #include "WorldSession.h"
+#include "AccountMgr.h"
+#include "Config.h"
+
+typedef std::set<uint32> DisabledPlrs;
 
 class Rating_Vendor : public CreatureScript
 {
+private:
+	DisabledPlrs m_plrList;
+	DisabledPlrs m_charList;
 public:
-    Rating_Vendor() : CreatureScript("Rating_Vendor") { }
+    Rating_Vendor() : CreatureScript("Rating_Vendor") 
+	{
+	
+	}
 
 	struct Rating_VendorAI : public ScriptedAI
 	{
 		Rating_VendorAI(Creature *c) : ScriptedAI(c)
 		{
-			
 		}
 	};
 	
@@ -41,25 +50,45 @@ public:
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
-	//player->PlayerTalkClass->ClearMenus();
+		
         switch (action)
         {
-            case 1: 
-				if (player->GetArenaPersonalRating(ARENA_TYPE_2v2) >= 0)
+            case 1:
+				QueryResult result = WorldDatabase.Query("SELECT guid from gear_vendor_used");
+
+				do {
+					if (uint32 entry = result->Fetch()[0].GetUInt32())
+						m_plrList.insert(entry);
+				} while (result->NextRow());
+				
+				QueryResult result2 = WorldDatabase.Query("SELECT charid from gear_vendor_used2");
+					do {
+						if (uint32 entry = result2->Fetch()[0].GetUInt32())
+							m_charList.insert(entry);
+					} while (result2->NextRow());
+				
+				if (m_plrList.find(player->GetSession()->GetAccountId()) != m_plrList.end())
 				{
-					ChatHandler(player->GetSession()).PSendSysMessage("You have used the vendor and can now not use it on any other character.");
-					player->PlayerTalkClass->ClearMenus();
-					//SendVendor(player, creature->GetGUID());
-					
+					if (m_charList.find(player->GetGUID()) != m_charList.end())
+					{
+						player->PlayerTalkClass->ClearMenus();
+						player->GetSession()->SendListInventory(creature->GetGUID());
+					}
+					else
+					{
+						ChatHandler(player->GetSession()).PSendSysMessage("You have already used this vendor before and cannot use it again!");
+						return false;
+					}
 				}
 				else
 				{
-					ChatHandler(player->GetSession()).PSendSysMessage("you don't have the required rating to open this vendor!");
-					return false;
+					ChatHandler(player->GetSession()).PSendSysMessage("You have now used the vendor and cannot use it on any other character.");
+					player->PlayerTalkClass->ClearMenus();
+					player->GetSession()->SendListInventory(creature->GetGUID());
+					WorldDatabase.PExecute("INSERT INTO `gear_vendor_used` (`guid`) VALUES (%u)", player->GetSession()->GetAccountId());
+					WorldDatabase.PExecute("INSERT INTO `gear_vendor_used2` (`charid`) VALUES (%u)", player->GetGUID());
 				}
 				break;
-            default: 
-				return false;
         }
     }
 

@@ -959,7 +959,6 @@ void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
             }
         }
 
-        _plr->GetForcedMovement().Stop();
     }
 }
 

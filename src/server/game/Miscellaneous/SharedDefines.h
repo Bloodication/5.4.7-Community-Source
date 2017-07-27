@@ -1761,6 +1761,20 @@ enum Mechanics
     (1<<MECHANIC_TURN)|(1<<MECHANIC_HORROR)|(1<<MECHANIC_DAZE)| \
     (1<<MECHANIC_SAPPED))
 
+#define IMMUNE_TO_LOSS_CONTROL_MASK (\
+    (1 << MECHANIC_CHARM) | (1 << MECHANIC_DISORIENTED) | (1 << MECHANIC_FEAR) | \
+    (1 << MECHANIC_SLEEP) | (1 << MECHANIC_STUN) | (1 << MECHANIC_FREEZE) | \
+    (1 << MECHANIC_POLYMORPH) | (1 << MECHANIC_BANISH) | (1 << MECHANIC_SHACKLE) | \
+    (1 << MECHANIC_TURN) | (1 << MECHANIC_HORROR) | (1 << MECHANIC_KNOCKOUT) | \
+    (1 << MECHANIC_SAPPED))
+
+#define CC_LIMITATION_CHECK (\
+    (1 << MECHANIC_CHARM) | (1 << MECHANIC_FEAR) | (1 << MECHANIC_SLEEP) | \
+    (1 << MECHANIC_FREEZE) | (1 << MECHANIC_POLYMORPH) | (1 << MECHANIC_BANISH) | \
+    (1 << MECHANIC_SHACKLE) | (1 << MECHANIC_TURN) | (1 << MECHANIC_HORROR) | \
+    (1 << MECHANIC_SAPPED))
+
+
 // Spell dispel type
 enum DispelType
 {
@@ -4460,7 +4474,7 @@ enum SpellFamilyNames
 };
 
 const uint32 MMAP_MAGIC = 0x4d4d4150; // 'MMAP'
-#define MMAP_VERSION 5
+#define MMAP_VERSION 3
 
 struct MmapTileHeader
 {
@@ -4471,7 +4485,7 @@ struct MmapTileHeader
 	bool usesLiquids : 1;
 
 	MmapTileHeader() : mmapMagic(MMAP_MAGIC), dtVersion(DT_NAVMESH_VERSION),
-		mmapVersion(MMAP_VERSION), size(0), usesLiquids(true) {}
+		mmapVersion(MMAP_VERSION), size(0), usesLiquids(true) { }
 };
 
 enum NavTerrain

@@ -302,7 +302,7 @@ class spell_mage_pet_frost_nova : public SpellScriptLoader
                             if (_player->GetSpecializationId(_player->GetActiveSpec()) != SPEC_MAGE_FROST)
                                 return;
 
-                            _player->CastSpell(_player, SPELL_MAGE_FINGER_OF_FROST, true);
+                            _player->AddAura(44544, _player);
                         }
                     }
                 }

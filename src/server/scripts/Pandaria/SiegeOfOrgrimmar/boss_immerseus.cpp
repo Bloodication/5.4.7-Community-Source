@@ -645,7 +645,7 @@ class npc_immerseus_contaminated_puddle : public CreatureScript
                             {
                                 if (Creature* pImmerseus = pInstance->instance->GetCreature(pInstance->GetData64(DATA_IMMERSEUS)))
                                 {
-                                    me->GetMotionMaster()->MoveFollowExact(pImmerseus, 0.0f, 0.0f);
+                                    //me->GetMotionMaster()->MoveFollowExact(pImmerseus, 0.0f, 0.0f);
                                 }
                             }
                             events.ScheduleEvent(EVENT_CHECK_PUDDLE, 1000);
@@ -772,7 +772,8 @@ class npc_immerseus_sha_puddle : public CreatureScript
                             {
                                 if (Creature* pImmerseus = pInstance->instance->GetCreature(pInstance->GetData64(DATA_IMMERSEUS)))
                                 {
-                                    me->GetMotionMaster()->MoveFollowExact(pImmerseus, 0.0f, 0.0f);
+									// Needs to be fixed later...Quadral
+									;// me->GetMotionMaster()->MoveFollowExact(pImmerseus, 0.0f, 0.0f);
                                 }
                             }
                             events.ScheduleEvent(EVENT_CHECK_PUDDLE, 1000);

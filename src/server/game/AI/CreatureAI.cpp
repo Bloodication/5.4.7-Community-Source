@@ -196,8 +196,8 @@ void CreatureAI::EnterEvadeMode()
     me->SetLastDamagedTime(0);
 }
 
-/*void CreatureAI::AttackedBy(Unit* attacker)
-{
-    if (!me->getVictim())
-        AttackStart(attacker);
-}*/
+//void CreatureAI::AttackedBy(Unit* attacker)
+//{
+  //  if (!me->getVictim())
+    //    AttackStart(attacker);
+//}

@@ -1394,74 +1394,83 @@ class spell_warr_deep_wounds : public SpellScriptLoader
         }
 };
 
-// Charge - 100
+enum Charge
+{
+	CHARGE_STUN = 7922,
+	DOUBLE_TIME = 103827,
+	WARBRINGER = 103828,
+	WARBRINGER_ROOT = 105771,
+	WARBRINGER_SLOW = 137637,
+	DOUBLE_TIME_MARKER = 124184,
+	SPELL_GLYPH_BULL_RUSH = 94372,
+	SPELL_GLYPH_BLITZ = 58377,
+	SPELL_RAGE_BONUS_15 = 109128
+};
+
 class spell_warr_charge : public SpellScriptLoader
 {
-    class script_impl : public SpellScript
-    {
-        PrepareSpellScript(script_impl)
+public:
+	spell_warr_charge() : SpellScriptLoader("spell_warr_charge") { }
 
-        enum
-        {
-            CHARGE_STUN        = 7922,
-            DOUBLE_TIME        = 103827,
-            WARBRINGER         = 103828,
-            WARBRINGER_STUN    = 105771,
-            DOUBLE_TIME_MARKER = 124184,
-            FIRE_VISUAL        = 96840,
-            BLAZING_TRAIL      = 123779
-        };
+	class spell_warr_charge_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_warr_charge_SpellScript);
 
-        bool canGenerateCharge;
+		bool canGenerateCharge;
 
-        bool Load()
-        {
-            Unit* caster = GetCaster();
-            if (!caster)
-                return false;
+		bool Load()
+		{ 
+			Unit * const caster = GetCaster();
+			if (!caster)
+				return false;
 
-            canGenerateCharge = !caster->HasAura(DOUBLE_TIME) || !caster->HasAura(DOUBLE_TIME_MARKER);
-            return true;
-        }
+			canGenerateCharge = !caster->HasAura(DOUBLE_TIME) || !caster->HasAura(DOUBLE_TIME_MARKER);
+			return true;
+		}
 
-        void HandleCharge()
-        {
-            Unit* target = GetHitUnit();
-            Unit* caster = GetCaster();
-            if (!target || !caster || caster == target)
-                return;
+		void HandleCharge(SpellEffIndex)
+		{
+			Unit * const target = GetHitUnit();
+			if (!target)
+				return;
 
-            uint32 stunSpellId = caster->HasAura(WARBRINGER) ? WARBRINGER_STUN : CHARGE_STUN;
-            caster->CastSpell(target, stunSpellId, true);
+			Unit * const caster = GetCaster();
+			if (!caster)
+				return;
 
-            // Glyph of Blazing Trail
-            if (caster->HasAura(BLAZING_TRAIL))
-                caster->CastSpell(caster, FIRE_VISUAL, true);
-        }
+			if (!caster->HasAura(WARBRINGER))
+				caster->CastSpell(target, CHARGE_STUN, true);
 
-        void HandleDummy(SpellEffIndex effIndex)
-        {
-            PreventHitDefaultEffect(effIndex);
+			if (caster->HasAura(WARBRINGER))
+			{
+				caster->CastSpell(target, WARBRINGER_ROOT, true);
+				caster->CastSpell(target, WARBRINGER_SLOW, true);
+			}
 
-            Unit* caster = GetCaster();
-            if (canGenerateCharge && caster)
-                caster->EnergizeBySpell(caster, GetSpellInfo()->Id, GetEffectValue(), POWER_RAGE);
-        }
+			if (caster->HasAura(SPELL_GLYPH_BULL_RUSH))
+				caster->CastSpell(caster, SPELL_RAGE_BONUS_15, true);
+		}
 
-        void Register()
-        {
-            BeforeHit += SpellHitFn(script_impl::HandleCharge);
-            OnEffectHitTarget += SpellEffectFn(script_impl::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
-        }
-    };
+		void HandleDummy(SpellEffIndex effIndex)
+		{
+			PreventHitDefaultEffect(effIndex);
 
-    public:
-        spell_warr_charge() : SpellScriptLoader("spell_warr_charge") { }
+			Unit* const caster = GetCaster();
+			if (canGenerateCharge && caster)
+				caster->EnergizeBySpell(caster, GetSpellInfo()->Id, GetEffectValue(), POWER_RAGE);
+		}
 
-    SpellScript* GetSpellScript() const
-    {
-        return new script_impl;
-    }
+		void Register()
+		{
+			OnEffectHitTarget += SpellEffectFn(spell_warr_charge_SpellScript::HandleCharge, EFFECT_0, SPELL_EFFECT_CHARGE);
+			OnEffectHitTarget += SpellEffectFn(spell_warr_charge_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+		}
+	};
+
+	SpellScript* GetSpellScript() const
+	{
+		return new spell_warr_charge_SpellScript();
+	}
 };
 
 // Execute - 5308

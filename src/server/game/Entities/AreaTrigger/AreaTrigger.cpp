@@ -346,9 +346,6 @@ void AreaTrigger::Remove(bool byExpire)
                 Position pos;
                 GetPosition(&pos);
 
-                for (auto player : playerList)
-                    player->GetForcedMovement().Stop();
-
                 break;
             }
             case 134370:// Down Draft
@@ -363,8 +360,8 @@ void AreaTrigger::Remove(bool byExpire)
 
                     for (Map::PlayerList::const_iterator l_Itr = l_PlayerList.begin(); l_Itr != l_PlayerList.end(); ++l_Itr)
                     {
-                        if (Player* l_Player = l_Itr->getSource())
-                            l_Player->GetForcedMovement().Stop();
+						if (Player* l_Player = l_Itr->getSource())
+							;// l_Player->GetForcedMovement().Stop();
                     }
                 }
                 /// Else, getting players around the areatrigger
@@ -373,8 +370,8 @@ void AreaTrigger::Remove(bool byExpire)
                     std::list<Player*> l_PlayerList;
                     GetPlayerListInGrid(l_PlayerList, 300.0f);
 
-                    for (Player* l_Player : l_PlayerList)
-                        l_Player->GetForcedMovement().Stop();
+					for (Player* l_Player : l_PlayerList)
+						;// l_Player->GetForcedMovement().Stop();
                 }
 
                 break;

@@ -3738,8 +3738,6 @@ class Player : public Unit, public GridObject<Player>
         bool IsNeedCleanupChannels() const { return m_forceCleanupChannels; }
         void CleanupChannelsAfterInterRealm();
 
-        ForcedMovement& GetForcedMovement() { return m_ForcedMovement; }
-
     private:
         // internal common parts for CanStore/StoreItem functions
         InventoryResult CanStoreItem_InSpecificSlot(uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool swap, Item* pSrcItem) const;
@@ -3881,8 +3879,6 @@ class Player : public Unit, public GridObject<Player>
         /// Wargame
         WargameRequest* m_WargameRequest;
         bool m_IsInvitedToWargame;          ///< Needed to bypass crossrealm check, wargame are played on local realm.
-
-        ForcedMovement m_ForcedMovement;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

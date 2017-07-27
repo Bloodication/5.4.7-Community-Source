@@ -1326,6 +1326,8 @@ class Unit : public WorldObject
         float GetMeleeReach() const { float reach = m_floatValues[UNIT_FIELD_COMBATREACH]; return reach > MIN_MELEE_REACH ? reach : MIN_MELEE_REACH; }
         bool IsWithinCombatRange(const Unit* obj, float dist2compare) const;
         bool IsWithinMeleeRange(const Unit* obj, float dist = MELEE_RANGE) const;
+		bool IsCharging() { return m_charging; }
+		void SetIsCharging(bool value) { m_charging = value; }
         void GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const;
         uint32 m_extraAttacks;
         bool m_canDualWield;
@@ -2367,6 +2369,7 @@ class Unit : public WorldObject
         TempSummon* ToTempSummon() { if (isSummon()) return reinterpret_cast<TempSummon*>(this); else return NULL; }
         TempSummon const* ToTempSummon() const { if (isSummon()) return reinterpret_cast<TempSummon const*>(this); else return NULL; }
 
+		uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
         void SetTarget(uint64 guid)
         {
             if (!_focusSpell)
@@ -2454,6 +2457,9 @@ class Unit : public WorldObject
 
     public:
         bool m_IsInKillingProcess;
+		void DisableSpline();
+		void UpdateSplineMovement(uint32 t_diff);
+		void UpdateSplinePosition();
 
     protected:
         explicit Unit (bool isWorldObject);
@@ -2585,8 +2591,6 @@ class Unit : public WorldObject
         bool IsAlwaysVisibleFor(WorldObject const* seer) const;
         bool IsAlwaysDetectableFor(WorldObject const* seer) const;
 
-        void DisableSpline();
-
         uint32 m_SendTransportMoveTimer;
 
         uint32 m_lastRegenTime[MAX_POWERS];
@@ -2607,9 +2611,6 @@ class Unit : public WorldObject
         bool HandleOverrideClassScriptAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell);
         bool HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura);
         bool HandleAuraRaidProcFromCharge(AuraEffect* triggeredByAura);
-
-        void UpdateSplineMovement(uint32 t_diff);
-        void UpdateSplinePosition();
 
         // player or player's pet
         float GetCombatRatingReduction(CombatRating cr) const;
@@ -2646,6 +2647,7 @@ class Unit : public WorldObject
 
         uint32 m_state;                                     // Even derived shouldn't modify
         uint32 m_CombatTimer;
+		bool m_charging;
         uint32 m_logTimer;
         TimeTrackerSmall m_movesplineTimer;
 		Diminishing m_Diminishing;

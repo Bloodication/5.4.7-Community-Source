@@ -44,7 +44,6 @@ void AddSC_BattlegroundDGScripts();
 // Customs
 void AddSC_event_april();
 void AddSC_teleguy();
-void AddSC_NPC_TransmogVendor();
 void AddSC_petguy();
 void AddSC_arena_spectator_script();
 void AddSC_transmogrify_script();
@@ -122,7 +121,7 @@ void AddSC_achievement_scripts();
 void AddSC_green_fire_scripts();
 void AddSC_legendary_cloak_scripts();
 
-//eastern kingdoms
+/*//eastern kingdoms
 void AddSC_alterac_valley();                 //Alterac Valley
 void AddSC_boss_balinda();
 void AddSC_boss_drekthar();
@@ -894,16 +893,16 @@ void AddSC_instance_pursuing_the_black_harvest();
 void AddSC_pursuing_the_black_harvest();
 
 void AddSC_instance_assault_on_zanvess();
-void AddSC_assault_on_zanvess();
+void AddSC_assault_on_zanvess();*/
 
 // battlegrounds
 
 // outdoor pvp
-void AddSC_outdoorpvp_hp();
+/*void AddSC_outdoorpvp_hp();
 void AddSC_outdoorpvp_na();
 void AddSC_outdoorpvp_si();
 void AddSC_outdoorpvp_tf();
-void AddSC_outdoorpvp_zm();
+void AddSC_outdoorpvp_zm();*/
 
 // player
 void AddSC_chat_log();
@@ -914,22 +913,22 @@ void AddScripts()
     AddExampleScripts();
     AddSpellScripts();
     AddSC_SmartSCripts();
-    AddSC_npc_toy();
+   // AddSC_npc_toy();
     AddCommandScripts();
     AddBGScripts();
     sAnticheatMgr->StartScripts();
 #ifdef SCRIPTS
     AddWorldScripts();
-    AddEasternKingdomsScripts();
-    AddKalimdorScripts();
-    AddOutlandScripts();
-    AddNorthrendScripts();
-    AddPandarieScripts();
-    AddBattlegroundScripts();
-    AddOutdoorPvPScripts();
+   // AddEasternKingdomsScripts();
+   // AddKalimdorScripts();
+   // AddOutlandScripts();
+   // AddNorthrendScripts();
+   // AddPandarieScripts();
+    //AddBattlegroundScripts();
+    //AddOutdoorPvPScripts();
     AddCustomScripts();
     AddSC_fast_arena_start();
-    AddScenarioScripts();
+   // AddScenarioScripts();
 #endif
 }
 
@@ -1024,7 +1023,7 @@ void AddWorldScripts()
 #endif
 }
 
-void AddEasternKingdomsScripts()
+/*void AddEasternKingdomsScripts()
 {
 #ifdef SCRIPTS
     AddSC_alterac_valley();                 //Alterac Valley
@@ -1844,9 +1843,9 @@ void AddBattlegroundScripts()
 }
 
 #ifdef SCRIPTS
-/* This is where custom scripts' loading functions should be declared. */
+/* This is where custom scripts' loading functions should be declared. 
 
-#endif
+#endif*/
 
 void AddCustomScripts()
 {
@@ -1864,7 +1863,6 @@ void AddCustomScripts()
 	AddSC_DuelReset();
 	AddSC_Vip_Access();
 	AddSC_Morph_npc();
-	AddSC_NPC_TransmogVendor();
 	AddSC_Title_gossip_codebox();
 	AddSC_proff_npc();
 	AddSC_SpellRegulator();
