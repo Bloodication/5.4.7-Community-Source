@@ -769,6 +769,9 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         }
     }
 
+	if (HasAura(134732) && !IsFriendlyTo(victim) && (victim->GetTypeId() == TYPEID_PLAYER))
+ 		victim->AddAura(134735, victim);
+	
     // Custom MoP Script - Item - Hunter T16 4P Bonus
     // can't proc from mastery and auto-shot
     if (IsPlayer() && spellProto && spellProto->Id != 75 && spellProto->Id != 76663 && ToPlayer()->getClass() == CLASS_HUNTER && ToPlayer()->getLevel() == 90)

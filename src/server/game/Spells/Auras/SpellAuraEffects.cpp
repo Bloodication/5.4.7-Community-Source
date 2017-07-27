@@ -716,6 +716,15 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 break;
             switch (GetSpellInfo()->SpellFamilyName)
             {
+				if (caster)
+				{
+					if (Aura* aura = caster->GetAura(110310)) //Dampening
+						AddPct(amount, -aura->GetEffect(EFFECT_0)->GetAmount());
+
+					/*Unit::AuraEffectList const& mAbsorptionDonePct = caster->GetAuraEffectsByType(SPELL_AURA_MOD_ABSORPTION_PCT);
+					for (Unit::AuraEffectList::const_iterator i = mAbsorptionDonePct.begin(); i != mAbsorptionDonePct.end(); ++i)
+						AddPct(amount, (*i)->GetAmount());*/
+				}
                 case SPELLFAMILY_MONK:
                     // Life Cocoon
                     if (GetSpellInfo()->Id == 116849)
@@ -738,6 +747,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         // +80.68% from sp bonus
                         DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 0.8068f;
                     }
+					
                     break;
                 case SPELLFAMILY_WARLOCK:
                     // Twilight Ward

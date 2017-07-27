@@ -1053,17 +1053,10 @@ class spell_mage_blazing_speed : public SpellScriptLoader
 
                 return SPELL_CAST_OK;
               }
-              
-            void HandleOnHit()
-            {   
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->RemoveMovementImpairingAuras();
-            }
-
+			  
             void Register()
             {
                 OnCheckCast += SpellCheckCastFn(spell_mage_blazing_speed_SpellScript::CheckCast);
-                OnHit += SpellHitFn(spell_mage_blazing_speed_SpellScript::HandleOnHit);
             }
         };
 
@@ -1382,13 +1375,12 @@ class spell_mage_replenish_mana : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, 10052, true);
+                
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_mage_replenish_mana_SpellScript::HandleOnHit);
+                
             }
         };
 
