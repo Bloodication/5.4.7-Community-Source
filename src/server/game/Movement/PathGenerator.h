@@ -21,7 +21,7 @@
 #include "SharedDefines.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"
-#include "C:/Users/Quadral/Desktop/real547/ardor-i90-at-realm/src/server/game/Movement/Spline/MoveSplineInitArgs.h"
+#include "./Spline/MoveSplineInitArgs.h"
 
 class Unit;
 
