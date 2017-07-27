@@ -1928,6 +1928,38 @@ class spell_dru_dash : public SpellScriptLoader
         }
 };
 
+// Disorienting Roar - 99
+class spell_dru_dis_roar : public SpellScriptLoader
+{
+    public:
+        spell_dru_dis_roar() : SpellScriptLoader("spell_dru_dis_roar") { }
+
+        class spell_dru_dis_roar_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_dis_roar_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(5215))
+                        _player->RemoveAura(5215);
+
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_dru_dis_roar_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_dis_roar_SpellScript();
+        }
+};
+
 // Called by Mangle (bear) - 33878, Mangle (cat) - 33876, Ravage - 6785 and Shred - 5221 (Shred - 114236)
 // Rip - 1079
 class spell_dru_rip_duration : public SpellScriptLoader
@@ -5628,6 +5660,7 @@ void AddSC_druid_spell_scripts()
     new spell_dru_stampede();
     new spell_dru_savage_roar_powerful();
     new spell_dru_natures_swiftness();
+	new spell_dru_dis_roar();
 
     new spell_area_druid_ursols_vortex();
     new spell_dru_dream_of_cenarius_heal();
