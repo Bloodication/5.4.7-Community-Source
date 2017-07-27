@@ -1382,13 +1382,12 @@ class spell_mage_replenish_mana : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, 10052, true);
+
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_mage_replenish_mana_SpellScript::HandleOnHit);
+            
             }
         };
 
