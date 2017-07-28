@@ -295,6 +295,13 @@ class spell_warr_storm_bolt : public SpellScriptLoader
 
             void HandleOnHit()
             {
+                //If hunter has Deterrance, ignore it.
+                if (Unit* target = GetHitUnit())
+                {
+                    if (target->HasAura(19263)
+                        return;
+                }
+                    
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* unitTarget = GetHitUnit())
                         _player->CastSpell(unitTarget, WARRIOR_SPELL_STORM_BOLT_STUN, true);
