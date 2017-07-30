@@ -614,6 +614,9 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                         if (!aura->IsPermanent()
                             && aura->GetDuration() <= 30*IN_MILLISECONDS
                             && aurApp->IsPositive()
+							&& (!player->HasAura(66))
+							&& (!player->HasAura(32612))
+							&& (!player->HasAura(114018))
                             && (!(aura->GetSpellInfo()->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY))
                             && (!aura->HasEffectType(SPELL_AURA_MOD_INVISIBILITY)))
                             player->RemoveAura(iter);

@@ -2454,7 +2454,12 @@ SpellSchoolMask Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask,
         uint32 spellDamage = victim->SpellBaseDamageBonusDone(schoolMask);
         // Absorb 15% of spell damage, but maximum can absorb 30% of income damage
         uint32 absorbAmount = std::min(CalculatePct(spellDamage, 15), CalculatePct(dmgInfo.GetDamage(), 30));
-        dmgInfo.AbsorbDamage(absorbAmount);
+		if (victim->HasAura(134735))
+		{
+			dmgInfo.AbsorbDamage(absorbAmount * 0.65f);
+		}else{
+			dmgInfo.AbsorbDamage(absorbAmount);
+		}
     }
 
     *resist = dmgInfo.GetResist();

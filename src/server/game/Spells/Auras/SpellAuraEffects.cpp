@@ -2009,27 +2009,18 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
                                         // This feature uses only in arenas
                                         // **********************************************
                                         // Here need increase mana regen per tick (6 second rule)
-                                        // on 0 tick -   0  (handled in 2 second)
-                                        // on 1 tick - 166% (handled in 4 second)
-                                        // on 2 tick - 133% (handled in 6 second)
+                                        // 1-5 Tick 1% 
 
                                         // Apply bonus for 1 - 4 tick
                                         switch (m_tickNumber)
                                         {
                                             case 1:   // 0%
-                                                aurEff->ChangeAmount(0);
+                                                aurEff->ChangeAmount(GetAmount() * 0.99);
                                                 break;
-                                            case 2:   // 166%
-                                                aurEff->ChangeAmount(GetAmount() * 5 / 3);
-                                                break;
-                                            case 3:   // 133%
-                                                aurEff->ChangeAmount(GetAmount() * 4 / 3);
-                                                break;
-                                            default:  // 100% - normal regen
-                                                aurEff->ChangeAmount(GetAmount());
-                                                // No need to update after 4th tick
-                                                m_isPeriodic = false;
-                                                break;
+											case 8:
+												aurEff->ChangeAmount(GetAmount() * 5 / 4);// 10% per second
+												//m_isPeriodic = false;
+												break;
                                         }
                                     }
                                 }
