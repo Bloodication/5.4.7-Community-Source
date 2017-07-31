@@ -8620,6 +8620,11 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
     if (GetTrader() && !IsWithinDistInMap(GetTrader(), INTERACTION_DISTANCE))
         GetSession()->SendCancelTrade();
 
+    if (GetAreaId() == 5861 && GetSession()->GetSecurity() == SEC_PLAYER)
+    {
+		TeleportTo(870, 3971.35f, 1862.69f, 904.65f, 0.59f);
+		ChatHandler(GetSession()).PSendSysMessage("|cffff6060[Information]:|r You are not allowed to be here, you aren't a VIP!|r!");
+    }
     CheckAreaExploreAndOutdoor();
 
     return true;
