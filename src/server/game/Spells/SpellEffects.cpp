@@ -2316,26 +2316,6 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 
 		switch (m_spellInfo->Id)
 		{
-		case 81751:
-		{
-					  if (unitTarget == caster)
-						  addhealth /= 2;
-
-					  if (GetSpellValue(SPELLVALUE_BASE_POINT1) == 1) ///< Does proc Divine Aegis
-					  {
-						  int32 bp = addhealth;
-
-						  if (AuraEffect* divineAegis = unitTarget->GetAuraEffect(47753, EFFECT_0))
-							  bp += divineAegis->GetAmount();
-
-						  bp = std::min<int32>(bp, CalculatePct(unitTarget->GetMaxHealth(), 60));
-
-						  caster->CastCustomSpell(unitTarget, 47753, &bp, nullptr, nullptr, true);
-					  }
-
-					  addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, addhealth, HEAL);
-					  break;
-		}
 		case 105996: // Essence of Dreams, Ultraxion, Dragon Soul
 		{
 						 uint32 count = 0;

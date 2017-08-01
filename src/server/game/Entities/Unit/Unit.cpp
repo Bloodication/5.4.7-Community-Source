@@ -8029,24 +8029,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, uint32 absorb, AuraE
             }
             switch (dummySpell->Id)
             {
-                case 81749:
-                {
-                    if (!target || !procSpell || !damage)
-                        return false;
-
-                    Unit* originalTarget = target;
-
-                    basepoints0 = int32(CalculatePct(damage, 90));
-                    target = this;
-                    triggered_spell_id = 81751;
-
-                    /// According to https://firestorm-servers.com/fr/report/see_report/957, what procs Atonement can, if critical, proc Divine Aegis 
-                    if (procEx & PROC_EX_CRITICAL_HIT && HasAura(47515)) ///< Divine Aegis
-                        basepoints1 = 1;
-                    else
-                        basepoints1 = 0;
-                    break;
-                }
                 // Shadowflame, Item - Priest T12 Shadow 2P Bonus
                 case 99155:
                 {
@@ -14899,6 +14881,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     // No bonus/malus healing for potion spells
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
         return healamount;
+
+	// No bonus heal for Atonement
+	if (spellProto->Id == 81751)
+		return healamount;
 
     bool shouldTakeBonus = true;
     switch (spellProto->Id)

@@ -1305,24 +1305,24 @@ class spell_pri_atonement : public SpellScriptLoader
                     {
                         if (_player->HasAura(PRIEST_ATONEMENT_AURA))
                         {
-                            int32 bp = GetHitDamage();
-                            std::list<Unit*> groupList;
+							int32 bp = CalculatePct(GetHitDamage(), 90);
+							std::list<Unit*> groupList;
 
-                            _player->GetPartyMembers(groupList);
+							_player->GetPartyMembers(groupList);
 
-                            if (groupList.size() > 1)
-                            {
+							if (groupList.size() > 1)
+							{
 								groupList.sort(JadeCore::HealthPctOrderPred());
-                                groupList.resize(1);
-                            }
+								groupList.resize(1);
+							}
 
-                            for (auto itr : groupList)
-                            {
-                                if (itr->GetGUID() == _player->GetGUID())
-                                    bp /= 2;
+							for (auto itr : groupList)
+							{
+								if (itr->GetGUID() == _player->GetGUID())
+									bp /= 2;
 
-                                _player->CastCustomSpell(itr, PRIEST_ATONEMENT_HEAL, &bp, NULL, NULL, true);
-                            }
+								_player->CastCustomSpell(itr, PRIEST_ATONEMENT_HEAL, &bp, NULL, NULL, true);
+							}
                         }
                     }
                 }
