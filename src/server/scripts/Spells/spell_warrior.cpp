@@ -298,7 +298,7 @@ class spell_warr_storm_bolt : public SpellScriptLoader
                 //If hunter has Deterrance, ignore it.
                 if (Unit* target = GetHitUnit())
                 {
-                    if (target->HasAura(19263)
+                    if (target->HasAura(19263))
                         return;
                 }
                     
