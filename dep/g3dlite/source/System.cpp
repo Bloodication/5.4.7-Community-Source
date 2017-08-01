@@ -41,6 +41,7 @@
 
 #ifdef G3D_WINDOWS
 
+#	include	<intrin.h>
 #   include <conio.h>
 #   include <sys/timeb.h>
 #   include "G3D/RegistryUtil.h"
